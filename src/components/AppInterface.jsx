@@ -54,12 +54,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
       {characters.length === 0 ? (
         <div className="text-sm text-text-secondary">
-          <button onClick={() => setActiveMode('characters')} className="text-accent hover:underline">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
+          <button onClick={() => setActiveMode('characters')} className="text-accent hover:underline transition-colors">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
           {characters.map(c => (
-            <button key={c.id} onClick={() => setSelectedCharacterId(c.id)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm ${selectedCharacterId === c.id ? 'border-accent text-accent bg-accent/10' : 'border-border text-text-secondary hover:border-accent/50'}`}>
+            <button key={c.id} onClick={() => setSelectedCharacterId(c.id)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm transition-all duration-200 ${selectedCharacterId === c.id ? 'border-accent text-accent bg-accent/10 scale-[1.02]' : 'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>
               {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
               {c.name}
             </button>
@@ -78,29 +78,29 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           <img src="/layer-logo.png" alt="Seducecraft" className="h-8 object-contain" />
         </div>
         <div className="flex items-center gap-4 relative">
-          <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary">🌐</button>
+          <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary transition-colors">🌐</button>
           {langOpen && (
             <div className="absolute right-0 top-full mt-1 bg-bg-secondary border border-border rounded-md shadow-lg z-20 min-w-[80px]">
-              <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm">EN</button>
-              <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm">RU</button>
+              <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">EN</button>
+              <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">RU</button>
             </div>
           )}
           {isLoggedIn && !isAnonymous && <span className="text-sm">{userName} · {credits} {t.credits}</span>}
-          {isLoggedIn && isAnonymous && <button onClick={onLogout} className="text-sm text-text-secondary">{userName}</button>}
-          {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary">{t.login}</button>}
-          {isLoggedIn && !isAnonymous && <button onClick={onLogout} className="text-sm text-text-secondary">{t.logout}</button>}
+          {isLoggedIn && isAnonymous && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{userName}</button>}
+          {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.login}</button>}
+          {isLoggedIn && !isAnonymous && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.logout}</button>}
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 border-r border-border bg-bg-secondary flex flex-col">
           <nav className="flex-1 py-4">
             {[{id:'characters',name:t.myCharacters},{id:'templates',name:t.templates},{id:'custom',name:t.advanced},{id:'history',name:t.myGallery}].map(({id,name}) => (
-              <button key={id} onClick={() => setActiveMode(id)} className={`w-full text-left px-6 py-3 text-sm ${activeMode===id ? 'bg-bg-tertiary text-text-primary border-r-2 border-accent' : 'text-text-secondary hover:text-text-primary'}`}>{name}</button>
+              <button key={id} onClick={() => setActiveMode(id)} className={`w-full text-left px-6 py-3 text-sm transition-all duration-200 ${activeMode===id ? 'bg-bg-tertiary text-text-primary border-r-2 border-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50'}`}>{name}</button>
             ))}
           </nav>
           {!isAnonymous && (
             <div className="p-4 border-t border-border">
-              <button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button>
+              <button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary transition-colors">{t.terms}</button>
             </div>
           )}
         </aside>
@@ -111,10 +111,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <>
                 <h2 className="text-2xl font-semibold mb-4">{t.templates}</h2>
                 <CharacterPicker compact />
-                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTemplates} className="w-full h-10 bg-bg-secondary border border-border rounded-md px-3 text-sm mb-6" />
+                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTemplates} className="w-full h-10 bg-bg-secondary border border-border rounded-md px-3 text-sm mb-6 focus:border-accent focus:outline-none transition-colors" />
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {filtered.map(p => (
-                    <button key={p.id} onClick={() => { if (!selectedCharacter) return; setPrompt(p.prompt); setActiveMode('custom'); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 overflow-hidden disabled:opacity-50" disabled={!selectedCharacter}>
+                    <button key={p.id} onClick={() => { if (!selectedCharacter) return; setPrompt(p.prompt); setActiveMode('custom'); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 overflow-hidden disabled:opacity-50 transition-all duration-200" disabled={!selectedCharacter}>
                       <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
                       <div className="p-2 text-xs font-medium">{p.title[lang] || p.title.en}</div>
                     </button>
@@ -134,19 +134,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <h2 className="text-2xl font-semibold mb-6">{t.advanced}</h2>
                 <CharacterPicker />
                 <div className="flex gap-4 mb-5">
-                  <button onClick={() => setMedia('photo')} className={`px-8 py-3 text-base rounded-lg border-2 font-medium ${media==='photo'?'border-accent bg-accent/15 text-accent':'border-border text-text-secondary'}`}>{t.photo}</button>
-                  <button onClick={() => setMedia('video')} className={`px-8 py-3 text-base rounded-lg border-2 font-medium ${media==='video'?'border-accent bg-accent/15 text-accent':'border-border text-text-secondary'}`}>{t.video}</button>
+                  <button onClick={() => setMedia('photo')} className={`px-8 py-3 text-base rounded-lg border-2 font-medium transition-all duration-200 ${media==='photo'?'border-accent bg-accent/15 text-accent':'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>{t.photo}</button>
+                  <button onClick={() => setMedia('video')} className={`px-8 py-3 text-base rounded-lg border-2 font-medium transition-all duration-200 ${media==='video'?'border-accent bg-accent/15 text-accent':'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>{t.video}</button>
                 </div>
                 <div className="flex gap-4 mb-6">
                   {['flash','normal','pro'].map(q => (
-                    <button key={q} onClick={() => setQuality(q)} className={`px-6 py-2.5 text-sm rounded-lg border-2 font-medium ${quality===q?'border-accent text-accent bg-accent/10':'border-border text-text-secondary'}`}>{t[q]}</button>
+                    <button key={q} onClick={() => setQuality(q)} className={`px-6 py-2.5 text-sm rounded-lg border-2 font-medium transition-all duration-200 ${quality===q?'border-accent text-accent bg-accent/10':'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>{t[q]}</button>
                   ))}
                 </div>
                 <div className="mb-6">
                   <label className="block text-sm text-text-secondary mb-2">{t.scenario}</label>
-                  <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-32 bg-bg-secondary border border-border rounded-md px-4 py-3" />
+                  <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-32 bg-bg-secondary border border-border rounded-md px-4 py-3 focus:border-accent focus:outline-none transition-colors" />
                 </div>
-                <button onClick={handleGenerate} disabled={generating || !prompt.trim() || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-10 py-4 rounded-lg text-base font-medium">{generating ? t.generating : t.generate}</button>
+                <button onClick={handleGenerate} disabled={generating || !prompt.trim() || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-10 py-4 rounded-lg text-base font-medium transition-all duration-200 hover:shadow-lg hover:shadow-accent/20">{generating ? t.generating : t.generate}</button>
                 {result && <div className="mt-6 p-4 border border-border rounded-md">{result.message}</div>}
                 <div className="mt-6 border border-border rounded-md bg-bg-secondary h-64 flex items-center justify-center text-text-secondary">{t.result}</div>
               </>
