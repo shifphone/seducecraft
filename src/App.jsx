@@ -18,9 +18,6 @@ export default function App() {
   }, [])
 
   const handleStart = () => {
-    if (!adult) {
-      // age gate will show when entering studio
-    }
     if (!name) {
       setLoginOpen(true)
       return
@@ -51,7 +48,7 @@ export default function App() {
       {loginOpen && (
         <LoginModal
           onClose={() => setLoginOpen(false)}
-          onSuccess={(n) => {
+          onLogin={(n) => {
             setName(n)
             localStorage.setItem('seducecraft.name', n)
             setLoginOpen(false)
