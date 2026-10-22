@@ -61,9 +61,9 @@ export default function Landing({ onStart, isLoggedIn, userName, onLogin }) {
             <h2 className="text-4xl font-semibold mb-8">How it works</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
-                { n: '01', t: 'Describe', d: 'A short line is enough. No technical setup to begin.' },
-                { n: '02', t: 'Choose', d: 'Custom or a template on the left. Photo and video switch inside.' },
-                { n: '03', t: 'Receive', d: 'The frame appears in the workspace. Refine and run again.' },
+                { n: '01', t: 'Upload a photo', d: 'Add a clear image of the person you want to work with.' },
+                { n: '02', t: 'Choose or describe', d: 'Pick a template from the library, or write your own scenario.' },
+                { n: '03', t: 'Enjoy', d: 'Generate and review the result. Refine if you want, then run again.' },
               ].map((item) => (
                 <div key={item.n} className="bg-bg-secondary border border-border rounded-lg p-6">
                   <p className="text-accent text-sm mb-2">{item.n}</p>
