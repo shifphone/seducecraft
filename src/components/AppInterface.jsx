@@ -15,7 +15,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [swapMode, setSwapMode] = useState('template');
   const [deepMode, setDeepMode] = useState('template');
   const [prompt, setPrompt] = useState('');
-  const [quality, setQuality] = useState('normal');
   const [generating, setGenerating] = useState(false);
   const [toast, setToast] = useState(null);
   const [presets] = useState(SAMPLE_PRESETS);
@@ -69,6 +68,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     { id: 'deepfake', name: t.deepfake },
   ];
 
+  const TabBtn = ({ active, onClick, children }) => (
+    <button onClick={onClick} className={`px-5 py-2.5 text-sm rounded-full border transition-all duration-200 ${active ? 'tab-active' : 'border-border text-text-secondary hover:border-accent/40'}`}>{children}</button>
+  );
+
+  const GenBtn = ({ onClick, disabled }) => (
+    <button onClick={onClick} disabled={disabled} className="btn-glow disabled:opacity-40 text-white px-10 py-3 rounded-full text-sm font-medium transition-all">{generating ? t.generating : t.generate}</button>
+  );
+
   const CharacterPicker = () => (
     <div className="mb-4">
       <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
@@ -76,7 +83,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         <button onClick={() => setActiveMode('characters')} className="text-sm text-accent hover:underline">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
       ) : (
         <div className="relative inline-block">
-          <button onClick={() => setCharOpen(!charOpen)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-border text-sm hover:border-accent/50 min-w-[200px]">
+          <button onClick={() => setCharOpen(!charOpen)} className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-border text-sm hover:border-accent/50 min-w-[200px]">
             {selectedCharacter ? (
               <>
                 {selectedCharacter.photos?.[0] && <img src={selectedCharacter.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
@@ -109,8 +116,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             <div className="mt-4 flex items-center justify-between text-sm">
               <div><div className="font-medium">{viewer.title}</div><div className="text-text-secondary text-xs">{viewer.characterName}</div></div>
               <div className="flex gap-2">
-                <button onClick={() => downloadImage(viewer.src, viewer.title)} className="px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-md text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
-                <button onClick={() => setViewer(null)} className="px-4 py-2 border border-border rounded-md text-sm hover:border-accent">Close</button>
+                <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white rounded-full text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
+                <button onClick={() => setViewer(null)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
               </div>
             </div>
           </div>
@@ -140,7 +147,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         <aside className="w-64 border-r border-border bg-bg-secondary flex flex-col">
           <nav className="flex-1 py-4">
             {menu.map(({id, name}) => (
-              <button key={id} onClick={() => setActiveMode(id)} className={`w-full text-left px-6 py-3 text-sm transition-all duration-200 ${activeMode===id ? 'bg-bg-tertiary text-text-primary border-r-2 border-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/50'}`}>{name}</button>
+              <button key={id} onClick={() => setActiveMode(id)} className={`w-full text-left px-6 py-3 text-sm transition-all duration-200 ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/30'}`}>{name}</button>
             ))}
           </nav>
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
@@ -153,7 +160,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <p className="text-text-secondary mb-6">{t.homeSub}</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
                   {[{id:'photo',label:t.photo},{id:'faceswap',label:t.faceSwap},{id:'video',label:t.video},{id:'deepfake',label:t.deepfake}].map(m => (
-                    <button key={m.id} onClick={() => setActiveMode(m.id)} className="border border-border rounded-lg p-4 text-center hover:border-accent/50 transition-colors">{m.label}</button>
+                    <button key={m.id} onClick={() => setActiveMode(m.id)} className="border border-border rounded-xl p-4 text-center hover:border-accent/50 transition-colors">{m.label}</button>
                   ))}
                 </div>
                 <h3 className="text-lg font-semibold mb-3">{t.readyWorks}</h3>
@@ -194,28 +201,28 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <>
                 <h2 className="text-2xl font-semibold mb-4">{t.photo}</h2>
                 <div className="flex gap-2 mb-5">
-                  {['undress','templates','custom'].map(m => (
-                    <button key={m} onClick={() => setPhotoMode(m)} className={`px-4 py-2 text-sm rounded-lg border-2 ${photoMode===m?'border-accent text-accent bg-accent/10':'border-border text-text-secondary hover:border-accent/50'}`}>{t[m]}</button>
-                  ))}
+                  <TabBtn active={photoMode==='undress'} onClick={() => setPhotoMode('undress')}>{t.undress}</TabBtn>
+                  <TabBtn active={photoMode==='templates'} onClick={() => setPhotoMode('templates')}>{t.templates}</TabBtn>
+                  <TabBtn active={photoMode==='custom'} onClick={() => setPhotoMode('custom')}>{t.custom}</TabBtn>
                 </div>
                 <CharacterPicker />
                 {photoMode === 'custom' && <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-24 bg-bg-secondary border border-border rounded-md px-3 py-2 mb-4 focus:border-accent focus:outline-none" />}
                 {photoMode === 'templates' && <div className="grid grid-cols-3 gap-3 mb-4">{presets.map(p => <button key={p.id} onClick={() => handleGenerate(p.prompt, p.title[lang])} className="border border-border rounded-md overflow-hidden hover:border-accent/50"><img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" /><div className="p-2 text-xs">{p.title[lang] || p.title.en}</div></button>)}</div>}
                 {photoMode === 'undress' && <p className="text-sm text-text-secondary mb-4">{lang === 'en' ? 'Select a character and generate.' : 'Выберите персонажа и сгенерируйте.'}</p>}
-                <button onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-8 py-3 rounded-lg text-sm font-medium">{generating ? t.generating : t.generate}</button>
+                <GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} />
               </>
             )}
             {activeMode === 'faceswap' && (
               <>
                 <h2 className="text-2xl font-semibold mb-4">{t.faceSwap}</h2>
                 <div className="flex gap-2 mb-5">
-                  <button onClick={() => setSwapMode('template')} className={`px-4 py-2 text-sm rounded-lg border-2 ${swapMode==='template'?'border-accent text-accent bg-accent/10':'border-border text-text-secondary'}`}>{t.useTemplate}</button>
-                  <button onClick={() => setSwapMode('upload')} className={`px-4 py-2 text-sm rounded-lg border-2 ${swapMode==='upload'?'border-accent text-accent bg-accent/10':'border-border text-text-secondary'}`}>{t.uploadOwn}</button>
+                  <TabBtn active={swapMode==='template'} onClick={() => setSwapMode('template')}>{t.useTemplate}</TabBtn>
+                  <TabBtn active={swapMode==='upload'} onClick={() => setSwapMode('upload')}>{t.uploadOwn}</TabBtn>
                 </div>
                 <CharacterPicker />
                 {swapMode === 'template' && <div className="grid grid-cols-3 gap-3 mb-4">{presets.map(p => <img key={p.id} src={p.src} alt="" className="aspect-[3/4] w-full object-cover rounded-md border border-border" />)}</div>}
                 {swapMode === 'upload' && <input type="file" accept="image/*" className="mb-4 text-sm" />}
-                <button onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-8 py-3 rounded-lg text-sm font-medium">{generating ? t.generating : t.generate}</button>
+                <GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} />
               </>
             )}
             {activeMode === 'video' && (
@@ -223,20 +230,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <h2 className="text-2xl font-semibold mb-4">{t.video}</h2>
                 <CharacterPicker />
                 <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-24 bg-bg-secondary border border-border rounded-md px-3 py-2 mb-4 focus:border-accent focus:outline-none" />
-                <button onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-8 py-3 rounded-lg text-sm font-medium">{generating ? t.generating : t.generate}</button>
+                <GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} />
               </>
             )}
             {activeMode === 'deepfake' && (
               <>
                 <h2 className="text-2xl font-semibold mb-4">{t.deepfake}</h2>
                 <div className="flex gap-2 mb-5">
-                  <button onClick={() => setDeepMode('template')} className={`px-4 py-2 text-sm rounded-lg border-2 ${deepMode==='template'?'border-accent text-accent bg-accent/10':'border-border text-text-secondary'}`}>{t.useTemplate}</button>
-                  <button onClick={() => setDeepMode('upload')} className={`px-4 py-2 text-sm rounded-lg border-2 ${deepMode==='upload'?'border-accent text-accent bg-accent/10':'border-border text-text-secondary'}`}>{t.uploadOwn}</button>
+                  <TabBtn active={deepMode==='template'} onClick={() => setDeepMode('template')}>{t.useTemplate}</TabBtn>
+                  <TabBtn active={deepMode==='upload'} onClick={() => setDeepMode('upload')}>{t.uploadOwn}</TabBtn>
                 </div>
                 <CharacterPicker />
                 {deepMode === 'template' && <p className="text-sm text-text-secondary mb-4">{lang === 'en' ? 'Video templates coming soon.' : 'Видеошаблоны скоро.'}</p>}
                 {deepMode === 'upload' && <input type="file" accept="video/*" className="mb-4 text-sm" />}
-                <button onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-8 py-3 rounded-lg text-sm font-medium">{generating ? t.generating : t.generate}</button>
+                <GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} />
               </>
             )}
           </div>
