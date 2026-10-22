@@ -1,25 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import CharacterCreator from './CharacterCreator';
 
-export default function Characters({ onRequireTerms, termsAccepted }) {
-  const [characters, setCharacters] = useState([]);
+export default function Characters({ onRequireTerms, termsAccepted, characters = [], onSave }) {
   const [creating, setCreating] = useState(false);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('seducecraft.characters');
-      if (saved) setCharacters(JSON.parse(saved));
-    } catch {}
-  }, []);
-
-  const saveCharacters = (list) => {
-    setCharacters(list);
-    try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
-  };
 
   const handleSave = (character) => {
     const next = [character, ...characters];
-    saveCharacters(next);
+    onSave?.(next);
     setCreating(false);
   };
 
