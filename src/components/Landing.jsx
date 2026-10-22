@@ -10,7 +10,7 @@ export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, 
       <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGcAAABrCAYAAABqg5yCAAAgAElEQVR4Xu2dB7RdVbX3f7uedntN74Q0AoQSOgGRKhBAQBAJRZEi" alt="" className="h-9 w-9 object-contain" />
+            <img src="/logo-icon.svg" alt="" className="h-9 w-9 object-contain" />
             <span className="text-2xl font-semibold tracking-tight text-[#e8d5b5]">Seducecraft</span>
             <span className="text-xs border border-accent/60 text-accent px-2 py-0.5 rounded">{t.adultStudio}</span>
           </div>
