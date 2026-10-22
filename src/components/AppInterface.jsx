@@ -26,6 +26,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [viewer, setViewer] = useState(null);
   const [gallerySort, setGallerySort] = useState('newest');
   const [selectedGallery, setSelectedGallery] = useState(new Set());
+  const [undressPhoto, setUndressPhoto] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   useEffect(() => {
     try {
@@ -41,13 +43,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const saveGallery = (list) => { setGallery(list); try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {} };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
-  const handleGenerate = (sourcePrompt, sourceTitle) => {
-    if (!selectedCharacter) return;
-    const p = sourcePrompt || prompt;
-    if (!p?.trim()) return;
+  const handleGenerate = (sourcePrompt, sourceTitle, photoSrc) => {
+    const p = sourcePrompt || prompt || selectedTemplate?.prompt;
+    if (!p?.trim() && !photoSrc) return;
     setGenerating(true);
     setTimeout(() => {
-      const gen = { id: crypto.randomUUID(), title: sourceTitle || 'Custom', prompt: p, characterName: selectedCharacter.name, src: '/stills/beam.jpg', createdAt: Date.now() };
+      const gen = { id: crypto.randomUUID(), title: sourceTitle || selectedTemplate?.title?.[lang] || 'Custom', prompt: p || '', characterName: selectedCharacter?.name || 'Photo', src: photoSrc || selectedTemplate?.src || '/stills/beam.jpg', createdAt: Date.now() };
       saveGallery([gen, ...gallery]);
       setGenerating(false);
       showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
@@ -69,21 +70,21 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   ];
 
   const TabBtn = ({ active, onClick, children }) => (
-    <button onClick={onClick} className={`px-5 py-2 text-sm transition-all duration-200 ${active ? 'tab-active' : 'tab-inactive'}`}>{children}</button>
+    <button onClick={onClick} className={`px-6 py-2.5 text-sm transition-all duration-200 ${active ? 'tab-active' : 'tab-inactive'}`}>{children}</button>
   );
 
   const GenBtn = ({ onClick, disabled }) => (
-    <button onClick={onClick} disabled={disabled} className="btn-glow disabled:opacity-40 text-white px-12 py-3 text-sm font-medium">{generating ? t.generating : t.generate}</button>
+    <button onClick={onClick} disabled={disabled} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{generating ? t.generating : t.generate}</button>
   );
 
   const CharacterPicker = () => (
-    <div className="mb-4">
+    <div className="mb-6">
       <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
       {characters.length === 0 ? (
         <button onClick={() => setActiveMode('characters')} className="text-sm text-accent hover:underline">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
       ) : (
         <div className="relative inline-block">
-          <button onClick={() => setCharOpen(!charOpen)} className={`flex items-center gap-2 px-4 py-2.5 text-sm min-w-[220px] ${selectedCharacter ? 'input-glow bg-bg-secondary' : 'border border-border rounded-lg hover:border-accent/50'}`}>
+          <button onClick={() => setCharOpen(!charOpen)} className={`flex items-center gap-2 px-4 py-2.5 text-sm min-w-[240px] ${selectedCharacter ? 'input-glow bg-bg-secondary' : 'border border-border rounded-lg hover:border-accent/50'}`}>
             {selectedCharacter ? (
               <>
                 {selectedCharacter.photos?.[0] && <img src={selectedCharacter.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
@@ -93,7 +94,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             ) : <span className="text-text-secondary">{lang === 'en' ? 'Select character' : 'Выбрать персонажа'}</span>}
           </button>
           {charOpen && (
-            <div className="absolute left-0 top-full mt-1 bg-bg-secondary border border-border rounded-lg shadow-lg z-20 min-w-[220px] py-1">
+            <div className="absolute left-0 top-full mt-1 bg-bg-secondary border border-border rounded-lg shadow-lg z-20 min-w-[240px] py-1">
               {characters.map(c => (
                 <button key={c.id} onClick={() => { setSelectedCharacterId(c.id); setCharOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary flex items-center gap-2">
                   {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}{c.name}
@@ -108,7 +109,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {toast && <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"><div className="bg-green-600/90 text-white px-6 py-3 rounded-lg text-sm font-medium shadow-lg">{toast}</div></div>}
+      {toast && <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-lg">{toast}</div></div>}
       {viewer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setViewer(null)}>
           <div className="max-w-3xl w-full" onClick={e => e.stopPropagation()}>
@@ -152,20 +153,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </nav>
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
         </aside>
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="max-w-3xl mx-auto">
+        <main className="flex-1 p-8 overflow-auto">
+          <div className="max-w-5xl mx-auto">
             {activeMode === 'home' && (
               <>
                 <h2 className="text-2xl font-semibold mb-2">{t.homeTitle}</h2>
-                <p className="text-text-secondary mb-6">{t.homeSub}</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                <p className="text-text-secondary mb-8">{t.homeSub}</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
                   {[{id:'photo',label:t.photo},{id:'faceswap',label:t.faceSwap},{id:'video',label:t.video},{id:'deepfake',label:t.deepfake}].map(m => (
-                    <button key={m.id} onClick={() => setActiveMode(m.id)} className="border border-border rounded-xl p-4 text-center hover:border-accent/50 transition-colors">{m.label}</button>
+                    <button key={m.id} onClick={() => setActiveMode(m.id)} className="border border-border rounded-xl p-5 text-center hover:border-accent/50 transition-colors">{m.label}</button>
                   ))}
                 </div>
-                <h3 className="text-lg font-semibold mb-3">{t.readyWorks}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {presets.map(p => <img key={p.id} src={p.src} alt="" className="aspect-[3/4] w-full object-cover rounded-md border border-border" />)}
+                <h3 className="text-lg font-semibold mb-4">{t.readyWorks}</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {presets.map(p => <img key={p.id} src={p.src} alt="" className="aspect-[3/4] w-full object-cover rounded-lg border border-border" />)}
                 </div>
               </>
             )}
@@ -185,7 +186,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   )}
                 </div>
                 {gallery.length === 0 ? <p className="text-text-secondary">{t.galleryEmpty}</p> : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {sortedGallery.map(g => (
                       <div key={g.id} className="relative group border border-border rounded-lg overflow-hidden bg-bg-secondary">
                         <label className="absolute top-2 left-2 z-10"><input type="checkbox" checked={selectedGallery.has(g.id)} onChange={() => { const n = new Set(selectedGallery); n.has(g.id) ? n.delete(g.id) : n.add(g.id); setSelectedGallery(n); }} className="w-4 h-4" /></label>
@@ -199,46 +200,65 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             )}
             {activeMode === 'photo' && (
               <>
-                <div className="flex gap-3 mb-6 justify-center">
-                  <TabBtn active={photoMode==='undress'} onClick={() => setPhotoMode('undress')}>{t.undress}</TabBtn>
+                <div className="flex gap-3 mb-8 justify-center">
+                  <TabBtn active={photoMode==='undress'} onClick={() => { setPhotoMode('undress'); setSelectedTemplate(null); }}>{t.undress}</TabBtn>
                   <TabBtn active={photoMode==='templates'} onClick={() => setPhotoMode('templates')}>{t.templates}</TabBtn>
                   <TabBtn active={photoMode==='custom'} onClick={() => setPhotoMode('custom')}>{t.custom}</TabBtn>
                 </div>
-                <CharacterPicker />
-                {photoMode === 'custom' && <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-24 bg-bg-secondary border border-border rounded-lg px-3 py-2 mb-4 focus:border-accent focus:outline-none" />}
-                {photoMode === 'templates' && <div className="grid grid-cols-3 gap-3 mb-4">{presets.map(p => <button key={p.id} onClick={() => handleGenerate(p.prompt, p.title[lang])} className="border border-border rounded-lg overflow-hidden hover:border-accent/50"><img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" /><div className="p-2 text-xs">{p.title[lang] || p.title.en}</div></button>)}</div>}
-                {photoMode === 'undress' && <p className="text-sm text-text-secondary mb-4 text-center">{lang === 'en' ? 'Select a character and generate.' : 'Выберите персонажа и сгенерируйте.'}</p>}
-                <div className="flex justify-center"><GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} /></div>
+                {photoMode === 'undress' && (
+                  <div className="mb-6">
+                    <p className="text-sm text-text-secondary mb-3 text-center">{lang === 'en' ? 'Upload a photo to undress' : 'Загрузите фото для раздевания'}</p>
+                    <div className="dropzone p-8 text-center">
+                      {undressPhoto ? <img src={undressPhoto} alt="" className="max-h-48 mx-auto rounded-lg mb-3" /> : null}
+                      <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="text-sm" />
+                    </div>
+                  </div>
+                )}
+                {photoMode !== 'undress' && <CharacterPicker />}
+                {photoMode === 'custom' && <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-28 bg-bg-secondary border border-border rounded-lg px-4 py-3 mb-6 focus:border-accent focus:outline-none" />}
+                {photoMode === 'templates' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {presets.map(p => (
+                      <button key={p.id} onClick={() => setSelectedTemplate(p)} className={`border rounded-lg overflow-hidden transition-colors ${selectedTemplate?.id === p.id ? 'border-accent ring-1 ring-accent' : 'border-border hover:border-accent/50'}`}>
+                        <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                        <div className="p-2 text-xs">{p.title[lang] || p.title.en}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="flex justify-center mt-4">
+                  <GenBtn onClick={() => handleGenerate(selectedTemplate?.prompt, selectedTemplate?.title?.[lang], undressPhoto)} disabled={generating || (photoMode === 'undress' ? !undressPhoto : !selectedCharacter)} />
+                </div>
               </>
             )}
             {activeMode === 'faceswap' && (
               <>
-                <div className="flex gap-3 mb-6 justify-center">
+                <div className="flex gap-3 mb-8 justify-center">
                   <TabBtn active={swapMode==='template'} onClick={() => setSwapMode('template')}>{t.useTemplate}</TabBtn>
                   <TabBtn active={swapMode==='upload'} onClick={() => setSwapMode('upload')}>{t.uploadOwn}</TabBtn>
                 </div>
                 <CharacterPicker />
-                {swapMode === 'template' && <div className="grid grid-cols-3 gap-3 mb-4">{presets.map(p => <img key={p.id} src={p.src} alt="" className="aspect-[3/4] w-full object-cover rounded-lg border border-border" />)}</div>}
-                {swapMode === 'upload' && <div className="dropzone p-6 mb-4 text-center"><input type="file" accept="image/*" className="text-sm" /></div>}
+                {swapMode === 'template' && <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">{presets.map(p => <button key={p.id} onClick={() => setSelectedTemplate(p)} className={`border rounded-lg overflow-hidden ${selectedTemplate?.id === p.id ? 'border-accent ring-1 ring-accent' : 'border-border hover:border-accent/50'}`}><img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" /><div className="p-2 text-xs">{p.title[lang] || p.title.en}</div></button>)}</div>}
+                {swapMode === 'upload' && <div className="dropzone p-8 mb-6 text-center"><input type="file" accept="image/*" className="text-sm" /></div>}
                 <div className="flex justify-center"><GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} /></div>
               </>
             )}
             {activeMode === 'video' && (
               <>
                 <CharacterPicker />
-                <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-24 bg-bg-secondary border border-border rounded-lg px-3 py-2 mb-4 focus:border-accent focus:outline-none" />
+                <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-28 bg-bg-secondary border border-border rounded-lg px-4 py-3 mb-6 focus:border-accent focus:outline-none" />
                 <div className="flex justify-center"><GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} /></div>
               </>
             )}
             {activeMode === 'deepfake' && (
               <>
-                <div className="flex gap-3 mb-6 justify-center">
+                <div className="flex gap-3 mb-8 justify-center">
                   <TabBtn active={deepMode==='template'} onClick={() => setDeepMode('template')}>{t.useTemplate}</TabBtn>
                   <TabBtn active={deepMode==='upload'} onClick={() => setDeepMode('upload')}>{t.uploadOwn}</TabBtn>
                 </div>
                 <CharacterPicker />
-                {deepMode === 'template' && <p className="text-sm text-text-secondary mb-4 text-center">{lang === 'en' ? 'Video templates coming soon.' : 'Видеошаблоны скоро.'}</p>}
-                {deepMode === 'upload' && <div className="dropzone p-6 mb-4 text-center"><input type="file" accept="video/*" className="text-sm" /></div>}
+                {deepMode === 'template' && <p className="text-sm text-text-secondary mb-6 text-center">{lang === 'en' ? 'Video templates coming soon.' : 'Видеошаблоны скоро.'}</p>}
+                {deepMode === 'upload' && <div className="dropzone p-8 mb-6 text-center"><input type="file" accept="video/*" className="text-sm" /></div>}
                 <div className="flex justify-center"><GenBtn onClick={() => handleGenerate()} disabled={generating || !selectedCharacter} /></div>
               </>
             )}
