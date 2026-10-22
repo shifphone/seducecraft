@@ -15,7 +15,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [quality, setQuality] = useState('normal');
   const [media, setMedia] = useState('photo');
   const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState(null);
+  const [toast, setToast] = useState(null);
   const [presets] = useState(SAMPLE_PRESETS);
   const [searchQuery, setSearchQuery] = useState('');
   const [langOpen, setLangOpen] = useState(false);
@@ -24,6 +24,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [charOpen, setCharOpen] = useState(false);
   const [gallery, setGallery] = useState([]);
   const [activeTemplate, setActiveTemplate] = useState(null);
+  const [viewer, setViewer] = useState(null);
 
   useEffect(() => {
     try {
@@ -33,6 +34,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (g) setGallery(JSON.parse(g));
     } catch {}
   }, []);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  };
 
   const saveCharacters = (list) => {
     setCharacters(list);
@@ -68,9 +74,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         createdAt: Date.now(),
       };
       addToGallery(gen);
-      setResult(gen);
       setGenerating(false);
+      showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
     }, 700);
+  };
+
+  const downloadImage = (src, name) => {
+    const a = document.createElement('a');
+    a.href = src;
+    a.download = (name || 'seducecraft') + '.jpg';
+    a.click();
   };
 
   const filtered = presets.filter(p => {
@@ -114,6 +127,24 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
+      {toast && <div className="fixed top-4 right-4 z-50 bg-bg-secondary border border-border px-4 py-2 rounded-md text-sm shadow-lg">{toast}</div>}
+      {viewer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setViewer(null)}>
+          <div className="max-w-3xl w-full" onClick={e => e.stopPropagation()}>
+            <img src={viewer.src} alt="" className="w-full max-h-[70vh] object-contain rounded-md" />
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <div>
+                <div className="font-medium">{viewer.title}</div>
+                <div className="text-text-secondary text-xs">{viewer.characterName}</div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => downloadImage(viewer.src, viewer.title)} className="px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-md text-sm transition-colors">{lang === 'en' ? 'Download' : 'Скачать'}</button>
+                <button onClick={() => setViewer(null)} className="px-4 py-2 border border-border rounded-md text-sm hover:border-accent transition-colors">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="border-b border-border h-16 flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <img src="/layer-logo-icon.png" alt="" className="h-11 w-11 object-contain" />
@@ -176,7 +207,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <h3 className="text-lg font-semibold mb-2">{activeTemplate.title[lang] || activeTemplate.title.en}</h3>
                         <p className="text-sm text-text-secondary mb-4">{lang === 'en' ? 'Ready to generate with' : 'Готово к генерации с'} {selectedCharacter?.name}</p>
                         <button onClick={() => handleGenerate(activeTemplate.prompt, activeTemplate.title[lang] || activeTemplate.title.en)} disabled={generating || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-8 py-3 rounded-lg text-sm font-medium transition-colors">{generating ? t.generating : t.generate}</button>
-                        {result && <div className="mt-4 p-3 border border-border rounded-md text-sm">{lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею'}</div>}
                       </div>
                     </div>
                   </div>
@@ -191,13 +221,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {gallery.map(g => (
-                      <div key={g.id} className="border border-border rounded-lg overflow-hidden bg-bg-secondary">
+                      <button key={g.id} onClick={() => setViewer(g)} className="text-left border border-border rounded-lg overflow-hidden bg-bg-secondary hover:border-accent/50 transition-colors">
                         <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
                         <div className="p-3 text-sm">
                           <div className="font-medium">{g.title}</div>
                           <div className="text-xs text-text-secondary">{g.characterName}</div>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -221,7 +251,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-32 bg-bg-secondary border border-border rounded-md px-4 py-3 focus:border-accent focus:outline-none transition-colors" />
                 </div>
                 <button onClick={() => handleGenerate()} disabled={generating || !prompt.trim() || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-10 py-4 rounded-lg text-base font-medium transition-all duration-200 hover:shadow-lg hover:shadow-accent/20">{generating ? t.generating : t.generate}</button>
-                {result && <div className="mt-6 p-4 border border-border rounded-md text-sm">{lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею'}</div>}
                 <div className="mt-6 border border-border rounded-md bg-bg-secondary h-64 flex items-center justify-center text-text-secondary">{t.result}</div>
               </>
             )}
