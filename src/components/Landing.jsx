@@ -48,7 +48,6 @@ export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, 
                 ))}
               </div>
               <button onClick={onStart} className="w-full h-12 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium">{t.openStudio}</button>
-              <p className="text-xs text-text-secondary text-center mt-2">18+ only · no sign-up</p>
             </div>
           </div>
         </section>
