@@ -25,6 +25,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallery, setGallery] = useState([]);
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [viewer, setViewer] = useState(null);
+  const [templateZoom, setTemplateZoom] = useState(null);
+  const [gallerySort, setGallerySort] = useState('newest');
+  const [selectedGallery, setSelectedGallery] = useState(new Set());
 
   useEffect(() => {
     try {
@@ -85,6 +88,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     a.download = (name || 'seducecraft') + '.jpg';
     a.click();
   };
+
+  const deleteGalleryItems = (ids) => {
+    const next = gallery.filter(g => !ids.has(g.id));
+    saveGallery(next);
+    setSelectedGallery(new Set());
+  };
+
+  const sortedGallery = [...gallery].sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
   const filtered = presets.filter(p => {
     const title = (p.title[lang] || p.title.en || '').toLowerCase();
@@ -149,6 +160,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
         </div>
       )}
+      {templateZoom && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setTemplateZoom(null)}>
+          <div className="max-w-3xl w-full" onClick={e => e.stopPropagation()}>
+            <img src={templateZoom.src} alt="" className="w-full max-h-[80vh] object-contain rounded-md" />
+            <div className="mt-3 text-center text-sm">{templateZoom.title[lang] || templateZoom.title.en}</div>
+            <button onClick={() => setTemplateZoom(null)} className="mt-3 block mx-auto px-4 py-2 border border-border rounded-md text-sm hover:border-accent">Close</button>
+          </div>
+        </div>
+      )}
       <header className="border-b border-border h-16 flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <img src="/layer-logo-icon.png" alt="" className="h-11 w-11 object-contain" />
@@ -193,13 +213,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTemplates} className="w-full h-10 bg-bg-secondary border border-border rounded-md px-3 text-sm mb-6 focus:border-accent focus:outline-none transition-colors" />
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {filtered.map(p => (
-                        <button key={p.id} onClick={() => { if (!selectedCharacter) return; setActiveTemplate(p); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 overflow-hidden disabled:opacity-50 transition-all duration-200" disabled={!selectedCharacter}>
-                          <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
-                          <div className="p-2 text-xs font-medium">{p.title[lang] || p.title.en}</div>
-                        </button>
+                        <div key={p.id} className="relative group border border-border rounded-md bg-bg-secondary overflow-hidden">
+                          <button onClick={() => setTemplateZoom(p)} className="absolute top-2 right-2 z-10 w-7 h-7 bg-black/60 text-white text-xs rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">↗</button>
+                          <button onClick={() => { if (!selectedCharacter) return; setActiveTemplate(p); }} className="text-left w-full disabled:opacity-50" disabled={!selectedCharacter}>
+                            <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                            <div className="p-2 text-xs font-medium">{p.title[lang] || p.title.en}</div>
+                          </button>
+                        </div>
                       ))}
                     </div>
-                    {!selectedCharacter && <p className="text-xs text-text-secondary mt-4">{lang === 'en' ? 'Select a character to use a template' : 'Выберите персонажа, чтобы использовать шаблон'}</p>}
                   </>
                 )}
                 {activeTemplate && (
@@ -219,19 +241,42 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             )}
             {activeMode === 'history' && (
               <>
-                <h2 className="text-2xl font-semibold mb-6">{t.myGallery}</h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold">{t.myGallery}</h2>
+                  {gallery.length > 0 && (
+                    <div className="flex items-center gap-3">
+                      <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
+                        <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
+                        <option value="oldest">{lang === 'en' ? 'Oldest' : 'Сначала старые'}</option>
+                      </select>
+                      {selectedGallery.size > 0 && (
+                        <button onClick={() => deleteGalleryItems(selectedGallery)} className="h-9 px-3 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm transition-colors">{lang === 'en' ? `Delete (${selectedGallery.size})` : `Удалить (${selectedGallery.size})`}</button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {gallery.length === 0 ? (
                   <p className="text-text-secondary">{t.galleryEmpty}</p>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {gallery.map(g => (
-                      <button key={g.id} onClick={() => setViewer(g)} className="text-left border border-border rounded-lg overflow-hidden bg-bg-secondary hover:border-accent/50 transition-colors">
-                        <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
-                        <div className="p-3 text-sm">
-                          <div className="font-medium">{g.title}</div>
-                          <div className="text-xs text-text-secondary">{g.characterName}</div>
-                        </div>
-                      </button>
+                    {sortedGallery.map(g => (
+                      <div key={g.id} className="relative group border border-border rounded-lg overflow-hidden bg-bg-secondary">
+                        <label className="absolute top-2 left-2 z-10">
+                          <input type="checkbox" checked={selectedGallery.has(g.id)} onChange={() => {
+                            const next = new Set(selectedGallery);
+                            next.has(g.id) ? next.delete(g.id) : next.add(g.id);
+                            setSelectedGallery(next);
+                          }} className="w-4 h-4" />
+                        </label>
+                        <button onClick={() => setViewer(g)} className="text-left w-full">
+                          <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                          <div className="p-3 text-sm">
+                            <div className="font-medium">{g.title}</div>
+                            <div className="text-xs text-text-secondary">{g.characterName}</div>
+                          </div>
+                        </button>
+                        <button onClick={() => deleteGalleryItems(new Set([g.id]))} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-600 text-white text-xs rounded flex items-center justify-center transition-opacity hover:bg-red-700">×</button>
+                      </div>
                     ))}
                   </div>
                 )}
