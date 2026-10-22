@@ -34,6 +34,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
   };
 
+  const deleteCharacter = (id) => {
+    const next = characters.filter(c => c.id !== id);
+    saveCharacters(next);
+    if (selectedCharacterId === id) setSelectedCharacterId(null);
+  };
+
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
   const handleGenerate = () => {
@@ -59,10 +65,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       ) : (
         <div className="flex flex-wrap gap-2">
           {characters.map(c => (
-            <button key={c.id} onClick={() => setSelectedCharacterId(c.id)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm transition-all duration-200 ${selectedCharacterId === c.id ? 'border-accent text-accent bg-accent/10 scale-[1.02]' : 'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>
-              {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
-              {c.name}
-            </button>
+            <div key={c.id} className="relative group">
+              <button onClick={() => setSelectedCharacterId(selectedCharacterId === c.id ? null : c.id)} className={`flex items-center gap-2 px-3 py-2 pr-8 rounded-lg border-2 text-sm transition-all duration-200 ${selectedCharacterId === c.id ? 'border-accent text-accent bg-accent/10' : 'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>
+                {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
+                {c.name}
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); deleteCharacter(c.id); }} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-text-secondary hover:text-red-400 hover:bg-red-400/10 rounded transition-colors" title={lang === 'en' ? 'Remove' : 'Удалить'}>×</button>
+            </div>
           ))}
         </div>
       )}
