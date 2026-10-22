@@ -174,14 +174,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           <img src="/layer-logo-icon.png" alt="" className="h-11 w-11 object-contain" />
           <img src="/layer-logo.png" alt="Seducecraft" className="h-8 object-contain" />
         </div>
-        <div className="flex items-center gap-4 relative">
-          <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary transition-colors">🌐</button>
-          {langOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-bg-secondary border border-border rounded-md shadow-lg z-20 min-w-[80px]">
-              <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">EN</button>
-              <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">RU</button>
-            </div>
-          )}
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary transition-colors">🌐</button>
+            {langOpen && (
+              <div className="absolute left-0 top-full mt-2 bg-bg-secondary border border-border rounded-md shadow-lg z-20 min-w-[70px]">
+                <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">EN</button>
+                <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">RU</button>
+              </div>
+            )}
+          </div>
           {isLoggedIn && <span className="text-sm">{userName} · {credits} {t.credits}</span>}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.login}</button>}
           {isLoggedIn && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.logout}</button>}
