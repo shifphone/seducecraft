@@ -4,6 +4,7 @@ const PHOTO_GUIDANCE = `Best results for your character:\n• Clear front, 3/4 a
 
 export default function CharacterCreator({ onSave, onCancel, onRequireTerms, termsAccepted }) {
   const [name, setName] = useState('');
+  const [mode, setMode] = useState(null); // 'fictional' | 'photo' | null
   const [style, setStyle] = useState('realistic');
   const [photos, setPhotos] = useState([]);
   const [showGuidance, setShowGuidance] = useState(false);
@@ -20,12 +21,15 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
   });
 
   const hasPhotos = photos.length > 0;
+  const isPhotoMode = mode === 'photo' || hasPhotos;
+  const isFictionalMode = mode === 'fictional' && !hasPhotos;
 
   const handlePhotoClick = () => {
     if (!termsAccepted) {
       onRequireTerms();
       return;
     }
+    setMode('photo');
     setShowGuidance(true);
   };
 
@@ -39,6 +43,12 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
       reader.readAsDataURL(file);
     });
     setShowGuidance(false);
+    setMode('photo');
+  };
+
+  const clearPhotos = () => {
+    setPhotos([]);
+    setMode(null);
   };
 
   const handleSave = () => {
@@ -46,9 +56,9 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
     onSave({
       id: crypto.randomUUID(),
       name: name.trim(),
-      style,
+      style: isPhotoMode ? null : style,
       photos,
-      params: hasPhotos ? null : params,
+      params: isPhotoMode ? null : params,
       createdAt: Date.now(),
     });
   };
@@ -66,33 +76,27 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
           <input value={name} onChange={e => setName(e.target.value)} className="w-full h-11 bg-bg-secondary border border-border rounded-md px-3 focus:border-accent focus:outline-none transition-colors" placeholder="Character name" />
         </div>
 
-        <div>
-          <label className="block text-sm text-text-secondary mb-2">Style</label>
-          <div className="flex gap-2">
-            {['realistic', 'stylized'].map(s => (
-              <button key={s} onClick={() => setStyle(s)} className={`h-10 px-4 rounded-md border text-sm transition-all ${style === s ? 'border-accent text-white bg-accent/10' : 'border-border text-text-secondary hover:border-accent/50'}`}>{s === 'realistic' ? 'Realistic' : 'Stylized'}</button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm text-text-secondary mb-2">Reference photos (up to 5)</label>
-          <button onClick={handlePhotoClick} className="h-11 px-4 border border-border rounded-md text-sm hover:border-accent hover:text-accent transition-colors">Add photos</button>
-          {photos.length > 0 && (
-            <div className="mt-3 flex gap-2 flex-wrap">
-              {photos.map((src, i) => (
-                <div key={i} className="relative">
-                  <img src={src} alt="" className="w-16 h-16 object-cover rounded" />
-                  <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center hover:bg-red-600">×</button>
-                </div>
-              ))}
+        {!mode && (
+          <div>
+            <label className="block text-sm text-text-secondary mb-3">How do you want to create?</label>
+            <div className="flex gap-3">
+              <button onClick={() => setMode('fictional')} className="flex-1 h-12 border border-border rounded-md text-sm hover:border-accent hover:text-accent transition-colors">Create fictional</button>
+              <button onClick={handlePhotoClick} className="flex-1 h-12 border border-border rounded-md text-sm hover:border-accent hover:text-accent transition-colors">Upload photos</button>
             </div>
-          )}
-          {hasPhotos && <p className="text-xs text-text-secondary mt-2">Photos uploaded — appearance settings are skipped. The model will use your photos as-is.</p>}
-        </div>
+          </div>
+        )}
 
-        {!hasPhotos && (
+        {isFictionalMode && (
           <>
+            <div>
+              <label className="block text-sm text-text-secondary mb-2">Style</label>
+              <div className="flex gap-2">
+                {['realistic', 'stylized'].map(s => (
+                  <button key={s} onClick={() => setStyle(s)} className={`h-10 px-4 rounded-md border text-sm transition-all ${style === s ? 'border-accent text-white bg-accent/10' : 'border-border text-text-secondary hover:border-accent/50'}`}>{s === 'realistic' ? 'Realistic' : 'Stylized'}</button>
+                ))}
+              </div>
+            </div>
+
             <div className="border-t border-border pt-6">
               <h3 className="text-sm font-medium mb-4">Appearance</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -117,7 +121,28 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
           </>
         )}
 
-        <button onClick={handleSave} disabled={!name.trim()} className="h-12 px-6 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white rounded-md text-sm font-medium transition-colors">Save character</button>
+        {isPhotoMode && (
+          <div>
+            <label className="block text-sm text-text-secondary mb-2">Reference photos (up to 5)</label>
+            <button onClick={handlePhotoClick} className="h-11 px-4 border border-border rounded-md text-sm hover:border-accent hover:text-accent transition-colors">Add photos</button>
+            {photos.length > 0 && (
+              <div className="mt-3 flex gap-2 flex-wrap">
+                {photos.map((src, i) => (
+                  <div key={i} className="relative">
+                    <img src={src} alt="" className="w-16 h-16 object-cover rounded" />
+                    <button onClick={() => setPhotos(p => p.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center hover:bg-red-600">×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-xs text-text-secondary mt-2">Photos uploaded — appearance and style settings are not used. The model will use your photos as-is.</p>
+            <button onClick={clearPhotos} className="text-xs text-text-secondary hover:text-text-primary mt-2 transition-colors">Switch to fictional</button>
+          </div>
+        )}
+
+        {(isFictionalMode || (isPhotoMode && hasPhotos)) && (
+          <button onClick={handleSave} disabled={!name.trim()} className="h-12 px-6 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white rounded-md text-sm font-medium transition-colors">Save character</button>
+        )}
       </div>
 
       {showGuidance && (
