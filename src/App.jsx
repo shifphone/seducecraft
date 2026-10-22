@@ -17,12 +17,56 @@ export default function App() {
     if (age === 'true') setAdult(true)
   }, [])
 
+  const handleStart = () => {
+    if (!adult) {
+      // age gate will show when entering studio
+    }
+    if (!name) {
+      setLoginOpen(true)
+      return
+    }
+    setView('studio')
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
-      {view === 'landing' && <Landing onEnter={() => setView('studio')} onLogin={() => setLoginOpen(true)} />}
-      {view === 'studio' && <AppInterface name={name} onLogout={() => { setName(''); localStorage.removeItem('seducecraft.name'); setView('landing'); }} />}
-      {loginOpen && <LoginModal onClose={() => setLoginOpen(false)} onSuccess={(n) => { setName(n); localStorage.setItem('seducecraft.name', n); setLoginOpen(false); setView('studio'); }} />}
-      {!adult && view === 'studio' && <AgeGate onAccept={() => { setAdult(true); sessionStorage.setItem('seducecraft.age', 'true'); }} />}
+      {view === 'landing' && (
+        <Landing
+          onStart={handleStart}
+          onLogin={() => setLoginOpen(true)}
+          isLoggedIn={!!name}
+          userName={name}
+        />
+      )}
+      {view === 'studio' && (
+        <AppInterface
+          name={name}
+          onLogout={() => {
+            setName('')
+            localStorage.removeItem('seducecraft.name')
+            setView('landing')
+          }}
+        />
+      )}
+      {loginOpen && (
+        <LoginModal
+          onClose={() => setLoginOpen(false)}
+          onSuccess={(n) => {
+            setName(n)
+            localStorage.setItem('seducecraft.name', n)
+            setLoginOpen(false)
+            setView('studio')
+          }}
+        />
+      )}
+      {!adult && view === 'studio' && (
+        <AgeGate
+          onAccept={() => {
+            setAdult(true)
+            sessionStorage.setItem('seducecraft.age', 'true')
+          }}
+        />
+      )}
     </div>
   )
 }
