@@ -5,3 +5,25 @@
 body {
   @apply bg-black text-white antialiased;
 }
+
+.menu-active {
+  background: linear-gradient(90deg, rgba(234, 88, 12, 0.25) 0%, rgba(234, 88, 12, 0.05) 100%);
+  border-left: 2px solid #ea580c;
+  box-shadow: inset 0 0 20px rgba(234, 88, 12, 0.15);
+}
+
+.btn-glow {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 28px rgba(234, 88, 12, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tab-active {
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+  box-shadow: 0 0 16px rgba(234, 88, 12, 0.35);
+  border-color: transparent;
+  color: white;
+}
