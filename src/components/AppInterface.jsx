@@ -21,11 +21,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [langOpen, setLangOpen] = useState(false);
   const [characters, setCharacters] = useState([]);
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
+  const [charOpen, setCharOpen] = useState(false);
+  const [gallery, setGallery] = useState([]);
+  const [activeTemplate, setActiveTemplate] = useState(null);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem('seducecraft.characters');
       if (saved) setCharacters(JSON.parse(saved));
+      const g = localStorage.getItem('seducecraft.gallery');
+      if (g) setGallery(JSON.parse(g));
     } catch {}
   }, []);
 
@@ -34,20 +39,38 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
   };
 
-  const deleteCharacter = (id) => {
-    const next = characters.filter(c => c.id !== id);
-    saveCharacters(next);
-    if (selectedCharacterId === id) setSelectedCharacterId(null);
+  const saveGallery = (list) => {
+    setGallery(list);
+    try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {}
   };
 
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
-  const handleGenerate = () => {
+  const addToGallery = (item) => {
+    const next = [item, ...gallery];
+    saveGallery(next);
+  };
+
+  const handleGenerate = (sourcePrompt, sourceTitle) => {
     if (!selectedCharacter) return;
     if (!termsAccepted && !isAnonymous) { onRequireTerms(); return; }
-    if (!prompt.trim()) return;
+    const p = sourcePrompt || prompt;
+    if (!p?.trim()) return;
     setGenerating(true);
-    setTimeout(() => { setResult({ message: lang === 'en' ? 'Demo mode.' : 'Демо режим.' }); setGenerating(false); }, 700);
+    setTimeout(() => {
+      const gen = {
+        id: crypto.randomUUID(),
+        title: sourceTitle || (lang === 'en' ? 'Custom' : 'Произвольный'),
+        prompt: p,
+        characterName: selectedCharacter.name,
+        characterPhoto: selectedCharacter.photos?.[0] || null,
+        src: '/stills/beam.jpg',
+        createdAt: Date.now(),
+      };
+      addToGallery(gen);
+      setResult(gen);
+      setGenerating(false);
+    }, 700);
   };
 
   const filtered = presets.filter(p => {
@@ -59,20 +82,30 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     <div className={compact ? 'mb-4' : 'mb-6'}>
       <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
       {characters.length === 0 ? (
-        <div className="text-sm text-text-secondary">
-          <button onClick={() => setActiveMode('characters')} className="text-accent hover:underline transition-colors">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
-        </div>
+        <button onClick={() => setActiveMode('characters')} className="text-sm text-accent hover:underline transition-colors">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
       ) : (
-        <div className="flex flex-wrap gap-2">
-          {characters.map(c => (
-            <div key={c.id} className="relative group">
-              <button onClick={() => setSelectedCharacterId(selectedCharacterId === c.id ? null : c.id)} className={`flex items-center gap-2 px-3 py-2 pr-8 rounded-lg border-2 text-sm transition-all duration-200 ${selectedCharacterId === c.id ? 'border-accent text-accent bg-accent/10' : 'border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'}`}>
-                {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
-                {c.name}
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); deleteCharacter(c.id); }} className="absolute right-1.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-text-secondary hover:text-red-400 hover:bg-red-400/10 rounded transition-colors" title={lang === 'en' ? 'Remove' : 'Удалить'}>×</button>
+        <div className="relative inline-block">
+          <button onClick={() => setCharOpen(!charOpen)} className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-border text-sm hover:border-accent/50 transition-colors min-w-[200px]">
+            {selectedCharacter ? (
+              <>
+                {selectedCharacter.photos?.[0] && <img src={selectedCharacter.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
+                <span>{selectedCharacter.name}</span>
+                <button onClick={(e) => { e.stopPropagation(); setSelectedCharacterId(null); }} className="ml-auto text-text-secondary hover:text-text-primary">×</button>
+              </>
+            ) : (
+              <span className="text-text-secondary">{lang === 'en' ? 'Select character' : 'Выбрать персонажа'}</span>
+            )}
+          </button>
+          {charOpen && (
+            <div className="absolute left-0 top-full mt-1 bg-bg-secondary border border-border rounded-lg shadow-lg z-20 min-w-[200px] py-1">
+              {characters.map(c => (
+                <button key={c.id} onClick={() => { setSelectedCharacterId(c.id); setCharOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary flex items-center gap-2 transition-colors">
+                  {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
+                  {c.name}
+                </button>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
       {!selectedCharacter && characters.length > 0 && <p className="text-xs text-red-400 mt-2">{t.characterRequired}</p>}
@@ -120,23 +153,55 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <>
                 <h2 className="text-2xl font-semibold mb-4">{t.templates}</h2>
                 <CharacterPicker compact />
-                <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTemplates} className="w-full h-10 bg-bg-secondary border border-border rounded-md px-3 text-sm mb-6 focus:border-accent focus:outline-none transition-colors" />
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {filtered.map(p => (
-                    <button key={p.id} onClick={() => { if (!selectedCharacter) return; setPrompt(p.prompt); setActiveMode('custom'); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 overflow-hidden disabled:opacity-50 transition-all duration-200" disabled={!selectedCharacter}>
-                      <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
-                      <div className="p-2 text-xs font-medium">{p.title[lang] || p.title.en}</div>
-                    </button>
-                  ))}
-                </div>
-                {!selectedCharacter && <p className="text-xs text-text-secondary mt-4">{lang === 'en' ? 'Select a character to use a template' : 'Выберите персонажа, чтобы использовать шаблон'}</p>}
+                {!activeTemplate && (
+                  <>
+                    <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTemplates} className="w-full h-10 bg-bg-secondary border border-border rounded-md px-3 text-sm mb-6 focus:border-accent focus:outline-none transition-colors" />
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {filtered.map(p => (
+                        <button key={p.id} onClick={() => { if (!selectedCharacter) return; setActiveTemplate(p); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10 overflow-hidden disabled:opacity-50 transition-all duration-200" disabled={!selectedCharacter}>
+                          <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                          <div className="p-2 text-xs font-medium">{p.title[lang] || p.title.en}</div>
+                        </button>
+                      ))}
+                    </div>
+                    {!selectedCharacter && <p className="text-xs text-text-secondary mt-4">{lang === 'en' ? 'Select a character to use a template' : 'Выберите персонажа, чтобы использовать шаблон'}</p>}
+                  </>
+                )}
+                {activeTemplate && (
+                  <div className="mt-4">
+                    <button onClick={() => setActiveTemplate(null)} className="text-sm text-text-secondary hover:text-text-primary mb-4 transition-colors">← {lang === 'en' ? 'Back to templates' : 'Назад к шаблонам'}</button>
+                    <div className="flex gap-6 items-start">
+                      <img src={activeTemplate.src} alt="" className="w-48 rounded-md object-cover" />
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">{activeTemplate.title[lang] || activeTemplate.title.en}</h3>
+                        <p className="text-sm text-text-secondary mb-4">{lang === 'en' ? 'Ready to generate with' : 'Готово к генерации с'} {selectedCharacter?.name}</p>
+                        <button onClick={() => handleGenerate(activeTemplate.prompt, activeTemplate.title[lang] || activeTemplate.title.en)} disabled={generating || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-8 py-3 rounded-lg text-sm font-medium transition-colors">{generating ? t.generating : t.generate}</button>
+                        {result && <div className="mt-4 p-3 border border-border rounded-md text-sm">{lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею'}</div>}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
             {activeMode === 'history' && (
-              <div className="text-center py-16 text-text-secondary">
-                <h2 className="text-2xl font-semibold mb-2 text-text-primary">{t.myGallery}</h2>
-                <p>{t.galleryEmpty}</p>
-              </div>
+              <>
+                <h2 className="text-2xl font-semibold mb-6">{t.myGallery}</h2>
+                {gallery.length === 0 ? (
+                  <p className="text-text-secondary">{t.galleryEmpty}</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {gallery.map(g => (
+                      <div key={g.id} className="border border-border rounded-lg overflow-hidden bg-bg-secondary">
+                        <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                        <div className="p-3 text-sm">
+                          <div className="font-medium">{g.title}</div>
+                          <div className="text-xs text-text-secondary">{g.characterName}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
             {activeMode === 'custom' && (
               <>
@@ -155,8 +220,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <label className="block text-sm text-text-secondary mb-2">{t.scenario}</label>
                   <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-32 bg-bg-secondary border border-border rounded-md px-4 py-3 focus:border-accent focus:outline-none transition-colors" />
                 </div>
-                <button onClick={handleGenerate} disabled={generating || !prompt.trim() || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-10 py-4 rounded-lg text-base font-medium transition-all duration-200 hover:shadow-lg hover:shadow-accent/20">{generating ? t.generating : t.generate}</button>
-                {result && <div className="mt-6 p-4 border border-border rounded-md">{result.message}</div>}
+                <button onClick={() => handleGenerate()} disabled={generating || !prompt.trim() || !selectedCharacter} className="bg-accent hover:bg-accent-hover disabled:opacity-40 text-white px-10 py-4 rounded-lg text-base font-medium transition-all duration-200 hover:shadow-lg hover:shadow-accent/20">{generating ? t.generating : t.generate}</button>
+                {result && <div className="mt-6 p-4 border border-border rounded-md text-sm">{lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею'}</div>}
                 <div className="mt-6 border border-border rounded-md bg-bg-secondary h-64 flex items-center justify-center text-text-secondary">{t.result}</div>
               </>
             )}
