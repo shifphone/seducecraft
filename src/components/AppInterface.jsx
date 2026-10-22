@@ -21,9 +21,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
       <header className="border-b border-border h-16 flex items-center justify-between px-6">
-        <div className="flex items-center gap-4">
-          <img src="/logo-icon.svg" alt="" className="h-10 w-10 object-contain" />
-          <span className="text-xl font-semibold tracking-wide text-[#e8d5b5]">Seducecraft</span>
+        <div className="flex items-center gap-3">
+          <img src="/layer-logo-icon.png" alt="" className="h-9 w-9 object-contain" />
+          <img src="/layer-logo.png" alt="Seducecraft" className="h-7 object-contain" />
         </div>
         <div className="flex items-center gap-4 relative">
           <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary">🌐</button>
