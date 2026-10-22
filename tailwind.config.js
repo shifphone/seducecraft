@@ -7,16 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        surface: {
-          900: '#0a0a0a',
-          800: '#141414',
-          700: '#1f1f1f',
-        },
-        accent: {
-          DEFAULT: '#8B3A3A',
-          hover: '#A04545',
-        }
-      }
+        'bg-primary': '#0a0a0a',
+        'bg-secondary': '#111111',
+        'bg-tertiary': '#1a1a1a',
+        'border': '#262626',
+        'text-primary': '#f5f5f5',
+        'text-secondary': '#a1a1aa',
+        'accent': '#ea580c',
+        'accent-hover': '#c2410c',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],
