@@ -43,7 +43,7 @@ export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, 
             <div className="bg-bg-secondary border border-border rounded-lg p-5">
               <img src="/stills/beam.jpg" alt="Studio preview" className="aspect-video w-full rounded-md object-cover mb-4" />
               <div className="grid grid-cols-2 gap-2 mb-3">
-                {[t.advanced, t.photo, t.video, t.templates].map(item => (
+                {[t.photo, t.video, t.templates, t.deepfake].map(item => (
                   <div key={item} className="bg-bg-tertiary rounded-md py-3 text-center text-sm text-text-secondary">{item}</div>
                 ))}
               </div>
