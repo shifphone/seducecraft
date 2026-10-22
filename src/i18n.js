@@ -58,10 +58,6 @@ export const translations = {
       custom: 'Advanced',
       history: 'My Gallery',
     },
-    noGallery: 'Your generated results will appear here.',
-    logout: 'Logout',
-    logIn: 'Log in',
-    adultStudio: 'Adult AI Studio',
   },
   ru: {
     brand: 'Seducecraft',
@@ -122,9 +118,5 @@ export const translations = {
       custom: 'Продвинутый',
       history: 'Моя галерея',
     },
-    noGallery: 'Ваши сгенерированные результаты появятся здесь.',
-    logout: 'Выйти',
-    logIn: 'Войти',
-    adultStudio: 'Adult AI Studio',
   }
 };
