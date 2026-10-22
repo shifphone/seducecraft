@@ -182,10 +182,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary transition-colors">RU</button>
             </div>
           )}
-          {isLoggedIn && !isAnonymous && <span className="text-sm">{userName} · {credits} {t.credits}</span>}
-          {isLoggedIn && isAnonymous && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{userName}</button>}
+          {isLoggedIn && <span className="text-sm">{userName} · {credits} {t.credits}</span>}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.login}</button>}
-          {isLoggedIn && !isAnonymous && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.logout}</button>}
+          {isLoggedIn && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary transition-colors">{t.logout}</button>}
         </div>
       </header>
       <div className="flex flex-1 overflow-hidden">
