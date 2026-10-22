@@ -5,22 +5,49 @@ import AgeGate from './components/AgeGate'
 import LoginModal from './components/LoginModal'
 import TermsModal from './components/TermsModal'
 
+const translations = {
+  en: {
+    login: 'Log in',
+    account: 'Account',
+    logout: 'Log out',
+    credits: 'Credits',
+    topUp: 'Top up',
+    // add more as needed
+  },
+  ru: {
+    login: 'Войти',
+    account: 'Аккаунт',
+    logout: 'Выйти',
+    credits: 'Кредиты',
+    topUp: 'Пополнить',
+  }
+}
+
 export default function App() {
   const [view, setView] = useState('landing')
   const [adult, setAdult] = useState(false)
   const [name, setName] = useState('')
+  const [isAnonymous, setIsAnonymous] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [termsOpen, setTermsOpen] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [lang, setLang] = useState('en')
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('seducecraft.name')
-      if (stored) setName(stored)
+      const anon = localStorage.getItem('seducecraft.anon') === 'true'
+      if (stored) {
+        setName(stored)
+        setIsAnonymous(anon)
+        setView('studio')
+      }
       const age = sessionStorage.getItem('seducecraft.age')
       if (age === 'true') setAdult(true)
       const terms = localStorage.getItem('seducecraft.terms')
       if (terms === 'true') setTermsAccepted(true)
+      const savedLang = localStorage.getItem('seducecraft.lang')
+      if (savedLang) setLang(savedLang)
     } catch {}
   }, [])
 
@@ -32,16 +59,28 @@ export default function App() {
     setView('studio')
   }
 
-  const handleLogin = (n) => {
+  const handleLogin = (n, anonymous = false) => {
     setName(n)
-    try { localStorage.setItem('seducecraft.name', n) } catch {}
+    setIsAnonymous(anonymous)
+    try {
+      localStorage.setItem('seducecraft.name', n)
+      localStorage.setItem('seducecraft.anon', anonymous ? 'true' : 'false')
+    } catch {}
     setLoginOpen(false)
     setView('studio')
+    // TOS only for real (non-anon) logins, and only if not already accepted
+    if (!anonymous && !termsAccepted) {
+      setTermsOpen(true)
+    }
   }
 
   const handleLogout = () => {
     setName('')
-    try { localStorage.removeItem('seducecraft.name') } catch {}
+    setIsAnonymous(false)
+    try {
+      localStorage.removeItem('seducecraft.name')
+      localStorage.removeItem('seducecraft.anon')
+    } catch {}
     setView('landing')
   }
 
@@ -56,6 +95,11 @@ export default function App() {
     setTermsOpen(false)
   }
 
+  const changeLang = (l) => {
+    setLang(l)
+    try { localStorage.setItem('seducecraft.lang', l) } catch {}
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {view === 'landing' && (
@@ -64,23 +108,29 @@ export default function App() {
           onLogin={() => setLoginOpen(true)}
           isLoggedIn={!!name}
           userName={name}
+          lang={lang}
+          onLangChange={changeLang}
         />
       )}
       {view === 'studio' && (
         <AppInterface
           isLoggedIn={!!name}
           name={name}
+          isAnonymous={isAnonymous}
           onLogin={() => setLoginOpen(true)}
           onLogout={handleLogout}
           onShowTerms={() => setTermsOpen(true)}
           termsAccepted={termsAccepted}
-          onRequireTerms={() => setTermsOpen(true)}
+          onRequireTerms={() => { if (!isAnonymous && !termsAccepted) setTermsOpen(true) }}
+          lang={lang}
+          onLangChange={changeLang}
         />
       )}
       {loginOpen && (
         <LoginModal
           onClose={() => setLoginOpen(false)}
           onLogin={handleLogin}
+          lang={lang}
         />
       )}
       {!adult && view === 'studio' && (
