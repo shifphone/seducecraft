@@ -37,7 +37,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const showToast = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    setTimeout(() => setToast(null), 1800);
   };
 
   const saveCharacters = (list) => {
@@ -127,7 +127,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {toast && <div className="fixed top-4 right-4 z-50 bg-bg-secondary border border-border px-4 py-2 rounded-md text-sm shadow-lg">{toast}</div>}
+      {toast && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="bg-green-600/90 text-white px-6 py-3 rounded-lg text-sm font-medium shadow-lg">{toast}</div>
+        </div>
+      )}
       {viewer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setViewer(null)}>
           <div className="max-w-3xl w-full" onClick={e => e.stopPropagation()}>
