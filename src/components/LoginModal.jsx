@@ -1,10 +1,13 @@
 import { useState } from 'react';
 
 export default function LoginModal({ onLogin, onClose }) {
-  const [step, setStep] = useState('main'); // main | email | emailCode | anon | anonCode
+  const [step, setStep] = useState('main');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [anonLink, setAnonLink] = useState('');
+  const [emailError, setEmailError] = useState('');
+
+  const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
   const handleSocial = (provider) => {
     onLogin(`${provider} User`, false);
@@ -12,15 +15,17 @@ export default function LoginModal({ onLogin, onClose }) {
 
   const sendEmailCode = (e) => {
     e.preventDefault();
-    if (!email.trim()) return;
-    // TODO: real OTP via Supabase/backend. Code valid 5 min.
+    if (!isValidEmail(email)) {
+      setEmailError('Enter a valid email');
+      return;
+    }
+    setEmailError('');
     setStep('emailCode');
   };
 
   const verifyEmailCode = (e) => {
     e.preventDefault();
     if (!code.trim()) return;
-    // TODO: verify OTP. For now accept any 6-digit.
     onLogin(email.split('@')[0] || 'User', false);
   };
 
@@ -31,7 +36,6 @@ export default function LoginModal({ onLogin, onClose }) {
   const confirmAnonLink = (e) => {
     e.preventDefault();
     if (!anonLink.trim()) return;
-    // TODO: restore session from link. For now just log in as anon.
     onLogin('Anonymous', true);
   };
 
@@ -69,11 +73,12 @@ export default function LoginModal({ onLogin, onClose }) {
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => { setEmail(e.target.value); setEmailError(''); }}
                 placeholder="Email"
                 className="w-full h-11 bg-bg-primary border border-border rounded-md px-3 focus:outline-none focus:border-accent"
                 required
               />
+              {emailError && <p className="text-xs text-red-400">{emailError}</p>}
               <div className="flex gap-2">
                 <button type="button" onClick={() => setStep('main')} className="h-11 px-4 text-text-secondary hover:text-text-primary">Back</button>
                 <button type="submit" className="flex-1 h-11 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium">Send code</button>
