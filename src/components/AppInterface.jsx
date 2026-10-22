@@ -61,11 +61,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const menu = [
     { id: 'home', name: t.home },
     { id: 'characters', name: t.myCharacters },
-    { id: 'gallery', name: t.myGallery },
     { id: 'photo', name: t.photo },
     { id: 'faceswap', name: t.faceSwap },
     { id: 'video', name: t.video },
     { id: 'deepfake', name: t.deepfake },
+    { id: 'gallery', name: t.myGallery },
   ];
 
   const TabBtn = ({ active, onClick, children }) => (
@@ -147,7 +147,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         <aside className="w-64 border-r border-border bg-bg-secondary flex flex-col">
           <nav className="flex-1 py-4">
             {menu.map(({id, name}) => (
-              <button key={id} onClick={() => setActiveMode(id)} className={`w-full text-left px-6 py-3 text-sm transition-all duration-200 ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/30'}`}>{name}</button>
+              <button key={id} onClick={() => setActiveMode(id)} className={`menu-item w-full text-left px-6 py-3 text-sm transition-all duration-200 ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary'}`}>{name}</button>
             ))}
           </nav>
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
