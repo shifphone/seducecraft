@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Characters from './Characters';
 import { translations as T } from '../i18n';
 
@@ -19,7 +19,22 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [presets] = useState(SAMPLE_PRESETS);
   const [searchQuery, setSearchQuery] = useState('');
   const [langOpen, setLangOpen] = useState(false);
-  const [selectedCharacter, setSelectedCharacter] = useState(false);
+  const [characters, setCharacters] = useState([]);
+  const [selectedCharacterId, setSelectedCharacterId] = useState(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('seducecraft.characters');
+      if (saved) setCharacters(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const saveCharacters = (list) => {
+    setCharacters(list);
+    try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
+  };
+
+  const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
   const handleGenerate = () => {
     if (!selectedCharacter) return;
@@ -33,6 +48,27 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     const title = (p.title[lang] || p.title.en || '').toLowerCase();
     return !searchQuery || title.includes(searchQuery.toLowerCase());
   });
+
+  const CharacterPicker = ({ compact }) => (
+    <div className={compact ? 'mb-4' : 'mb-6'}>
+      <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
+      {characters.length === 0 ? (
+        <div className="text-sm text-text-secondary">
+          <button onClick={() => setActiveMode('characters')} className="text-accent hover:underline">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {characters.map(c => (
+            <button key={c.id} onClick={() => setSelectedCharacterId(c.id)} className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm ${selectedCharacterId === c.id ? 'border-accent text-accent bg-accent/10' : 'border-border text-text-secondary hover:border-accent/50'}`}>
+              {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-6 h-6 rounded object-cover" />}
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {!selectedCharacter && characters.length > 0 && <p className="text-xs text-red-400 mt-2">{t.characterRequired}</p>}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
@@ -70,19 +106,21 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         </aside>
         <main className="flex-1 p-6 overflow-auto">
           <div className="max-w-4xl mx-auto">
-            {activeMode === 'characters' && <Characters onRequireTerms={onRequireTerms} termsAccepted={termsAccepted} />}
+            {activeMode === 'characters' && <Characters onRequireTerms={onRequireTerms} termsAccepted={termsAccepted} characters={characters} onSave={saveCharacters} />}
             {activeMode === 'templates' && (
               <>
                 <h2 className="text-2xl font-semibold mb-4">{t.templates}</h2>
+                <CharacterPicker compact />
                 <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTemplates} className="w-full h-10 bg-bg-secondary border border-border rounded-md px-3 text-sm mb-6" />
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {filtered.map(p => (
-                    <button key={p.id} onClick={() => { setPrompt(p.prompt); setActiveMode('custom'); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 overflow-hidden">
+                    <button key={p.id} onClick={() => { if (!selectedCharacter) return; setPrompt(p.prompt); setActiveMode('custom'); }} className="text-left border border-border rounded-md bg-bg-secondary hover:border-accent/50 overflow-hidden disabled:opacity-50" disabled={!selectedCharacter}>
                       <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
                       <div className="p-2 text-xs font-medium">{p.title[lang] || p.title.en}</div>
                     </button>
                   ))}
                 </div>
+                {!selectedCharacter && <p className="text-xs text-text-secondary mt-4">{lang === 'en' ? 'Select a character to use a template' : 'Выберите персонажа, чтобы использовать шаблон'}</p>}
               </>
             )}
             {activeMode === 'history' && (
@@ -94,13 +132,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             {activeMode === 'custom' && (
               <>
                 <h2 className="text-2xl font-semibold mb-6">{t.advanced}</h2>
-                <div className="mb-6">
-                  <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
-                  <button onClick={() => setSelectedCharacter(true)} className={`px-5 py-2.5 text-sm rounded-lg border-2 ${selectedCharacter ? 'border-accent text-accent bg-accent/10' : 'border-border text-text-secondary'}`}>
-                    {selectedCharacter ? (lang === 'en' ? 'Character selected' : 'Персонаж выбран') : (lang === 'en' ? 'Select / Add character' : 'Выбрать / Добавить персонажа')}
-                  </button>
-                  {!selectedCharacter && <p className="text-xs text-red-400 mt-2">{t.characterRequired}</p>}
-                </div>
+                <CharacterPicker />
                 <div className="flex gap-4 mb-5">
                   <button onClick={() => setMedia('photo')} className={`px-8 py-3 text-base rounded-lg border-2 font-medium ${media==='photo'?'border-accent bg-accent/15 text-accent':'border-border text-text-secondary'}`}>{t.photo}</button>
                   <button onClick={() => setMedia('video')} className={`px-8 py-3 text-base rounded-lg border-2 font-medium ${media==='video'?'border-accent bg-accent/15 text-accent':'border-border text-text-secondary'}`}>{t.video}</button>
