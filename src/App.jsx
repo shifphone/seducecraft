@@ -1,147 +1,157 @@
-import { useState, useEffect } from 'react'
-import Landing from './components/Landing'
-import AppInterface from './components/AppInterface'
-import AgeGate from './components/AgeGate'
-import LoginModal from './components/LoginModal'
-import TermsModal from './components/TermsModal'
-
-const translations = {
-  en: {
-    login: 'Log in',
-    account: 'Account',
-    logout: 'Log out',
-    credits: 'Credits',
-    topUp: 'Top up',
-    // add more as needed
-  },
-  ru: {
-    login: 'Войти',
-    account: 'Аккаунт',
-    logout: 'Выйти',
-    credits: 'Кредиты',
-    topUp: 'Пополнить',
-  }
-}
+import { useState, useEffect } from 'react';
+import Landing from './components/Landing';
+import AppInterface from './components/AppInterface';
+import TermsModal from './components/TermsModal';
+import AgeGate from './components/AgeGate';
+import LoginModal from './components/LoginModal';
 
 export default function App() {
-  const [view, setView] = useState('landing')
-  const [adult, setAdult] = useState(false)
-  const [name, setName] = useState('')
-  const [isAnonymous, setIsAnonymous] = useState(false)
-  const [loginOpen, setLoginOpen] = useState(false)
-  const [termsOpen, setTermsOpen] = useState(false)
-  const [termsAccepted, setTermsAccepted] = useState(false)
-  const [lang, setLang] = useState('en')
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [view, setView] = useState('landing');
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [showLogin, setShowLogin] = useState(false);
+  const [showAge, setShowAge] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [lang, setLang] = useState('en');
+  const [credits, setCredits] = useState(10);
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('seducecraft.name')
-      const anon = localStorage.getItem('seducecraft.anon') === 'true'
-      if (stored) {
-        setName(stored)
-        setIsAnonymous(anon)
-        setView('studio')
+      const name = localStorage.getItem('seducecraft.name');
+      const anon = localStorage.getItem('seducecraft.anon') === '1';
+      const age = sessionStorage.getItem('seducecraft.age') === '1';
+      const terms = localStorage.getItem('seducecraft.terms') === '1';
+      const savedLang = localStorage.getItem('seducecraft.lang') || 'en';
+      const savedCredits = parseInt(localStorage.getItem('seducecraft.credits') || '10', 10);
+      if (name) {
+        setUserName(name);
+        setIsLoggedIn(true);
+        setIsAnonymous(anon);
+        setView('app'); // persist studio on refresh if logged in
       }
-      const age = sessionStorage.getItem('seducecraft.age')
-      if (age === 'true') setAdult(true)
-      const terms = localStorage.getItem('seducecraft.terms')
-      if (terms === 'true') setTermsAccepted(true)
-      const savedLang = localStorage.getItem('seducecraft.lang')
-      if (savedLang) setLang(savedLang)
+      if (age) setAgeConfirmed(true);
+      if (terms) setTermsAccepted(true);
+      setLang(savedLang);
+      setCredits(isNaN(savedCredits) ? 10 : savedCredits);
     } catch {}
-  }, [])
+  }, []);
+
+  const enterStudio = () => {
+    setView('app');
+    if (!termsAccepted && !isAnonymous) setShowTerms(true);
+  };
 
   const handleStart = () => {
-    if (!name) {
-      setLoginOpen(true)
-      return
+    if (!ageConfirmed) {
+      setPendingAction(() => enterStudio);
+      setShowAge(true);
+      return;
     }
-    setView('studio')
-  }
+    if (!isLoggedIn) {
+      setPendingAction(() => enterStudio);
+      setShowLogin(true);
+      return;
+    }
+    enterStudio();
+  };
 
-  const handleLogin = (n, anonymous = false) => {
-    setName(n)
-    setIsAnonymous(anonymous)
-    try {
-      localStorage.setItem('seducecraft.name', n)
-      localStorage.setItem('seducecraft.anon', anonymous ? 'true' : 'false')
-    } catch {}
-    setLoginOpen(false)
-    setView('studio')
-    // TOS only for real (non-anon) logins, and only if not already accepted
-    if (!anonymous && !termsAccepted) {
-      setTermsOpen(true)
+  const handleAgeAccept = () => {
+    setAgeConfirmed(true);
+    setShowAge(false);
+    try { sessionStorage.setItem('seducecraft.age', '1'); } catch {}
+    if (!isLoggedIn) {
+      setShowLogin(true);
+    } else if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
     }
-  }
+  };
+
+  const handleLogin = (name, anonymous = false) => {
+    const trimmed = (name || (anonymous ? 'Anonymous' : '')).trim().slice(0, 32);
+    if (!trimmed) return;
+    setUserName(trimmed);
+    setIsLoggedIn(true);
+    setIsAnonymous(anonymous);
+    try {
+      localStorage.setItem('seducecraft.name', trimmed);
+      localStorage.setItem('seducecraft.anon', anonymous ? '1' : '0');
+    } catch {}
+    setShowLogin(false);
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
 
   const handleLogout = () => {
-    setName('')
-    setIsAnonymous(false)
+    setIsLoggedIn(false);
+    setIsAnonymous(false);
+    setUserName('');
     try {
-      localStorage.removeItem('seducecraft.name')
-      localStorage.removeItem('seducecraft.anon')
+      localStorage.removeItem('seducecraft.name');
+      localStorage.removeItem('seducecraft.anon');
     } catch {}
-    setView('landing')
-  }
-
-  const handleAcceptAge = () => {
-    setAdult(true)
-    try { sessionStorage.setItem('seducecraft.age', 'true') } catch {}
-  }
+    setView('landing');
+  };
 
   const handleAcceptTerms = () => {
-    setTermsAccepted(true)
-    try { localStorage.setItem('seducecraft.terms', 'true') } catch {}
-    setTermsOpen(false)
-  }
+    setTermsAccepted(true);
+    setShowTerms(false);
+    try { localStorage.setItem('seducecraft.terms', '1'); } catch {}
+  };
 
-  const changeLang = (l) => {
-    setLang(l)
-    try { localStorage.setItem('seducecraft.lang', l) } catch {}
-  }
+  const handleLangChange = (newLang) => {
+    setLang(newLang);
+    try { localStorage.setItem('seducecraft.lang', newLang); } catch {}
+  };
+
+  const handleTopUp = (amount) => {
+    const newCredits = credits + amount;
+    setCredits(newCredits);
+    try { localStorage.setItem('seducecraft.credits', String(newCredits)); } catch {}
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {view === 'landing' && (
+    <>
+      {view === 'landing' ? (
         <Landing
           onStart={handleStart}
-          onLogin={() => setLoginOpen(true)}
-          isLoggedIn={!!name}
-          userName={name}
+          isLoggedIn={isLoggedIn}
+          userName={userName}
+          onLogin={() => setShowLogin(true)}
           lang={lang}
-          onLangChange={changeLang}
+          onLangChange={handleLangChange}
         />
-      )}
-      {view === 'studio' && (
+      ) : (
         <AppInterface
-          isLoggedIn={!!name}
-          name={name}
+          isLoggedIn={isLoggedIn}
           isAnonymous={isAnonymous}
-          onLogin={() => setLoginOpen(true)}
+          userName={userName}
+          onLogin={() => setShowLogin(true)}
           onLogout={handleLogout}
-          onShowTerms={() => setTermsOpen(true)}
+          onShowTerms={() => setShowTerms(true)}
           termsAccepted={termsAccepted}
-          onRequireTerms={() => { if (!isAnonymous && !termsAccepted) setTermsOpen(true) }}
+          onRequireTerms={() => { if (!isAnonymous) setShowTerms(true); }}
           lang={lang}
-          onLangChange={changeLang}
+          onLangChange={handleLangChange}
+          credits={credits}
+          onTopUp={handleTopUp}
         />
       )}
-      {loginOpen && (
-        <LoginModal
-          onClose={() => setLoginOpen(false)}
-          onLogin={handleLogin}
-          lang={lang}
-        />
+      {showAge && (
+        <AgeGate onAccept={handleAgeAccept} onClose={() => { setShowAge(false); setPendingAction(null); }} />
       )}
-      {!adult && view === 'studio' && (
-        <AgeGate onAccept={handleAcceptAge} />
+      {showTerms && (
+        <TermsModal onAccept={handleAcceptTerms} onClose={() => setShowTerms(false)} />
       )}
-      {termsOpen && (
-        <TermsModal
-          onAccept={handleAcceptTerms}
-          onClose={() => setTermsOpen(false)}
-        />
+      {showLogin && (
+        <LoginModal onLogin={handleLogin} onClose={() => { setShowLogin(false); setPendingAction(null); }} />
       )}
-    </div>
-  )
+    </>
+  );
 }
