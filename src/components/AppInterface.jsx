@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Characters from './Characters';
 import { translations as T } from '../i18n';
+import { supabase } from '../lib/supabase';
 
 const SAMPLE_PRESETS = [
   { id: 1, title: { en: 'On the counter', ru: 'На столешнице' }, prompt: 'Bathroom counter', src: '/stills/beam.jpg' },
@@ -50,6 +51,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     return p;
   };
 
+  const uploadReference = async (dataUrl) => {
+    if (!supabase) throw new Error('Supabase client not configured');
+    const base64 = dataUrl.split(',')[1];
+    const mime = dataUrl.match(/data:(.*?);/)?.[1] || 'image/jpeg';
+    const ext = mime.includes('png') ? 'png' : 'jpg';
+    const buf = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    const fileName = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('references').upload(fileName, buf, { contentType: mime, upsert: false });
+    if (error) throw new Error(error.message);
+    const { data } = supabase.storage.from('references').getPublicUrl(fileName);
+    return data.publicUrl;
+  };
+
   const handleGenerate = async () => {
     const needsPhoto = photoMode === 'undress' || (activeMode === 'faceswap' && swapMode === 'upload') || (activeMode === 'deepfake' && deepMode === 'upload');
     if (needsPhoto && !undressPhoto) return;
@@ -60,7 +74,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com' };
       const photo = selectedCharacter?.photos?.[0];
       if (photo && photo.startsWith('data:')) {
-        body.referenceBase64 = photo;
+        body.references = await uploadReference(photo);
       } else if (photo && photo.startsWith('http')) {
         body.references = photo;
       }
@@ -71,7 +85,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       });
       const data = await res.json();
       if (!res.ok) {
-        const errMsg = data.available ? `${data.error}: ${data.available.join(', ')}` : (typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data));
+        const errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data);
         throw new Error(errMsg.slice(0, 400));
       }
       const gen = { id: crypto.randomUUID(), title: selectedTemplate?.title?.[lang] || 'Custom', prompt: p, characterName: selectedCharacter?.name || 'Photo', src: data.url, createdAt: Date.now() };

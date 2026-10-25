@@ -1,75 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
-  const urlCandidates = [
-    process.env.seducecraft_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_seducecraft_SUPABASE_URL,
-    process.env.SUPABASE_URL,
-  ];
-  const keyCandidates = [
-    process.env.seducecraft_SUPABASE_SECRET_KEY,
-    process.env.seducecraft_SUPABASE_SERVICE_ROLE_KEY,
-    process.env.seducecraft_SUPABASE_ANON_KEY,
-    process.env.SUPABASE_SECRET_KEY,
-  ];
-
-  const supabaseUrl = urlCandidates.find(v => v && v.length > 10);
-  const supabaseKey = keyCandidates.find(v => v && v.length > 20);
-
-  if (!supabaseUrl || !supabaseKey) {
-    return res.status(500).json({
-      error: 'Missing seducecraft_SUPABASE_URL or SECRET_KEY',
-      urlSet: !!process.env.seducecraft_SUPABASE_URL,
-      urlLen: (process.env.seducecraft_SUPABASE_URL || '').length,
-      keySet: !!process.env.seducecraft_SUPABASE_SECRET_KEY,
-      keyLen: (process.env.seducecraft_SUPABASE_SECRET_KEY || '').length,
-      serviceLen: (process.env.seducecraft_SUPABASE_SERVICE_ROLE_KEY || '').length,
-    });
-  }
-
-  const { prompt, endUserEmail, model, referenceBase64, references } = req.body || {};
+  const { prompt, endUserEmail, model, references } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
+  if (!references) return res.status(400).json({ error: 'references required' });
 
   const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft'))
     ? endUserEmail
     : 'shifphone@gmail.com';
-
-  let refUrl = references;
-  let uploadError = null;
-
-  if (!refUrl && referenceBase64 && referenceBase64.startsWith('data:')) {
-    try {
-      const base64 = referenceBase64.split(',')[1];
-      if (!base64) throw new Error('Invalid data URL');
-      const mime = referenceBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
-      const buf = Buffer.from(base64, 'base64');
-      const ext = mime.includes('png') ? 'png' : 'jpg';
-      const fileName = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase.storage
-        .from('references')
-        .upload(fileName, buf, { contentType: mime, upsert: false });
-
-      if (error) {
-        uploadError = `supabase: ${error.message}`;
-      } else {
-        const { data: urlData } = supabase.storage.from('references').getPublicUrl(fileName);
-        refUrl = urlData.publicUrl;
-      }
-    } catch (e) {
-      uploadError = e.message;
-    }
-  }
-
-  if (!refUrl) {
-    return res.status(400).json({ error: uploadError || 'Failed to get public URL for reference' });
-  }
 
   const body = {
     model: model || 'xSD4.5',
@@ -77,7 +18,7 @@ export default async function handler(req, res) {
     endUserEmail: email,
     n: 1,
     size: '2048x2048',
-    references: Array.isArray(refUrl) ? refUrl : [refUrl],
+    references: Array.isArray(references) ? references : [references],
   };
 
   try {
@@ -92,7 +33,7 @@ export default async function handler(req, res) {
 
     if (!createRes.ok) {
       const err = await createRes.text();
-      return res.status(createRes.status).json({ error: err, refUrl });
+      return res.status(createRes.status).json({ error: err });
     }
 
     const { requestId } = await createRes.json();
@@ -110,7 +51,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ url, requestId });
       }
       if (data.status === 'failed' || data.status === 'expired') {
-        return res.status(500).json({ error: data.error?.message || data.status, refUrl });
+        return res.status(500).json({ error: data.error?.message || data.status });
       }
     }
     return res.status(504).json({ error: 'Timeout' });
