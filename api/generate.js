@@ -17,15 +17,16 @@ export default async function handler(req, res) {
   if (!refUrl && referenceBase64 && referenceBase64.startsWith('data:')) {
     try {
       const base64 = referenceBase64.split(',')[1];
+      const mime = referenceBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
+      const buf = Buffer.from(base64, 'base64');
       const form = new FormData();
-      form.append('image', base64);
-      const uploadRes = await fetch('https://api.imgbb.com/1/upload?key=YOUR_IMGBB_KEY', { method: 'POST', body: form });
-      const upText = await uploadRes.text();
-      if (uploadRes.ok) {
-        const up = JSON.parse(upText);
-        refUrl = up?.data?.url;
+      form.append('file', new Blob([buf], { type: mime }), 'ref.jpg');
+      const uploadRes = await fetch('https://0x0.st', { method: 'POST', body: form });
+      const text = await uploadRes.text();
+      if (uploadRes.ok && text.startsWith('http')) {
+        refUrl = text.trim();
       } else {
-        uploadError = `imgbb ${uploadRes.status}: ${upText.slice(0, 150)}`;
+        uploadError = `0x0 ${uploadRes.status}: ${text.slice(0, 100)}`;
       }
     } catch (e) {
       uploadError = e.message;
@@ -33,7 +34,7 @@ export default async function handler(req, res) {
   }
 
   if (!refUrl) {
-    return res.status(400).json({ error: uploadError || 'No public reference URL', hadBase64: !!referenceBase64 });
+    return res.status(400).json({ error: uploadError || 'Failed to get public URL for reference' });
   }
 
   const body = {
