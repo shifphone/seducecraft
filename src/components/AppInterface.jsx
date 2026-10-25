@@ -39,7 +39,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     } catch {}
   }, []);
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 4000); };
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = (list) => { setCharacters(list); try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {} };
   const saveGallery = (list) => { setGallery(list); try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {} };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
@@ -71,8 +71,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       });
       const data = await res.json();
       if (!res.ok) {
-        const errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data);
-        throw new Error(errMsg.slice(0, 200));
+        const errMsg = data.available ? `${data.error}: ${data.available.join(', ')}` : (typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data));
+        throw new Error(errMsg.slice(0, 400));
       }
       const gen = { id: crypto.randomUUID(), title: selectedTemplate?.title?.[lang] || 'Custom', prompt: p, characterName: selectedCharacter?.name || 'Photo', src: data.url, createdAt: Date.now() };
       saveGallery([gen, ...gallery]);
@@ -128,7 +128,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {toast && <div className="fixed top-[55%] left-1/2 -translate-x-1/2 z-[100]"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-xl">{toast}</div></div>}
+      {toast && <div className="fixed top-[55%] left-1/2 -translate-x-1/2 z-[100] max-w-lg"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-xl break-all">{toast}</div></div>}
       {charModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setCharModal(false)}>
           <div className="bg-bg-secondary border border-border rounded-xl p-6 max-w-lg w-full" onClick={e => e.stopPropagation()}>
@@ -277,37 +277,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <div className="flex justify-center mt-4">
                   <button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{generating ? t.generating : t.generate}</button>
                 </div>
-              </>
-            )}
-            {activeMode === 'faceswap' && (
-              <>
-                <div className="flex gap-3 mb-8 justify-center">
-                  <TabBtn active={swapMode==='upload'} onClick={() => setSwapMode('upload')}>{t.uploadOwn}</TabBtn>
-                  <TabBtn active={swapMode==='template'} onClick={() => setSwapMode('template')}>{t.useTemplate}</TabBtn>
-                </div>
-                <CharacterPicker />
-                {swapMode === 'template' && <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">{presets.map(p => <button key={p.id} type="button" onClick={(e) => { e.preventDefault(); setSelectedTemplate(p); }} className={`border rounded-lg overflow-hidden ${selectedTemplate?.id === p.id ? 'border-accent ring-1 ring-accent' : 'border-border hover:border-accent/50'}`}><img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" /><div className="p-2 text-xs">{p.title[lang] || p.title.en}</div></button>)}</div>}
-                {swapMode === 'upload' && <div className="dropzone p-8 mb-6 text-center"><input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="text-sm" /></div>}
-                <div className="flex justify-center"><button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{generating ? t.generating : t.generate}</button></div>
-              </>
-            )}
-            {activeMode === 'video' && (
-              <>
-                <CharacterPicker />
-                <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-28 bg-bg-secondary border border-border rounded-lg px-4 py-3 mb-6 focus:border-accent focus:outline-none" />
-                <div className="flex justify-center"><button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{generating ? t.generating : t.generate}</button></div>
-              </>
-            )}
-            {activeMode === 'deepfake' && (
-              <>
-                <div className="flex gap-3 mb-8 justify-center">
-                  <TabBtn active={deepMode==='upload'} onClick={() => setDeepMode('upload')}>{t.uploadOwn}</TabBtn>
-                  <TabBtn active={deepMode==='template'} onClick={() => setDeepMode('template')}>{t.useTemplate}</TabBtn>
-                </div>
-                <CharacterPicker />
-                {deepMode === 'template' && <p className="text-sm text-text-secondary mb-6 text-center">{lang === 'en' ? 'Video templates coming soon.' : 'Видеошаблоны скоро.'}</p>}
-                {deepMode === 'upload' && <div className="dropzone p-8 mb-6 text-center"><input type="file" accept="video/*" className="text-sm" /></div>}
-                <div className="flex justify-center"><button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{generating ? t.generating : t.generate}</button></div>
               </>
             )}
           </div>
