@@ -20,13 +20,14 @@ export default async function handler(req, res) {
       const mime = referenceBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
       const buf = Buffer.from(base64, 'base64');
       const form = new FormData();
-      form.append('file', new Blob([buf], { type: mime }), 'ref.jpg');
-      const uploadRes = await fetch('https://0x0.st', { method: 'POST', body: form });
+      form.append('reqtype', 'fileupload');
+      form.append('fileToUpload', new Blob([buf], { type: mime }), 'ref.jpg');
+      const uploadRes = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form });
       const text = await uploadRes.text();
       if (uploadRes.ok && text.startsWith('http')) {
         refUrl = text.trim();
       } else {
-        uploadError = `0x0 ${uploadRes.status}: ${text.slice(0, 120)}`;
+        uploadError = `catbox ${uploadRes.status}: ${text.slice(0, 120)}`;
       }
     } catch (e) {
       uploadError = e.message;
