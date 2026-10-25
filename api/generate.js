@@ -7,6 +7,10 @@ export default async function handler(req, res) {
   const { prompt, endUserEmail, model } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
+  const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft')) 
+    ? endUserEmail 
+    : 'shifphone@gmail.com';
+
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
       method: 'POST',
@@ -17,9 +21,9 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: model || 'xSD4.5',
         prompt,
-        endUserEmail: endUserEmail || 'test@seducecraft.app',
+        endUserEmail: email,
         n: 1,
-        size: '1024x1024',
+        size: '2048x2048',
       }),
     });
 
@@ -30,7 +34,7 @@ export default async function handler(req, res) {
 
     const { requestId } = await createRes.json();
 
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 90; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const pollRes = await fetch(`https://api.xmode.ai/v1/generations/${requestId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` },
