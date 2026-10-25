@@ -6,11 +6,10 @@ export default async function handler(req, res) {
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
-  const supabaseUrl = process.env.seducecraft_SUPABASE_URL || process.env.NEXT_PUBLIC_seducecraft_SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseKey = process.env.seducecraft_SUPABASE_SECRET_KEY || process.env.seducecraft_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.seducecraft_SUPABASE_URL || process.env.NEXT_PUBLIC_seducecraft_SUPABASE_URL;
+  const supabaseKey = process.env.seducecraft_SUPABASE_SECRET_KEY || process.env.seducecraft_SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !supabaseKey) {
-    const allKeys = Object.keys(process.env).filter(k => k.toLowerCase().includes('supabase') || k.toLowerCase().includes('seducecraft'));
-    return res.status(500).json({ error: 'Supabase env not found', available: allKeys });
+    return res.status(500).json({ error: 'Missing seducecraft_SUPABASE_URL or SECRET_KEY' });
   }
 
   const { prompt, endUserEmail, model, referenceBase64, references } = req.body || {};
