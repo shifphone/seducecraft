@@ -44,18 +44,27 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const saveGallery = (list) => { setGallery(list); try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {} };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const needsPhoto = photoMode === 'undress' || (activeMode === 'faceswap' && swapMode === 'upload') || (activeMode === 'deepfake' && deepMode === 'upload');
     if (needsPhoto && !undressPhoto) return;
     if (!needsPhoto && !selectedCharacter) return;
-    const p = selectedTemplate?.prompt || prompt;
+    const p = selectedTemplate?.prompt || prompt || 'photo';
     setGenerating(true);
-    setTimeout(() => {
-      const gen = { id: crypto.randomUUID(), title: selectedTemplate?.title?.[lang] || 'Custom', prompt: p || '', characterName: selectedCharacter?.name || 'Photo', src: undressPhoto || selectedTemplate?.src || '/stills/beam.jpg', createdAt: Date.now() };
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: p, endUserEmail: userName || 'test@seducecraft.app' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Generation failed');
+      const gen = { id: crypto.randomUUID(), title: selectedTemplate?.title?.[lang] || 'Custom', prompt: p, characterName: selectedCharacter?.name || 'Photo', src: data.url, createdAt: Date.now() };
       saveGallery([gen, ...gallery]);
-      setGenerating(false);
       showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
-    }, 700);
+    } catch (e) {
+      showToast(e.message || 'Error');
+    }
+    setGenerating(false);
   };
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
