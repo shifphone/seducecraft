@@ -4,25 +4,25 @@ export default async function handler(req, res) {
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
-  const { prompt, endUserEmail, model, referenceBase64 } = req.body || {};
+  const { prompt, endUserEmail, model, referenceBase64, references } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft')) 
     ? endUserEmail 
     : 'shifphone@gmail.com';
 
-  let references;
-  if (referenceBase64) {
+  let refUrl = references;
+  if (!refUrl && referenceBase64 && referenceBase64.startsWith('data:')) {
     try {
-      const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: referenceBase64 }),
-      });
+      const base64 = referenceBase64.split(',')[1];
+      const mime = referenceBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
+      const buf = Buffer.from(base64, 'base64');
+      const form = new FormData();
+      form.append('file', new Blob([buf], { type: mime }), 'ref.jpg');
+      const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: form });
       if (uploadRes.ok) {
         const up = await uploadRes.json();
-        const url = up?.data?.url?.replace('tmpfiles.org/', 'tmpfiles.org/dl/') || up?.data?.url;
-        if (url) references = url;
+        refUrl = up?.data?.url?.replace('tmpfiles.org/', 'tmpfiles.org/dl/') || up?.data?.url;
       }
     } catch {}
   }
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     n: 1,
     size: '2048x2048',
   };
-  if (references) body.references = references;
+  if (refUrl) body.references = refUrl;
 
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       if (data.status === 'succeeded') {
         const images = data.images || data.output?.images || [];
         const url = images[0]?.url || images[0] || data.output?.url;
-        return res.status(200).json({ url, requestId });
+        return res.status(200).json({ url, requestId, usedReference: !!refUrl });
       }
       if (data.status === 'failed' || data.status === 'expired') {
         return res.status(500).json({ error: data.error?.message || data.status });
