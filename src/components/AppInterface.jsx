@@ -44,17 +44,33 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const saveGallery = (list) => { setGallery(list); try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {} };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
+  const buildPrompt = () => {
+    let p = selectedTemplate?.prompt || prompt || 'photo';
+    if (selectedCharacter) {
+      const parts = [selectedCharacter.name];
+      if (selectedCharacter.appearance) parts.push(selectedCharacter.appearance);
+      if (selectedCharacter.style) parts.push(selectedCharacter.style);
+      p = `${parts.join(', ')}, ${p}`;
+    }
+    return p;
+  };
+
   const handleGenerate = async () => {
     const needsPhoto = photoMode === 'undress' || (activeMode === 'faceswap' && swapMode === 'upload') || (activeMode === 'deepfake' && deepMode === 'upload');
     if (needsPhoto && !undressPhoto) return;
     if (!needsPhoto && !selectedCharacter) return;
-    const p = selectedTemplate?.prompt || prompt || 'photo';
+    const p = buildPrompt();
     setGenerating(true);
     try {
+      const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com' };
+      const photo = selectedCharacter?.photos?.[0];
+      if (photo && photo.startsWith('http') && !photo.startsWith('blob:')) {
+        body.references = photo;
+      }
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: p, endUserEmail: userName || 'test@seducecraft.app' }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Generation failed');
