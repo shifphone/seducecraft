@@ -46,12 +46,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const buildPrompt = () => {
     let p = selectedTemplate?.prompt || prompt || 'photo';
-    if (selectedCharacter) {
-      const parts = [selectedCharacter.name];
-      if (selectedCharacter.appearance) parts.push(selectedCharacter.appearance);
-      if (selectedCharacter.style) parts.push(selectedCharacter.style);
-      p = `${parts.join(', ')}, ${p}`;
-    }
+    if (selectedCharacter?.name) p = `${selectedCharacter.name}, ${p}`;
     return p;
   };
 
@@ -64,7 +59,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com' };
       const photo = selectedCharacter?.photos?.[0];
-      if (photo && photo.startsWith('http') && !photo.startsWith('blob:')) {
+      if (photo && photo.startsWith('data:')) {
+        body.referenceBase64 = photo;
+      } else if (photo && photo.startsWith('http')) {
         body.references = photo;
       }
       const res = await fetch('/api/generate', {
