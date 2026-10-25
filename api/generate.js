@@ -12,7 +12,6 @@ export default async function handler(req, res) {
     : 'shifphone@gmail.com';
 
   let refUrl = references;
-  let uploadError = null;
   if (!refUrl && referenceBase64 && referenceBase64.startsWith('data:')) {
     try {
       const base64 = referenceBase64.split(',')[1];
@@ -21,28 +20,25 @@ export default async function handler(req, res) {
       const form = new FormData();
       form.append('file', new Blob([buf], { type: mime }), 'ref.jpg');
       const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: form });
-      const upText = await uploadRes.text();
       if (uploadRes.ok) {
-        const up = JSON.parse(upText);
-        refUrl = up?.data?.url?.replace('tmpfiles.org/', 'tmpfiles.org/dl/') || up?.data?.url;
-      } else {
-        uploadError = `upload ${uploadRes.status}: ${upText.slice(0, 200)}`;
+        const up = await uploadRes.json();
+        const raw = up?.data?.url;
+        if (raw && raw.includes('tmpfiles.org')) {
+          refUrl = raw.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        }
       }
-    } catch (e) {
-      uploadError = e.message;
-    }
+    } catch {}
   }
 
-  const body = {
-    model: model || 'xSD4.5',
-    prompt,
-    endUserEmail: email,
-    n: 1,
-    size: '2048x2048',
-  };
-  if (refUrl) body.references = refUrl;
-
-  try {
+  const tryGenerate = async (withRef) => {
+    const body = {
+      model: model || 'xSD4.5',
+      prompt,
+      endUserEmail: email,
+      n: 1,
+      size: '2048x2048',
+    };
+    if (withRef && refUrl) body.references = refUrl;
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
       method: 'POST',
       headers: {
@@ -51,10 +47,17 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify(body),
     });
+    return createRes;
+  };
 
+  try {
+    let createRes = await tryGenerate(true);
+    if (!createRes.ok && refUrl) {
+      createRes = await tryGenerate(false);
+    }
     if (!createRes.ok) {
       const err = await createRes.text();
-      return res.status(createRes.status).json({ error: err, uploadError, refUrl });
+      return res.status(createRes.status).json({ error: err });
     }
 
     const { requestId } = await createRes.json();
@@ -69,14 +72,14 @@ export default async function handler(req, res) {
       if (data.status === 'succeeded') {
         const images = data.images || data.output?.images || [];
         const url = images[0]?.url || images[0] || data.output?.url;
-        return res.status(200).json({ url, requestId, usedReference: !!refUrl, uploadError });
+        return res.status(200).json({ url, requestId });
       }
       if (data.status === 'failed' || data.status === 'expired') {
-        return res.status(500).json({ error: data.error?.message || data.status, uploadError, refUrl });
+        return res.status(500).json({ error: data.error?.message || data.status });
       }
     }
-    return res.status(504).json({ error: 'Timeout', uploadError });
+    return res.status(504).json({ error: 'Timeout' });
   } catch (e) {
-    return res.status(500).json({ error: e.message, uploadError });
+    return res.status(500).json({ error: e.message });
   }
 }
