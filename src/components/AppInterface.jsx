@@ -103,7 +103,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {toast && <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100]"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-xl">{toast}</div></div>}
+      {toast && <div className="fixed top-32 left-1/2 -translate-x-1/2 z-[100]"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-xl">{toast}</div></div>}
       {charModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setCharModal(false)}>
           <div className="bg-bg-secondary border border-border rounded-xl p-6 max-w-lg w-full" onClick={e => e.stopPropagation()}>
