@@ -39,7 +39,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     } catch {}
   }, []);
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000); };
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 4000); };
   const saveCharacters = (list) => { setCharacters(list); try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {} };
   const saveGallery = (list) => { setGallery(list); try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {} };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
@@ -70,7 +70,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Generation failed');
+      if (!res.ok) {
+        const errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data);
+        throw new Error(errMsg.slice(0, 200));
+      }
       const gen = { id: crypto.randomUUID(), title: selectedTemplate?.title?.[lang] || 'Custom', prompt: p, characterName: selectedCharacter?.name || 'Photo', src: data.url, createdAt: Date.now() };
       saveGallery([gen, ...gallery]);
       showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
