@@ -4,12 +4,24 @@ export default async function handler(req, res) {
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
-  const { prompt, endUserEmail, model } = req.body || {};
+  const { prompt, endUserEmail, model, references } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft')) 
     ? endUserEmail 
     : 'shifphone@gmail.com';
+
+  const body = {
+    model: model || 'xSD4.5',
+    prompt,
+    endUserEmail: email,
+    n: 1,
+    size: '2048x2048',
+  };
+
+  if (references && (typeof references === 'string' || Array.isArray(references))) {
+    body.references = references;
+  }
 
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
@@ -18,13 +30,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: model || 'xSD4.5',
-        prompt,
-        endUserEmail: email,
-        n: 1,
-        size: '2048x2048',
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!createRes.ok) {
