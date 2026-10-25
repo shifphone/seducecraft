@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       if (uploadRes.ok && text.startsWith('http')) {
         refUrl = text.trim();
       } else {
-        uploadError = `0x0 ${uploadRes.status}: ${text.slice(0, 100)}`;
+        uploadError = `0x0 ${uploadRes.status}: ${text.slice(0, 120)}`;
       }
     } catch (e) {
       uploadError = e.message;
