@@ -1,14 +1,22 @@
+import { createClient } from '@supabase/supabase-js';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ error: 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in Vercel env' });
+  }
+
   const { prompt, endUserEmail, model, referenceBase64, references } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
-  const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft')) 
-    ? endUserEmail 
+  const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft'))
+    ? endUserEmail
     : 'shifphone@gmail.com';
 
   let refUrl = references;
@@ -17,18 +25,22 @@ export default async function handler(req, res) {
   if (!refUrl && referenceBase64 && referenceBase64.startsWith('data:')) {
     try {
       const base64 = referenceBase64.split(',')[1];
+      if (!base64) throw new Error('Invalid data URL');
       const mime = referenceBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
       const buf = Buffer.from(base64, 'base64');
-      const form = new FormData();
-      form.append('reqtype', 'fileupload');
-      form.append('time', '24h');
-      form.append('fileToUpload', new Blob([buf], { type: mime }), 'ref.jpg');
-      const uploadRes = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', { method: 'POST', body: form });
-      const text = await uploadRes.text();
-      if (uploadRes.ok && text.startsWith('http')) {
-        refUrl = text.trim();
+      const ext = mime.includes('png') ? 'png' : 'jpg';
+      const fileName = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data, error } = await supabase.storage
+        .from('references')
+        .upload(fileName, buf, { contentType: mime, upsert: false });
+
+      if (error) {
+        uploadError = `supabase: ${error.message}`;
       } else {
-        uploadError = `litterbox ${uploadRes.status}: ${text.slice(0, 180)}`;
+        const { data: urlData } = supabase.storage.from('references').getPublicUrl(fileName);
+        refUrl = urlData.publicUrl;
       }
     } catch (e) {
       uploadError = e.message;
@@ -45,7 +57,7 @@ export default async function handler(req, res) {
     endUserEmail: email,
     n: 1,
     size: '2048x2048',
-    references: refUrl,
+    references: Array.isArray(refUrl) ? refUrl : [refUrl],
   };
 
   try {
