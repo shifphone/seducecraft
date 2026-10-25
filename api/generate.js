@@ -4,12 +4,28 @@ export default async function handler(req, res) {
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
-  const { prompt, endUserEmail, model, references } = req.body || {};
+  const { prompt, endUserEmail, model, referenceBase64 } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft')) 
     ? endUserEmail 
     : 'shifphone@gmail.com';
+
+  let references;
+  if (referenceBase64) {
+    try {
+      const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: referenceBase64 }),
+      });
+      if (uploadRes.ok) {
+        const up = await uploadRes.json();
+        const url = up?.data?.url?.replace('tmpfiles.org/', 'tmpfiles.org/dl/') || up?.data?.url;
+        if (url) references = url;
+      }
+    } catch {}
+  }
 
   const body = {
     model: model || 'xSD4.5',
@@ -18,10 +34,7 @@ export default async function handler(req, res) {
     n: 1,
     size: '2048x2048',
   };
-
-  if (references && (typeof references === 'string' || Array.isArray(references))) {
-    body.references = references;
-  }
+  if (references) body.references = references;
 
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
