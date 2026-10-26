@@ -185,7 +185,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
       {toast && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] max-w-md">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] max-w-md">
           <div className="bg-zinc-900 border border-orange-500/40 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl">
             {toast}
           </div>
@@ -442,7 +442,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                     <div className="flex justify-center gap-4 mb-6">
                       <div className="text-center">
-                        <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover rounded-lg mb-1 border border-zinc-700" />
+                        <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover object-top rounded-lg mb-1 border border-zinc-700" />
                         <span className="text-[10px] text-zinc-500 uppercase">Full body</span>
                       </div>
                       <div className="text-center">
@@ -450,7 +450,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <span className="text-[10px] text-zinc-500 uppercase">Half body</span>
                       </div>
                       <div className="text-center relative">
-                        <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover rounded-lg mb-1 border border-zinc-700 opacity-40" />
+                        <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&crop=faces" alt="" className="w-16 h-20 object-cover object-top rounded-lg mb-1 border border-zinc-700 opacity-40" />
                         <div className="absolute inset-0 flex items-center justify-center text-red-500 text-xl font-bold -mt-3">✕</div>
                         <span className="text-[10px] text-zinc-500 uppercase">Face only</span>
                       </div>
