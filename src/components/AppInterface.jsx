@@ -365,7 +365,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
         </aside>
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
-          <div className="max-w-[1600px] mx-auto">
+          <div className="max-w-[1800px] mx-auto">
             {activeMode === 'home' && (
               <>
                 <h2 className="text-2xl font-semibold mb-2">{t.homeTitle}</h2>
@@ -418,7 +418,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
 
                 {photoMode === 'undress' && (
-                  <div className="max-w-2xl mx-auto text-center">
+                  <div className="max-w-3xl mx-auto text-center">
                     <h2 className="text-xl font-semibold mb-1">AI Photo Undress</h2>
                     <p className="text-sm text-zinc-500 mb-6">{lang === 'en' ? 'Upload a full-body photo to generate an undressed version' : 'Загрузите фото в полный рост для генерации'}</p>
                     <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-10 hover:border-orange-500/40 transition-colors mb-6">
@@ -442,7 +442,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                     <div className="flex justify-center gap-4 mb-6">
                       <div className="text-center">
-                        <img src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover object-top rounded-lg mb-1 border border-zinc-700" />
+                        <img src="https://images.pexels.com/photos/1382731/pexels-photo-1382731.jpeg?auto=compress&cs=tinysrgb&w=200&h=300&fit=crop" alt="" className="w-16 h-24 object-cover object-top rounded-lg mb-1 border border-zinc-700" />
                         <span className="text-[10px] text-zinc-500 uppercase">Full body</span>
                       </div>
                       <div className="text-center">
@@ -465,7 +465,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
                           <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
                         </div>
-                        <div className="grid grid-cols-4 gap-2">
+                        <div className="grid grid-cols-4 lg:grid-cols-6 gap-3">
                           {gallery.filter(g => g.title === 'Undress').slice(0, 8).map(g => (
                             <button key={g.id} onClick={() => { setPreviewSrc(g.src); }} className="aspect-[3/4] rounded-lg overflow-hidden hover:ring-2 hover:ring-orange-500/50">
                               <img src={g.src} alt="" className="w-full h-full object-cover" />

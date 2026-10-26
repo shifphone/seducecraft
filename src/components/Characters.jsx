@@ -41,7 +41,7 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
   }
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-[1600px]">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-semibold">Characters</h2>
@@ -92,7 +92,7 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       {sorted.length === 0 ? (
         <p className="text-zinc-500 text-sm mb-8">{filter === 'favorites' ? 'No favorites yet.' : 'No characters yet. Create one to use in generations.'}</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-10">
           {sorted.map((c) => (
             <div key={c.id} className="rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800/80 relative group hover:border-orange-500/40 hover:shadow-lg hover:shadow-black/40 transition-all">
               {c.photos?.[0] ? (
