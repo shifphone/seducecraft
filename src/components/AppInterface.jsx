@@ -18,6 +18,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [langOpen, setLangOpen] = useState(false);
   const [characters, setCharacters] = useState([]);
   const [characterSort, setCharacterSort] = useState('newest');
+  const [characterFilter, setCharacterFilter] = useState('all');
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const [charModal, setCharModal] = useState(false);
@@ -194,16 +195,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 })()}
               </div>
               <div className="flex-1 space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                <div className="flex justify-end items-center gap-3 mb-2">
-                  <span className="text-xs text-zinc-500">{lang === 'en' ? 'Sort by' : 'Сортировка'}</span>
+                <div className="flex justify-end items-center gap-2 mb-2">
                   <div className="flex gap-1">
                     <button
                       type="button"
                       onClick={() => setCharacterSort('newest')}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         characterSort === 'newest'
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
-                          : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
+                          : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'
                       }`}
                     >
                       {lang === 'en' ? 'New' : 'Новые'}
@@ -211,17 +211,32 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <button
                       type="button"
                       onClick={() => setCharacterSort('oldest')}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         characterSort === 'oldest'
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
-                          : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
+                          : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'
                       }`}
                     >
                       {lang === 'en' ? 'Old' : 'Старые'}
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setCharacterFilter(characterFilter === 'favorites' ? 'all' : 'favorites')}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      characterFilter === 'favorites'
+                        ? 'bg-orange-500/20 text-orange-400 border border-orange-500/40'
+                        : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'
+                    }`}
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.8 3.7 4.1.6-3 2.9.7 4.1L8 10.8 4.4 12.8l.7-4.1-3-2.9 4.1-.6L8 1.5z" /></svg>
+                    {lang === 'en' ? 'Fav' : 'Избр'}
+                  </button>
                 </div>
-                {[...characters].sort((a, b) => characterSort === 'oldest' ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0)).map(c => (
+                {[...characters]
+                  .filter(c => characterFilter === 'favorites' ? c.favorite : true)
+                  .sort((a, b) => characterSort === 'oldest' ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0))
+                  .map(c => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCharacterId(c.id)}
