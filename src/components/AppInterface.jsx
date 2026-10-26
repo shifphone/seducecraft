@@ -660,8 +660,42 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
                 {photoMode === 'templates' && (
                   <div className="w-full">
-                    <CharacterPicker />
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 mb-6">
+                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs uppercase tracking-wider text-zinc-500">Character</p>
+                          <div className="flex gap-1">
+                            <button onClick={() => setCharacterSort('newest')} className={`px-2 py-0.5 rounded text-[10px] ${characterSort==='newest' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>New</button>
+                            <button onClick={() => setCharacterSort('oldest')} className={`px-2 py-0.5 rounded text-[10px] ${characterSort==='oldest' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>Old</button>
+                            <button onClick={() => setCharacterFilter(characterFilter==='favorites'?'all':'favorites')} className={`px-2 py-0.5 rounded text-[10px] ${characterFilter==='favorites' ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-500 hover:text-zinc-300'}`}>★</button>
+                          </div>
+                        </div>
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                          {characters.length === 0 ? (
+                            <button onClick={() => setActiveMode('characters')} className="text-sm text-orange-400 hover:text-orange-300">Create a character first</button>
+                          ) : [...characters]
+                            .filter(c => characterFilter === 'favorites' ? c.favorite : true)
+                            .sort((a, b) => characterSort === 'oldest' ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0))
+                            .map(c => (
+                            <button
+                              key={c.id}
+                              onClick={() => setSelectedCharacterId(c.id)}
+                              className={`w-full flex items-center gap-2.5 p-2 rounded-lg border text-left transition-all ${
+                                selectedCharacterId === c.id
+                                  ? 'border-orange-500/60 bg-zinc-800'
+                                  : 'border-zinc-800 hover:border-zinc-600'
+                              }`}
+                            >
+                              {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-10 h-10 rounded-md object-cover flex-shrink-0" />}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium truncate">{c.name}</div>
+                                {c.favorite && <div className="text-[10px] text-orange-400">★ Fav</div>}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                       {presets.map(p => (
                         <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
                           className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left ${selectedTemplate?.id === p.id ? 'ring-2 ring-orange-500 scale-[1.02]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-zinc-600'}`}>
