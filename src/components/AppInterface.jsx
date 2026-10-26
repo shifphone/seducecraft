@@ -3,10 +3,10 @@ import Characters from './Characters';
 import { translations as T } from '../i18n';
 
 const SAMPLE_PRESETS = [
-  { id: 'portrait', title: { en: 'Studio Portrait', ru: 'Студийный портрет' }, prompt: 'Professional studio portrait, soft lighting, neutral background, looking at camera, sharp focus', src: '/examples/half.jpg', tags: ['portrait'] },
-  { id: 'outdoor', title: { en: 'Outdoor Full Body', ru: 'На улице в полный рост' }, prompt: 'Full body outdoor photo, natural daylight, standing pose, casual clothes, garden background', src: '/examples/full.jpg', tags: ['outdoor'] },
-  { id: 'mirror-towel', title: { en: 'Mirror Selfie', ru: 'Зеркальное селфи' }, prompt: 'Mirror selfie in a modern bathroom, wrapped in a white towel, holding phone, soft lighting, looking at camera, photorealistic', src: '/examples/half.jpg', tags: ['selfie', 'mirror'] },
-  { id: 'bedroom-selfie', title: { en: 'Bedroom Selfie', ru: 'Селфи в спальне' }, prompt: 'Casual bedroom selfie, sitting on bed, natural window light, looking at camera, relaxed expression, photorealistic', src: '/examples/face.jpg', tags: ['selfie', 'bedroom'] },
+  { id: 'bench', title: { en: 'White Bench', ru: 'Белая скамейка' }, prompt: 'Photorealistic image of a woman, wearing only a black choker necklace, sitting on the edge of a white cushioned bench in a minimalist studio with soft dramatic lighting and neutral gray walls. She is nude, knees bent and spread wide, feet in strappy black high-heeled sandals.', src: '/templates/bench.jpg', tags: ['nude', 'sitting', 'full body', 'indoor'] },
+  { id: 'portrait', title: { en: 'Studio Portrait', ru: 'Студийный портрет' }, prompt: 'Professional studio portrait, soft lighting, neutral background, looking at camera, sharp focus', src: '/examples/half.jpg', tags: ['portrait', 'face'] },
+  { id: 'outdoor', title: { en: 'Outdoor Full Body', ru: 'На улице' }, prompt: 'Full body outdoor photo, natural daylight, standing pose, casual clothes, garden background', src: '/examples/full.jpg', tags: ['outdoor', 'full body', 'standing'] },
+  { id: 'mirror', title: { en: 'Mirror Selfie', ru: 'Зеркальное селфи' }, prompt: 'Mirror selfie in a modern bathroom, wrapped in a white towel, holding phone, soft lighting, looking at camera', src: '/examples/half.jpg', tags: ['selfie', 'mirror', 'bathroom'] },
 ];
 
 export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits }) {
@@ -610,7 +610,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           className={`rounded-xl overflow-hidden border-2 transition-all text-left ${selectedTemplate?.id === p.id ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-zinc-800 hover:border-zinc-600'}`}>
                           <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
                           <div className="p-3 bg-zinc-900">
-                            <div className="text-sm font-medium">{p.title[lang] || p.title.en}</div>
+                            <div className="text-sm font-medium mb-1">{p.title[lang] || p.title.en}</div>
+                            <div className="flex flex-wrap gap-1">
+                              {p.tags?.slice(0, 3).map(t => (
+                                <span key={t} className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded">{t}</span>
+                              ))}
+                            </div>
                           </div>
                         </button>
                       ))}
