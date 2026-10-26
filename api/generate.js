@@ -40,7 +40,7 @@ export default async function handler(req, res) {
   }
   if (!refUrl) return res.status(400).json({ error: 'No reference' });
 
-  const finalPrompt = `use image_1 only for the face and identity, ${prompt}`;
+  const finalPrompt = `image_1 is only a face reference. Ignore clothing, pose, and background from the reference. Fully follow this description for the scene, body, and clothing: ${prompt}`;
 
   const body = {
     model: model || 'xSD4.5',
