@@ -4,7 +4,7 @@ import { translations as T } from '../i18n';
 
 const SAMPLE_PRESETS = [
   { id: 'bench', title: { en: 'White Bench', ru: 'Белая скамейка' }, prompt: 'Photorealistic image of a woman, wearing only a black choker necklace, sitting on the edge of a white cushioned bench in a minimalist studio with soft dramatic lighting and neutral gray walls. She is nude, knees bent and spread wide, feet in strappy black high-heeled sandals.', src: '/templates/bench.jpg', tags: ['nude', 'sitting', 'full body'] },
-  { id: 'bed', title: { en: 'Bed Surprise', ru: 'На кровати' }, prompt: 'woman leaning forward on her bed, one hand lifting her bare breast, the other hand pressing on the bed in front of her, mouth open in surprise with furrowed brows, low angle shot from below, bedroom setting with dim ambient lighting', src: '/templates/bed.jpg', tags: ['topless', 'bedroom', 'low angle'] },
+  { id: 'bathroom', title: { en: 'Bathroom Selfie', ru: 'Ванная селфи' }, prompt: 'amateur mirror selfie in ensuite bathroom, naked with back to the lens showing ass, detailed skin, bright indoor lighting, metro tiled walls, towel shelf, flat contrast', src: '/templates/bathroom-ass.jpg', tags: ['selfie', 'mirror', 'bathroom', 'nude'] },
   { id: 'towel', title: { en: 'Mirror Towel', ru: 'Селфи в полотенце' }, prompt: 'beautiful woman taking a mirror selfie in a modern bathroom, wrapped in a white bath towel, holding iPhone, soft flattering ceiling lights, realistic photography style, clean modern bathroom', src: '/templates/towel.jpg', tags: ['selfie', 'mirror', 'bathroom'] },
   { id: 'ass', title: { en: 'On Stomach', ru: 'На животе' }, prompt: 'POV photo from above, a naked woman lying on her front facing away from the viewer, looking back over her shoulder with a seductive expression, bare back and naked ass visible, hand gently grabbing her ass cheek, intimate bedroom with soft natural ambient lighting', src: '/templates/ass.jpg', tags: ['POV', 'ass', 'bedroom'] },
   { id: 'stockings', title: { en: 'Stockings Mirror', ru: 'Чулки в зеркале' }, prompt: 'woman naked laying on her side on a bed with legs bent at the knee and legs parted, wearing nylon stockings and holding an iphone taking a mirror selfie', src: '/templates/stockings.jpg', tags: ['selfie', 'mirror', 'lingerie'] },
@@ -99,7 +99,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       // For templates: add template image as second reference for pose/clothing
       if (photoMode === 'templates' && selectedTemplate?.src) {
         refUrls.push(window.location.origin + selectedTemplate.src);
-        body.prompt = `Use image_1 for the face and identity. Use image_2 for the pose, body position, clothing, and background. ${p}`;
+        body.prompt = `IMPORTANT: The face must come ONLY from image_1. Do not use the face from image_2. Replace the face completely with image_1. Use image_2 only for pose, body position, clothing, and background. ${p}`;
       }
       if (base64s.length) body.referenceBase64 = base64s;
       if (refUrls.length) body.references = refUrls;
