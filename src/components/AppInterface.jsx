@@ -49,16 +49,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   useEffect(() => {
     (async () => {
-      const session = await getSession();
-      if (session?.user && isSupabaseConfigured()) {
-        const { data } = await supabase.from('characters').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
-        if (data) setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
-      } else {
-        const saved = localStorage.getItem('seducecraft.characters');
-        if (saved) setCharacters(JSON.parse(saved));
-      }
-      const g = localStorage.getItem('seducecraft.gallery');
-      if (g) setGallery(JSON.parse(g));
+      if (!isSupabaseConfigured()) return;
+      const anonId = localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID(); localStorage.setItem('anonId', id); return id; })();
+      const { data } = await supabase.from('characters').select('*').eq('user_id', anonId).order('created_at', { ascending: false });
+      if (data) setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
+      const { data: gData } = await supabase.from('gallery').select('*').eq('user_id', anonId).order('created_at', { ascending: false });
+      if (gData) setGallery(gData);
     })();
   }, []);
 
@@ -71,25 +67,26 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = async (list) => {
     setCharacters(list);
-    const session = await getSession();
-    if (session?.user && isSupabaseConfigured()) {
-      // Sync to DB
-      for (const c of list) {
-        if (c.id?.length === 36) {
-          await supabase.from('characters').upsert({ ...c, user_id: session.user.id });
-        } else {
-          const { data } = await supabase.from('characters').insert({ name: c.name, photos: c.photos, user_id: session.user.id }).select().single();
-          if (data) c.id = data.id;
-        }
+    if (!isSupabaseConfigured()) return;
+    const anonId = localStorage.getItem('anonId');
+    if (!anonId) return;
+    for (const c of list) {
+      if (c.id?.length === 36) {
+        await supabase.from('characters').upsert({ ...c, user_id: anonId });
+      } else {
+        const { data } = await supabase.from('characters').insert({ name: c.name, photos: c.photos, user_id: anonId }).select().single();
+        if (data) c.id = data.id;
       }
-    } else {
-      try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
     }
   };
-  const saveGallery = (listOrUpdater) => {
+  const saveGallery = async (listOrUpdater) => {
     setGallery(prev => {
       const next = typeof listOrUpdater === 'function' ? listOrUpdater(prev) : listOrUpdater;
-      try { localStorage.setItem('seducecraft.gallery', JSON.stringify(next)); } catch {}
+      const anonId = localStorage.getItem('anonId');
+      if (anonId && isSupabaseConfigured()) {
+        const newItems = next.filter(g => !prev.find(p => p.id === g.id));
+        newItems.forEach(g => supabase.from('gallery').insert({ ...g, user_id: anonId }));
+      }
       return next;
     });
   };
