@@ -9,21 +9,21 @@ export default async function handler(req, res) {
   const { userId } = req.query;
 
   if (req.method === 'GET') {
-    const { data, error } = await supabase.from('characters').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('anon_characters').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json(data || []);
   }
 
   if (req.method === 'POST') {
     const { name, photos } = req.body;
-    const { data, error } = await supabase.from('characters').insert({ user_id: userId, name, photos }).select().single();
+    const { data, error } = await supabase.from('anon_characters').insert({ user_id: userId, name, photos }).select().single();
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json(data);
   }
 
   if (req.method === 'DELETE') {
     const { id } = req.body;
-    const { error } = await supabase.from('characters').delete().eq('id', id).eq('user_id', userId);
+    const { error } = await supabase.from('anon_characters').delete().eq('id', id).eq('user_id', userId);
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json({ ok: true });
   }
