@@ -10,6 +10,9 @@ export default async function handler(req, res) {
   
   const { base64, action, userId, name, photos } = req.body || {};
   
+  // Debug
+  if (action === 'debug') return res.status(200).json({ version: 'v2', action, userId });
+  
   // Character save
   if (action === 'saveCharacter') {
     const supabase = createClient(supabaseUrl, supabaseKey);
