@@ -5,15 +5,16 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
   try {
-    const balanceRes = await fetch('https://api.xmode.ai/v1/balance', {
+    const r = await fetch('https://api.xmode.ai/v1/balance', {
       headers: { 'Authorization': `Bearer ${apiKey}` },
     });
-    if (!balanceRes.ok) {
-      const err = await balanceRes.text();
-      return res.status(balanceRes.status).json({ error: err });
+    if (!r.ok) {
+      const err = await r.text();
+      return res.status(r.status).json({ error: err });
     }
-    const data = await balanceRes.json();
-    return res.status(200).json({ balance: data.balance || data.xTokens || data.credits || 0 });
+    const data = await r.json();
+    const balance = data.balance ?? data.xTokens ?? data.tokens ?? 0;
+    return res.status(200).json({ balance });
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
