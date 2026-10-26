@@ -108,7 +108,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { throw new Error(text.slice(0, 200) || 'Invalid response'); }
       if (!res.ok) {
         const errMsg = data.full?.error?.code 
           ? `${data.full.error.code}: ${data.error}` 
