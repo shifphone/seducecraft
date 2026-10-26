@@ -67,7 +67,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const buildPrompt = () => {
     if (photoMode === 'undress') {
-      return 'Keep the exact same person, exact same pose, exact same camera angle, exact same background. Only remove the clothing. Nude version of this exact photo. Do not change pose, expression, or composition.';
+      return 'Edit this photo: remove all clothing from the person. She is completely nude, naked, no clothes, no fabric, no underwear. Keep the same face, same pose, same camera angle, same background. Only the clothing changes — it is removed entirely. Visible skin where clothes were.';
     }
     let p = selectedTemplate?.prompt || prompt || 'photo';
     p = p.trim();
