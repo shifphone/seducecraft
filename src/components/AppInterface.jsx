@@ -330,7 +330,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
         </aside>
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-7xl mx-auto">
             {activeMode === 'home' && (
               <>
                 <h2 className="text-2xl font-semibold mb-2">{t.homeTitle}</h2>
@@ -393,10 +393,30 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'custom' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_300px] gap-5 max-w-6xl mx-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_320px] gap-6">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                       <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Character</p>
-                      <CharacterPicker />
+                      <div className="space-y-2 max-h-[420px] overflow-y-auto">
+                        {characters.length === 0 ? (
+                          <button onClick={() => setActiveMode('characters')} className="text-sm text-orange-400 hover:text-orange-300">Create a character first</button>
+                        ) : characters.map(c => (
+                          <button
+                            key={c.id}
+                            onClick={() => setSelectedCharacterId(c.id)}
+                            className={`w-full flex items-center gap-2.5 p-2 rounded-lg border text-left transition-all ${
+                              selectedCharacterId === c.id
+                                ? 'border-orange-500/60 bg-zinc-800'
+                                : 'border-zinc-800 hover:border-zinc-600'
+                            }`}
+                          >
+                            {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-10 h-10 rounded-md object-cover flex-shrink-0" />}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium truncate">{c.name}</div>
+                              {c.favorite && <div className="text-[10px] text-orange-400">★ Fav</div>}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <textarea
