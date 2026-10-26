@@ -74,17 +74,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return next;
     });
   };
-  const saveGallery = async (listOrUpdater) => {
-    setGallery(prev => {
-      const next = typeof listOrUpdater === 'function' ? listOrUpdater(prev) : listOrUpdater;
-      const anonId = localStorage.getItem('anonId');
-      if (anonId && isSupabaseConfigured()) {
-        const newItems = next.filter(g => !prev.find(p => p.id === g.id));
-        newItems.forEach(g => supabase.from('gallery').insert({ ...g, user_id: anonId }));
-      }
-      return next;
-    });
-  };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
   const buildPrompt = () => {
