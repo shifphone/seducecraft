@@ -89,7 +89,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
-      const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []);
+      const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []).slice(0, 2);
       const refUrls = [];
       const base64s = [];
       for (const photo of photos) {
