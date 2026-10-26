@@ -393,7 +393,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'custom' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_320px] gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_300px] gap-6">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-xs uppercase tracking-wider text-zinc-500">Character</p>
@@ -470,7 +470,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <div>
                         <p className="text-xs text-zinc-500 mb-2">Size</p>
                         <div className="grid grid-cols-2 gap-1.5">
-                          {['2048x2048','1920x1920','1536x2048','2048x1536'].map(s => (
+                          {['2048x2048','1920x1920','1920x2560','2560x1920'].map(s => (
                             <button key={s} type="button" onClick={() => setImageSize(s)}
                               className={`px-2 py-1.5 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                               {s.replace('x','×')}
@@ -493,8 +493,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                         {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                       </button>
-                      <button onClick={() => setActiveMode('gallery')} className="w-full py-2 text-xs text-zinc-500 hover:text-orange-400 transition-colors">
-                        → Gallery
+                      <button onClick={() => setActiveMode('gallery')} className="w-full mt-2 py-2 rounded-lg border border-zinc-700 text-xs text-zinc-400 hover:border-orange-500/50 hover:text-orange-400 transition-colors">
+                        → Open Gallery
                       </button>
                     </div>
                   </div>
