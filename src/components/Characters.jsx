@@ -68,24 +68,24 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {sorted.map((c) => (
-            <div key={c.id} className="border border-border rounded-lg overflow-hidden bg-bg-secondary relative group hover:border-accent/40 transition-colors">
+            <div key={c.id} className="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 relative group hover:border-orange-500/40 transition-colors">
               {c.photos?.[0] ? (
                 <img src={c.photos[0]} alt="" className="aspect-[3/4] w-full object-cover" />
               ) : (
-                <div className="aspect-[3/4] bg-bg-tertiary flex items-center justify-center text-text-secondary text-xs">No photo</div>
+                <div className="aspect-[3/4] bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">No photo</div>
               )}
-              <div className="p-3 text-sm flex items-center justify-between">
-                <span>{c.name}</span>
-                <button onClick={() => handleDelete(c.id)} className="text-xs text-text-secondary hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">Delete</button>
+              <div className="p-3 flex items-center justify-between">
+                <span className="text-sm font-medium truncate">{c.name}</span>
+                <button onClick={() => handleDelete(c.id)} className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">Delete</button>
               </div>
             </div>
           ))}
         </div>
       )}
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-2">
         <button
           onClick={() => setCreating(true)}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 hover:shadow-orange-500/50 transition-all"
+          className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-base shadow-lg shadow-orange-500/40 hover:brightness-110 hover:shadow-orange-500/60 transition-all"
         >
           + Create character
         </button>
