@@ -49,12 +49,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   useEffect(() => {
     (async () => {
-      if (!isSupabaseConfigured()) return;
       const anonId = localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID(); localStorage.setItem('anonId', id); return id; })();
-      const { data } = await supabase.from('characters').select('*').eq('user_id', anonId).order('created_at', { ascending: false });
-      if (data) setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
-      const { data: gData } = await supabase.from('gallery').select('*').eq('user_id', anonId).order('created_at', { ascending: false });
-      if (gData) setGallery(gData);
+      const res = await fetch(`/api/characters?userId=${anonId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
+      }
     })();
   }, []);
 
@@ -67,15 +67,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = async (list) => {
     setCharacters(list);
-    if (!isSupabaseConfigured()) return;
     const anonId = localStorage.getItem('anonId');
     if (!anonId) return;
     for (const c of list) {
-      if (c.id?.length === 36) {
-        await supabase.from('characters').upsert({ ...c, user_id: anonId });
-      } else {
-        const { data } = await supabase.from('characters').insert({ name: c.name, photos: c.photos, user_id: anonId }).select().single();
-        if (data) c.id = data.id;
+      if (!c.id || c.id.length < 30) {
+        const res = await fetch(`/api/characters?userId=${anonId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: c.name, photos: c.photos }) });
+        if (res.ok) { const data = await res.json(); c.id = data.id; }
       }
     }
   };
