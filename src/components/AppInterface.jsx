@@ -18,6 +18,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [langOpen, setLangOpen] = useState(false);
   const [characters, setCharacters] = useState([]);
   const [characterSort, setCharacterSort] = useState('newest');
+  const [sortOpen, setSortOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
@@ -196,16 +197,34 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <div className="flex justify-end mb-2 relative">
                   <button
                     type="button"
-                    onClick={() => setCharacterSort(characterSort === 'newest' ? 'oldest' : 'newest')}
+                    onClick={() => setSortOpen(!sortOpen)}
                     className="flex items-center gap-1.5 h-8 px-3 rounded-lg border border-zinc-700 bg-zinc-900 text-xs text-zinc-300 hover:border-orange-500/50 hover:text-white transition-colors"
                   >
-                    <span>{characterSort === 'newest' ? (lang === 'en' ? 'Newest' : 'Новые') : (lang === 'en' ? 'Oldest' : 'Старые')}</span>
+                    <span>{characterSort === 'oldest' ? (lang === 'en' ? 'Oldest' : 'Старые') : (lang === 'en' ? 'Newest' : 'Новые')}</span>
                     <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path d="M2 4l4 4 4-4" />
                     </svg>
                   </button>
+                  {sortOpen && (
+                    <div className="absolute right-0 top-9 z-10 min-w-[100px] rounded-lg border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+                      <button
+                        type="button"
+                        onClick={() => { setCharacterSort('newest'); setSortOpen(false); }}
+                        className={`block w-full px-3 py-1.5 text-left text-xs hover:bg-zinc-800 ${characterSort === 'newest' ? 'text-orange-400' : 'text-zinc-300 hover:text-white'}`}
+                      >
+                        {lang === 'en' ? 'Newest' : 'Новые'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setCharacterSort('oldest'); setSortOpen(false); }}
+                        className={`block w-full px-3 py-1.5 text-left text-xs hover:bg-zinc-800 ${characterSort === 'oldest' ? 'text-orange-400' : 'text-zinc-300 hover:text-white'}`}
+                      >
+                        {lang === 'en' ? 'Oldest' : 'Старые'}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {[...characters].sort((a, b) => characterSort === 'newest' ? (b.createdAt || 0) - (a.createdAt || 0) : (a.createdAt || 0) - (b.createdAt || 0)).map(c => (
+                {[...characters].sort((a, b) => characterSort === 'oldest' ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0)).map(c => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCharacterId(c.id)}
