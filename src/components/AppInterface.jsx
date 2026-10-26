@@ -118,23 +118,50 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   ];
 
   const TabBtn = ({ active, onClick, children }) => (
-    <button onClick={onClick} className={`px-6 py-2.5 text-sm transition-all duration-200 ${active ? 'tab-active' : 'tab-inactive'}`}>{children}</button>
+    <button
+      onClick={onClick}
+      className={`px-5 py-2.5 text-sm font-medium rounded-full transition-all duration-200 ${
+        active
+          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30'
+          : 'border border-zinc-700 text-zinc-400 hover:border-orange-500/40 hover:text-zinc-200'
+      }`}
+    >
+      {children}
+    </button>
   );
 
   const CharacterPicker = () => (
     <div className="mb-6">
       <label className="block text-sm text-text-secondary mb-2">{t.selectCharacter}</label>
       {characters.length === 0 ? (
-        <button onClick={() => setActiveMode('characters')} className="text-sm text-accent hover:underline">{lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}</button>
+        <button onClick={() => setActiveMode('characters')} className="text-sm text-orange-400 hover:text-orange-300 underline">
+          {lang === 'en' ? 'Create a character first' : 'Сначала создайте персонажа'}
+        </button>
       ) : (
-        <button onClick={() => setCharModal(true)} className={`flex items-center gap-3 px-4 py-3 text-sm min-w-[260px] ${selectedCharacter ? 'input-glow bg-bg-secondary' : 'border border-border rounded-lg hover:border-accent/50'}`}>
+        <button
+          onClick={() => setCharModal(true)}
+          className={`flex items-center gap-3 px-4 py-3 text-sm w-full max-w-sm rounded-xl border transition-all ${
+            selectedCharacter
+              ? 'border-orange-500/60 bg-bg-secondary shadow-[0_0_12px_rgba(249,115,22,0.15)]'
+              : 'border-zinc-700 hover:border-orange-500/40'
+          }`}
+        >
           {selectedCharacter ? (
             <>
-              {selectedCharacter.photos?.[0] && <img src={selectedCharacter.photos[0]} alt="" className="w-10 h-10 rounded object-cover" />}
-              <span className="font-medium">{selectedCharacter.name}</span>
-              <button onClick={(e) => { e.stopPropagation(); setSelectedCharacterId(null); }} className="ml-auto text-text-secondary hover:text-text-primary text-lg">×</button>
+              {selectedCharacter.photos?.[0] && (
+                <img src={selectedCharacter.photos[0]} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              )}
+              <span className="font-medium truncate">{selectedCharacter.name}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); setSelectedCharacterId(null); }}
+                className="ml-auto text-zinc-500 hover:text-zinc-200 text-lg leading-none"
+              >
+                ×
+              </button>
             </>
-          ) : <span className="text-text-secondary">{lang === 'en' ? 'Select character' : 'Выбрать персонажа'}</span>}
+          ) : (
+            <span className="text-zinc-400">{lang === 'en' ? 'Select character' : 'Выбрать персонажа'}</span>
+          )}
         </button>
       )}
     </div>
@@ -155,10 +182,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <h3 className="text-lg font-semibold">{lang === 'en' ? 'Select character' : 'Выберите персонажа'}</h3>
               <button onClick={() => setCharModal(false)} className="text-text-secondary hover:text-text-primary">×</button>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
               {characters.map(c => (
-                <button key={c.id} onClick={() => { setSelectedCharacterId(c.id); setCharModal(false); }} className={`border rounded-lg p-2 text-center hover:border-accent transition-colors ${selectedCharacterId === c.id ? 'border-accent' : 'border-border'}`}>
-                  {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-full aspect-square object-cover rounded-md mb-2" />}
+                <button
+                  key={c.id}
+                  onClick={() => { setSelectedCharacterId(c.id); setCharModal(false); }}
+                  className={`border rounded-xl p-2 text-center transition-all ${
+                    selectedCharacterId === c.id
+                      ? 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.25)]'
+                      : 'border-zinc-700 hover:border-orange-500/40'
+                  }`}
+                >
+                  {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-full aspect-square object-cover rounded-lg mb-2" />}
                   <div className="text-sm truncate">{c.name}</div>
                 </button>
               ))}
@@ -224,7 +259,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </nav>
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
         </aside>
-        <main className="flex-1 p-8 overflow-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
           <div className="max-w-5xl mx-auto">
             {activeMode === 'home' && (
               <>
@@ -271,7 +306,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             )}
             {activeMode === 'photo' && (
               <>
-                <div className="flex gap-3 mb-8 justify-center">
+                <div className="flex flex-wrap gap-2 mb-6 justify-center">
                   <TabBtn active={photoMode==='undress'} onClick={() => { setPhotoMode('undress'); setSelectedTemplate(null); }}>{t.undress}</TabBtn>
                   <TabBtn active={photoMode==='templates'} onClick={() => setPhotoMode('templates')}>{t.templates}</TabBtn>
                   <TabBtn active={photoMode==='custom'} onClick={() => setPhotoMode('custom')}>{t.custom}</TabBtn>
