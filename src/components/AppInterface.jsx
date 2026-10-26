@@ -180,7 +180,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     <div className="min-h-screen bg-bg-primary flex flex-col">
       {toast && (
         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] max-w-md">
-          <div className="bg-zinc-900 border border-orange-500/40 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl shadow-orange-500/20">
+          <div className="bg-red-900/90 border border-red-500 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl max-w-lg break-all">
             {toast}
           </div>
         </div>
@@ -484,7 +484,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <p className="text-xs text-zinc-500 mb-2">Model</p>
                         <div className="flex flex-col gap-2">
                           {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
-                            <button key={m.id} type="button" onClick={() => { setSelectedModel(m.id); setImageSize(m.id === 'xSD5Pro' ? '1024x1024' : '1920x1920'); }}
+                            <button key={m.id} type="button" onClick={() => { setSelectedModel(m.id); setImageSize(m.id === 'xSD5Pro' ? '1K' : '1920x1920'); }}
                               className={`px-3 py-2 rounded-lg text-sm text-left transition-all ${selectedModel===m.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-orange-500/50'}`}>
                               {m.label}
                             </button>
@@ -495,9 +495,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <p className="text-xs text-zinc-500 mb-2">Size</p>
                         <div className="grid grid-cols-2 gap-1.5">
                           {(selectedModel === 'xSD5Pro' 
-                            ? ['1024x1024','1280x1280','1536x1536','1920x1920'] 
+                            ? ['1K','1.5K','2K'] 
                             : ['1920x1920','2048x2048','2560x2560','3072x3072']
-                          ).sort((a,b) => { const [aw,ah]=a.split('x').map(Number); const [bw,bh]=b.split('x').map(Number); return aw*ah - bw*bh; }).map(s => (
+                          ).map(s => (
                             <button key={s} type="button" onClick={() => setImageSize(s)}
                               className={`px-2 py-1.5 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                               {s.replace('x','×')}
