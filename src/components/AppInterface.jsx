@@ -57,7 +57,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
       }
     })();
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (isLoggedIn) {
