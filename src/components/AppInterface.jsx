@@ -419,13 +419,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <p className="text-xs text-zinc-600 mb-3">JPG, PNG · Max 10MB</p>
                       <label className="text-orange-400 text-sm cursor-pointer hover:text-orange-300">
                         {lang === 'en' ? 'or click to browse' : 'или нажмите для выбора'}
-                        <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="hidden" />
+                        <input type="file" accept="image/*" onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          const reader = new FileReader();
+                          reader.onload = () => setUndressPhoto(reader.result);
+                          reader.readAsDataURL(f);
+                        }} className="hidden" />
                       </label>
-                    </div>
-                    <div className="flex justify-center gap-4 mb-6 text-xs text-zinc-500">
-                      <div className="text-center"><div className="w-16 h-20 bg-zinc-800 rounded mb-1 flex items-center justify-center text-lg">🧍</div>Full</div>
-                      <div className="text-center"><div className="w-16 h-20 bg-zinc-800 rounded mb-1 flex items-center justify-center text-lg">🧑</div>Half</div>
-                      <div className="text-center opacity-40"><div className="w-16 h-20 bg-zinc-800 rounded mb-1 flex items-center justify-center text-lg line-through">🙂</div>Face ✕</div>
                     </div>
                     <button onClick={handleGenerate} disabled={!canGenerate()} className="px-10 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                       ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
