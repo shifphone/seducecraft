@@ -88,7 +88,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     setPendingGens(c => c + 1);
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
-      const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
+      const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined, guidanceScale: 15 };
       const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []);
       const refUrls = [];
       const base64s = [];
