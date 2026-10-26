@@ -661,38 +661,48 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 {photoMode === 'templates' && (
                   <div className="w-full">
                     <CharacterPicker />
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
                       {presets.map(p => (
                         <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
-                          className={`rounded-xl overflow-hidden border-2 transition-all text-left ${selectedTemplate?.id === p.id ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-zinc-800 hover:border-zinc-600'}`}>
+                          className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left ${selectedTemplate?.id === p.id ? 'ring-2 ring-orange-500 scale-[1.02]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-zinc-600'}`}>
                           <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
-                          <div className="p-3 bg-zinc-900">
-                            <div className="text-sm font-medium mb-1">{p.title[lang] || p.title.en}</div>
-                            <div className="flex flex-wrap gap-1">
-                              {p.tags?.slice(0, 3).map(t => (
-                                <span key={t} className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-500 rounded">{t}</span>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
+                            <div className="text-sm font-medium text-white">{p.title[lang] || p.title.en}</div>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {p.tags?.slice(0, 2).map(t => (
+                                <span key={t} className="text-[10px] px-1.5 py-0.5 bg-white/20 text-white/80 rounded backdrop-blur-sm">{t}</span>
                               ))}
                             </div>
                           </div>
+                          {selectedTemplate?.id === p.id && (
+                            <div className="absolute top-2 right-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                              <span className="text-white text-xs">✓</span>
+                            </div>
+                          )}
                         </button>
                       ))}
                     </div>
                     {selectedTemplate && (
-                      <div className="max-w-md mx-auto p-5 bg-zinc-900/50 border border-zinc-800 rounded-2xl space-y-4">
-                        <div className="flex gap-2">
+                      <div className="max-w-sm mx-auto p-6 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-5">
+                        <div className="text-center">
+                          <div className="text-sm text-zinc-400 mb-1">Selected</div>
+                          <div className="font-medium">{selectedTemplate.title[lang] || selectedTemplate.title.en}</div>
+                        </div>
+                        <div className="flex gap-2 p-1 bg-zinc-800 rounded-xl">
                           {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
                             <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)}
-                              className={`flex-1 py-2 rounded-lg text-sm ${selectedModel===m.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>
+                              className={`flex-1 py-2 rounded-lg text-sm transition-all ${selectedModel===m.id ? 'bg-orange-500 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}`}>
                               {m.label}
                             </button>
                           ))}
                         </div>
                         <div>
-                          <div className="flex justify-between text-xs text-zinc-500 mb-1"><span>Images</span><span>{numImages}</span></div>
-                          <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500" />
+                          <div className="flex justify-between text-xs text-zinc-500 mb-2"><span>Images</span><span className="text-white font-medium">{numImages}</span></div>
+                          <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500 h-2" />
                         </div>
-                        <div className="text-xs text-zinc-500 text-center">~{numImages} token{numImages > 1 ? 's' : ''}</div>
-                        <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
+                        <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-800 rounded-lg">~{numImages} token{numImages > 1 ? 's' : ''}</div>
+                        <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40 transition-all">
                           ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                         </button>
                       </div>
