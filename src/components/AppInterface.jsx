@@ -179,7 +179,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
       {toast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md">
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] max-w-md">
           <div className="bg-zinc-900 border border-orange-500/40 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl shadow-orange-500/20">
             {toast}
           </div>
