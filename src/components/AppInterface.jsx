@@ -51,7 +51,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     (async () => {
       const anonCode = localStorage.getItem('seducecraft.anonCode');
       if (!anonCode) return;
-      const res = await fetch(`/api/characters?userId=${anonCode}`);
+      const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId: anonCode }) });
       if (res.ok) {
         const data = await res.json();
         setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
@@ -72,7 +72,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (!anonCode) return;
     for (const c of list) {
       if (!c.id || c.id.length < 30) {
-        const res = await fetch(`/api/characters?userId=${anonCode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: c.name, photos: c.photos }) });
+        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveCharacter', userId: anonCode, name: c.name, photos: c.photos }) });
         if (res.ok) { const data = await res.json(); c.id = data.id; }
       }
     }
