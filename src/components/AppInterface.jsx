@@ -48,18 +48,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [imageSize, setImageSize] = useState('1920x1920');
 
   useEffect(() => {
-    (async () => {
-      const anonCode = localStorage.getItem('seducecraft.anonCode');
-      console.log('Loading characters for:', anonCode);
-      if (!anonCode) return;
-      const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId: anonCode }) });
-      const data = await res.json();
-      console.log('Loaded characters:', data);
-      if (res.ok && Array.isArray(data)) {
-        setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
-      }
-    })();
-  }, [isLoggedIn]);
+    try {
+      const saved = localStorage.getItem('seducecraft.characters');
+      if (saved) setCharacters(JSON.parse(saved));
+      const g = localStorage.getItem('seducecraft.gallery');
+      if (g) setGallery(JSON.parse(g));
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -68,16 +63,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [isLoggedIn]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
-  const saveCharacters = async (list) => {
+  const saveCharacters = (list) => {
     setCharacters(list);
-    const anonCode = localStorage.getItem('seducecraft.anonCode');
-    if (!anonCode) return;
-    for (const c of list) {
-      if (!c.id || c.id.length < 30) {
-        const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveCharacter', userId: anonCode, name: c.name, photos: c.photos }) });
-        if (res.ok) { const data = await res.json(); c.id = data.id; }
-      }
-    }
+    try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
+  };
+  const saveGallery = (listOrUpdater) => {
+    setGallery(prev => {
+      const next = typeof listOrUpdater === 'function' ? listOrUpdater(prev) : listOrUpdater;
+      try { localStorage.setItem('seducecraft.gallery', JSON.stringify(next)); } catch {}
+      return next;
+    });
   };
   const saveGallery = async (listOrUpdater) => {
     setGallery(prev => {
