@@ -140,24 +140,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       ) : (
         <button
           onClick={() => setCharModal(true)}
-          className={`flex items-center gap-3 px-3 py-2 text-sm w-full max-w-xs rounded-xl border transition-all ${
+          className={`flex items-center gap-3 px-3 py-2.5 text-sm w-full max-w-xs rounded-xl border transition-all ${
             selectedCharacter
-              ? 'border-orange-500/70 bg-zinc-900'
+              ? 'border-orange-500/50 bg-zinc-900/80'
               : 'border-zinc-700 hover:border-zinc-500'
           }`}
         >
           {selectedCharacter ? (
             <>
               {selectedCharacter.photos?.[0] && (
-                <img src={selectedCharacter.photos[0]} alt="" className="w-9 h-9 rounded-md object-cover flex-shrink-0" />
+                <img src={selectedCharacter.photos[0]} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
               )}
               <span className="font-medium truncate text-left flex-1">{selectedCharacter.name}</span>
-              <button
-                onClick={(e) => { e.stopPropagation(); setSelectedCharacterId(null); }}
-                className="text-zinc-500 hover:text-white text-base leading-none px-1"
-              >
-                ×
-              </button>
+              <span className="text-zinc-500">›</span>
             </>
           ) : (
             <span className="text-zinc-400">{lang === 'en' ? 'Select character' : 'Выбрать персонажа'}</span>
@@ -176,27 +171,45 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     <div className="min-h-screen bg-bg-primary flex flex-col">
       {toast && <div className="fixed top-[55%] left-1/2 -translate-x-1/2 z-[100] max-w-lg"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-xl break-all">{toast}</div></div>}
       {charModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setCharModal(false)}>
-          <div className="bg-bg-secondary border border-border rounded-xl p-6 max-w-lg w-full" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={() => setCharModal(false)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 max-w-3xl w-full" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">{lang === 'en' ? 'Select character' : 'Выберите персонажа'}</h3>
-              <button onClick={() => setCharModal(false)} className="text-text-secondary hover:text-text-primary">×</button>
+              <h3 className="text-base font-semibold uppercase tracking-wide text-zinc-300">{lang === 'en' ? 'Select character' : 'Выберите персонажа'}</h3>
+              <button onClick={() => setCharModal(false)} className="text-zinc-500 hover:text-white text-xl leading-none">×</button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto">
-              {characters.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => { setSelectedCharacterId(c.id); setCharModal(false); }}
-                  className={`border rounded-xl p-2 text-center transition-all ${
-                    selectedCharacterId === c.id
-                      ? 'border-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.25)]'
-                      : 'border-zinc-700 hover:border-orange-500/40'
-                  }`}
-                >
-                  {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-full aspect-square object-cover rounded-lg mb-2" />}
-                  <div className="text-sm truncate">{c.name}</div>
-                </button>
-              ))}
+            <div className="flex gap-5">
+              <div className="w-48 flex-shrink-0">
+                {(() => {
+                  const preview = characters.find(c => c.id === selectedCharacterId) || characters[0];
+                  return preview ? (
+                    <div className="rounded-xl overflow-hidden border border-zinc-800">
+                      {preview.photos?.[0] && <img src={preview.photos[0]} alt="" className="w-full aspect-[3/4] object-cover" />}
+                      <div className="p-3">
+                        <div className="font-medium text-sm truncate">{preview.name}</div>
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+              </div>
+              <div className="flex-1 space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                {characters.map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => { setSelectedCharacterId(c.id); setCharModal(false); }}
+                    className={`w-full flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${
+                      selectedCharacterId === c.id
+                        ? 'border-orange-500/60 bg-zinc-900'
+                        : 'border-zinc-800 hover:border-zinc-600'
+                    }`}
+                  >
+                    {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{c.name}</div>
+                    </div>
+                    <span className="text-zinc-500">›</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
