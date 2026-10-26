@@ -2,8 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 24 95% 53%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 24 95% 53%;
+    --radius: 0.5rem;
+  }
+}
+
 body {
-  @apply bg-black text-white antialiased;
+  @apply bg-background text-foreground antialiased;
 }
 
 .menu-active {
@@ -17,46 +42,4 @@ body {
 
 .menu-item:hover:not(.menu-active) {
   background: rgba(234, 88, 12, 0.08);
-}
-
-.btn-glow {
-  background: linear-gradient(180deg, #ff8a3d 0%, #ea580c 50%, #c2410c 100%);
-  box-shadow: 0 0 24px rgba(234, 88, 12, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
-  border-radius: 9999px;
-}
-
-.btn-glow:hover {
-  box-shadow: 0 0 32px rgba(234, 88, 12, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.tab-active {
-  background: linear-gradient(180deg, #ff8a3d 0%, #ea580c 100%);
-  box-shadow: 0 0 16px rgba(234, 88, 12, 0.45);
-  border-color: transparent;
-  color: white;
-  border-radius: 9999px;
-}
-
-.tab-inactive {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  color: #888;
-  border-radius: 9999px;
-}
-
-.tab-inactive:hover {
-  border-color: #555;
-  color: #aaa;
-}
-
-.input-glow {
-  border: 1px solid #ea580c;
-  box-shadow: 0 0 12px rgba(234, 88, 12, 0.25);
-  border-radius: 8px;
-}
-
-.dropzone {
-  border: 1px dashed #444;
-  border-radius: 8px;
-  background: #111;
 }
