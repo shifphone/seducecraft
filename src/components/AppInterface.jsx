@@ -50,10 +50,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   useEffect(() => {
     (async () => {
       const anonCode = localStorage.getItem('seducecraft.anonCode');
+      console.log('Loading characters for:', anonCode);
       if (!anonCode) return;
       const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId: anonCode }) });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      console.log('Loaded characters:', data);
+      if (res.ok && Array.isArray(data)) {
         setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
       }
     })();
