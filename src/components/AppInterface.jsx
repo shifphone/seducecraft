@@ -76,7 +76,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (!needsPhoto && !selectedCharacter) return;
     const p = buildPrompt();
     setPendingGens(c => c + 1);
-    showToast(lang === 'en' ? 'Added to queue, generating…' : 'В очереди, генерируется…');
+    showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
       const photos = selectedCharacter?.photos || [];
@@ -101,7 +101,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const images = data.images || (data.url ? [{url: data.url}] : []);
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: (selectedTemplate?.title?.[lang] || 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
       saveGallery(prev => [...gens, ...prev]);
-      showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
+      showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
       showToast(e.message || 'Error');
@@ -178,6 +178,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
+      {toast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] max-w-md">
+          <div className="bg-zinc-900 border border-orange-500/40 text-white px-5 py-3 rounded-xl text-sm font-medium shadow-xl shadow-orange-500/20">
+            {toast}
+          </div>
+        </div>
+      )}
       {previewCharacter && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewCharacter(null)}>
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 max-w-sm w-full" onClick={e => e.stopPropagation()}>
@@ -488,8 +495,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <p className="text-xs text-zinc-500 mb-2">Size</p>
                         <div className="grid grid-cols-2 gap-1.5">
                           {(selectedModel === 'xSD5Pro' 
-                            ? ['1024x1024','1536x1536','2048x2048','1536x2048'] 
-                            : ['1920x1920','2048x2048','2560x2560','2048x3072']
+                            ? ['1024x1024','1280x1280','1536x1536','1920x1920'] 
+                            : ['1920x1920','2048x2048','2560x2560','3072x3072']
                           ).sort((a,b) => { const [aw,ah]=a.split('x').map(Number); const [bw,bh]=b.split('x').map(Number); return aw*ah - bw*bh; }).map(s => (
                             <button key={s} type="button" onClick={() => setImageSize(s)}
                               className={`px-2 py-1.5 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
