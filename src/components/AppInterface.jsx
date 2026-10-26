@@ -423,7 +423,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           .map(c => (
                           <button
                             key={c.id}
-                            onClick={() => { setSelectedCharacterId(c.id); setPreviewCharacter(c); }}
+                            onClick={() => {
+                              if (selectedCharacterId === c.id) {
+                                setPreviewCharacter(c);
+                              } else {
+                                setSelectedCharacterId(c.id);
+                              }
+                            }}
                             className={`w-full flex items-center gap-2.5 p-2 rounded-lg border text-left transition-all ${
                               selectedCharacterId === c.id
                                 ? 'border-orange-500/60 bg-zinc-800'
@@ -483,8 +489,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <div className="grid grid-cols-2 gap-1.5">
                           {(selectedModel === 'xSD5Pro' 
                             ? ['1024x1024','1536x1536','2048x2048','1536x2048'] 
-                            : ['2048x2048','1920x1920','2560x2560','2048x3072']
-                          ).map(s => (
+                            : ['1920x1920','2048x2048','2560x2560','2048x3072']
+                          ).sort((a,b) => { const [aw,ah]=a.split('x').map(Number); const [bw,bh]=b.split('x').map(Number); return aw*ah - bw*bh; }).map(s => (
                             <button key={s} type="button" onClick={() => setImageSize(s)}
                               className={`px-2 py-1.5 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                               {s.replace('x','×')}
