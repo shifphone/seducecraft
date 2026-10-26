@@ -62,6 +62,7 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
               Old
             </button>
           </div>
+          </div>
           <button onClick={() => setCreating(true)} className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium transition-colors">Create character</button>
         </div>
       </div>
