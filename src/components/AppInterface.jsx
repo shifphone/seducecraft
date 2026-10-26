@@ -365,7 +365,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
         </aside>
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
-          <div className="max-w-[1800px] mx-auto">
+          <div className="w-full">
             {activeMode === 'home' && (
               <>
                 <h2 className="text-2xl font-semibold mb-2">{t.homeTitle}</h2>
@@ -418,7 +418,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
 
                 {photoMode === 'undress' && (
-                  <div className="max-w-3xl mx-auto text-center">
+                  <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-xl font-semibold mb-1">AI Photo Undress</h2>
                     <p className="text-sm text-zinc-500 mb-6">{lang === 'en' ? 'Upload a full-body photo to generate an undressed version' : 'Загрузите фото в полный рост для генерации'}</p>
                     <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-10 hover:border-orange-500/40 transition-colors mb-6">
@@ -440,18 +440,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         }} className="hidden" />
                       </label>
                     </div>
-                    <div className="flex justify-center gap-4 mb-6">
+                    <div className="flex justify-center gap-6 mb-6">
                       <div className="text-center">
-                        <img src="https://images.pexels.com/photos/1382731/pexels-photo-1382731.jpeg?auto=compress&cs=tinysrgb&w=200&h=300&fit=crop" alt="" className="w-16 h-24 object-cover object-top rounded-lg mb-1 border border-zinc-700" />
+                        <img src="/examples/full.jpg" alt="" className="w-20 h-28 object-cover object-top rounded-lg mb-1 border border-zinc-700" />
                         <span className="text-[10px] text-zinc-500 uppercase">Full body</span>
                       </div>
                       <div className="text-center">
-                        <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover rounded-lg mb-1 border border-zinc-700" />
+                        <img src="/examples/half.jpg" alt="" className="w-20 h-28 object-cover object-top rounded-lg mb-1 border border-zinc-700" />
                         <span className="text-[10px] text-zinc-500 uppercase">Half body</span>
                       </div>
                       <div className="text-center relative">
-                        <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&crop=faces" alt="" className="w-16 h-20 object-cover object-top rounded-lg mb-1 border border-zinc-700 opacity-40" />
-                        <div className="absolute inset-0 flex items-center justify-center text-red-500 text-xl font-bold -mt-3">✕</div>
+                        <img src="/examples/face.jpg" alt="" className="w-20 h-28 object-cover object-top rounded-lg mb-1 border border-zinc-700 brightness-50" />
+                        <div className="absolute inset-0 flex items-center justify-center text-red-500 text-2xl font-bold -mt-2">✕</div>
                         <span className="text-[10px] text-zinc-500 uppercase">Face only</span>
                       </div>
                     </div>

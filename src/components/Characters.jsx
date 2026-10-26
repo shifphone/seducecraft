@@ -41,7 +41,7 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
   }
 
   return (
-    <div className="max-w-[1600px]">
+    <div className="w-full">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-semibold">Characters</h2>
