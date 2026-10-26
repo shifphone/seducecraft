@@ -14,7 +14,22 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Supabase not configured on server', available: keys });
   }
 
-  const { prompt, endUserEmail, model, n, referenceBase64, references } = req.body || {};
+  const { prompt, endUserEmail, model, n, referenceBase64, references, action, userId, name, photos } = req.body || {};
+  
+  // Character operations
+  if (action === 'saveCharacter') {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase.from('anon_characters').insert({ user_id: userId, name, photos }).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data);
+  }
+  if (action === 'loadCharacters') {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase.from('anon_characters').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data || []);
+  }
+  
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft'))
