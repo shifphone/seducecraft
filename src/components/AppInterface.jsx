@@ -96,6 +96,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         if (photo && photo.startsWith('http')) refUrls.push(photo);
         else if (photo && photo.startsWith('data:')) base64s.push(photo);
       }
+      // For templates: add template image as second reference for pose/clothing
+      if (photoMode === 'templates' && selectedTemplate?.src) {
+        refUrls.push(window.location.origin + selectedTemplate.src);
+        body.prompt = `Use image_1 for the face and identity. Use image_2 for the pose, body position, clothing, and background. ${p}`;
+      }
       if (base64s.length) body.referenceBase64 = base64s;
       if (refUrls.length) body.references = refUrls;
       const res = await fetch('/api/generate', {
