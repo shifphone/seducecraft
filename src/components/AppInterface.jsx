@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react';
 import Characters from './Characters';
 import { translations as T } from '../i18n';
 
-const SAMPLE_PRESETS = [
-  { id: 16, title: { en: 'POV anal — BDSM straps', ru: 'POV анал — БДСМ ремни' }, prompt: 'male POV with high angle her anus is being penetrated by the viewers penis like this<faceid:4435951:1.0>, She lays down with her legs lifted up and spread open, she is naked with naked breasts and nipples, she grabs hold of her thighs, her eyes are closed with furrowed brows and her mouth is open with closed teeth, she is strapped to a bdsm contraption, her body is sweaty and her hair is wet and messy, leather straps, dimly lit, poor lighting, film grain', model: 'СД', tags: ['18+', 'nude', 'bdsm', 'anal', 'POV', 'high angle', 'lying down', 'bedroom'], src: '/stills/bdsm.webp' },
-  { id: 17, title: { en: 'Low angle — penetration from behind', ru: 'Низкий ракурс — проникновение сзади' }, prompt: 'low angle close up photo, She is fully naked, ass near the camera and looking back over her shoulder furrowed brows eyes closed, seductive face, her vagina and ass penetrate by man\'s penis<faceid:5084273:1.0> man lower body underneath between her thighs, bedroom', model: 'СД', tags: ['18+', 'nude', 'ass', 'penetration', 'reverse cowgirl', 'low angle', 'closeup', 'bedroom'], src: '/stills/lowangle.jpg' },
-  { id: 18, title: { en: 'High angle — missionary penetration', ru: 'Высокий ракурс — проникновение миссионер' }, prompt: '<faceid:4664161:1.0> Close up high angle picture A woman with perfectly defined curved, viewer POV as She is naked lyed on the bed, she has leaning back naked breasts and spread legs raised, smooth skin, and a sultry gaze, positioned in a missionary squeeze her breast, while the man hands are on her thighs, showing her vagina get penetrated by viewers penis like the reference image, intense passion as her naked body under soft bedroom lighting, capturing the raw, erotic tension of their intimate encounter.', model: 'СД', tags: ['18+', 'POV', 'high angle', 'missionary', 'lying down', 'penetration', 'nude', 'bedroom'], src: '/stills/missionary.jpg' },
-  { id: 19, title: { en: 'Leaning on bed — surprise', ru: 'Наклонилась на кровати — удивление' }, prompt: 'woman leaning forward on her bed, one hand lifting her bare breast, the other hand pressing on the bed in front of her, mouth open in surprise with furrowed brows expressing intensity, low angle shot from below, bedroom setting with dim ambient lighting and soft shadows, photorealistic real-life photo, detailed skin texture with natural imperfections and pores, subtle fabric wrinkles on bedsheets, sharp focus and depth,', model: 'СД', tags: ['18+', 'topless', 'kneeling', 'surprised', 'low angle', 'bedroom', 'bed'], src: '/stills/bed_surprised.png' },
-];
+const SAMPLE_PRESETS = [];
 
 export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits }) {
   const t = T[lang] || T.en;
@@ -36,7 +31,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
   const [sequential, setSequential] = useState(false);
-  const [activeTag, setActiveTag] = useState(null);
 
   useEffect(() => {
     try {
@@ -290,28 +284,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 {photoMode !== 'undress' && <CharacterPicker />}
                 {photoMode === 'custom' && <textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={t.placeholder} className="w-full h-28 bg-bg-secondary border border-border rounded-lg px-4 py-3 mb-6 focus:border-accent focus:outline-none" />}
                 {photoMode === 'templates' && (
-                  <>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <button onClick={() => setActiveTag(null)} className={`px-3 py-1 text-xs rounded-full border ${!activeTag ? 'border-accent bg-accent/20' : 'border-border'}`}>All</button>
-                      {[...new Set(presets.flatMap(p => p.tags || []))].slice(0, 15).map(tag => (
-                        <button key={tag} onClick={() => setActiveTag(tag)} className={`px-3 py-1 text-xs rounded-full border ${activeTag === tag ? 'border-accent bg-accent/20' : 'border-border'}`}>{tag}</button>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                      {presets.filter(p => !activeTag || (p.tags || []).includes(activeTag)).map(p => (
-                      <button key={p.id} type="button" onClick={(e) => { e.preventDefault(); setSelectedTemplate(p); }} className={`border rounded-lg overflow-hidden transition-colors ${selectedTemplate?.id === p.id ? 'border-accent ring-1 ring-accent' : 'border-border hover:border-accent/50'}`}>
-                        <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
-                        <div className="p-2 text-xs">{p.title[lang] || p.title.en}</div>
-                      </button>
-                      ))}
-                    </div>
-                  </>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {presets.map(p => (
+                    <button key={p.id} type="button" onClick={(e) => { e.preventDefault(); setSelectedTemplate(p); }} className={`border rounded-lg overflow-hidden transition-colors ${selectedTemplate?.id === p.id ? 'border-accent ring-1 ring-accent' : 'border-border hover:border-accent/50'}`}>
+                      <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                      <div className="p-2 text-xs">{p.title[lang] || p.title.en}</div>
+                    </button>
+                    ))}
+                  </div>
                 )}
                 <div className="flex flex-col items-center gap-4 mt-4">
                   <div className="flex gap-4 items-center text-sm">
                     <div className="flex gap-2">
                       {[
-                        {id:'xSD5Flash', label:'xSD Flash'},
                         {id:'xSD4.5', label:'xSD'},
                         {id:'xSD5Pro', label:'xSD Pro'}
                       ].map(m => (
