@@ -660,7 +660,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
                 {photoMode === 'templates' && (
                   <div className="w-full">
-                    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 mb-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] gap-6 mb-6">
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                         <div className="flex items-center justify-between mb-3">
                           <p className="text-xs uppercase tracking-wider text-zinc-500">Character</p>
@@ -717,11 +717,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </button>
                       ))}
                     </div>
-                    </div>
                     {selectedTemplate && (
-                      <div className="max-w-sm mx-auto p-6 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-5">
+                      <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 h-fit sticky top-4">
                         <div className="text-center">
-                          <div className="text-sm text-zinc-400 mb-1">Selected</div>
+                          <div className="text-xs text-zinc-500 mb-1">Selected</div>
                           <div className="font-medium">{selectedTemplate.title[lang] || selectedTemplate.title.en}</div>
                         </div>
                         <div className="flex gap-2 p-1 bg-zinc-800 rounded-xl">
@@ -737,11 +736,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500 h-2" />
                         </div>
                         <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-800 rounded-lg">~{numImages} token{numImages > 1 ? 's' : ''}</div>
-                        <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40 transition-all">
+                        <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40 transition-all">
                           ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                         </button>
                       </div>
                     )}
+                    </div>
                   </div>
                 )}
               </>
