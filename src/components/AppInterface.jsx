@@ -29,6 +29,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
     try {
@@ -38,6 +40,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (g) setGallery(JSON.parse(g));
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
+    }
+  }, [isLoggedIn]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = (list) => { setCharacters(list); try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {} };
@@ -77,6 +85,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const gen = { id: crypto.randomUUID(), title: selectedTemplate?.title?.[lang] || 'Custom', prompt: p, characterName: selectedCharacter?.name || 'Photo', src: data.url, createdAt: Date.now() };
       saveGallery([gen, ...gallery]);
       showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
+      if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
       showToast(e.message || 'Error');
     }
@@ -159,14 +168,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         </div>
       )}
       {viewer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setViewer(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => { setViewer(null); setShowPrompt(false); }}>
           <div className="max-w-3xl w-full" onClick={e => e.stopPropagation()}>
             <img src={viewer.src} alt="" className="w-full max-h-[70vh] object-contain rounded-md" />
+            {showPrompt && viewer.prompt && (
+              <div className="mt-3 p-3 bg-bg-secondary border border-border rounded-lg text-sm text-text-secondary">{viewer.prompt}</div>
+            )}
             <div className="mt-4 flex items-center justify-between text-sm">
               <div><div className="font-medium">{viewer.title}</div><div className="text-text-secondary text-xs">{viewer.characterName}</div></div>
               <div className="flex gap-2">
+                {viewer.prompt && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
-                <button onClick={() => setViewer(null)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
+                <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
               </div>
             </div>
           </div>
@@ -187,7 +200,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               </div>
             )}
           </div>
-          {isLoggedIn && <span className="text-sm">{userName} · {credits} {t.credits}</span>}
+          {isLoggedIn && <span className="text-sm">{userName} · {balance !== null ? balance : credits} {t.credits}</span>}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary">{t.login}</button>}
           {isLoggedIn && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary">{t.logout}</button>}
         </div>
