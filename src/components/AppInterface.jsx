@@ -34,6 +34,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
   const [sequential, setSequential] = useState(false);
+  const [imageSize, setImageSize] = useState('2048x2048');
 
   useEffect(() => {
     try {
@@ -75,7 +76,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     setPendingGens(c => c + 1);
     showToast(lang === 'en' ? 'Added to queue, generating…' : 'В очереди, генерируется…');
     try {
-      const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, sequential: sequential ? 'auto' : undefined };
+      const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
       const photos = selectedCharacter?.photos || [];
       const refUrls = [];
       const base64s = [];
@@ -143,10 +144,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       ) : (
         <button
           onClick={() => setCharModal(true)}
-          className={`flex items-center gap-3 px-3 py-2.5 text-sm w-full max-w-xs rounded-xl border transition-all ${
+          className={`flex items-center gap-3 px-3 py-2.5 text-sm w-full rounded-xl border transition-all ${
             selectedCharacter
-              ? 'border-orange-500/50 bg-zinc-900/80'
-              : 'border-zinc-700 hover:border-zinc-500'
+              ? 'border-orange-500/40 bg-zinc-900 hover:border-orange-500/60'
+              : 'border-zinc-700 bg-zinc-900/50 hover:border-zinc-500'
           }`}
         >
           {selectedCharacter ? (
@@ -154,8 +155,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               {selectedCharacter.photos?.[0] && (
                 <img src={selectedCharacter.photos[0]} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
               )}
-              <span className="font-medium truncate text-left flex-1">{selectedCharacter.name}</span>
-              <span className="text-zinc-500">›</span>
+              <div className="flex-1 min-w-0 text-left">
+                <div className="font-medium truncate">{selectedCharacter.name}</div>
+                {selectedCharacter.favorite && <div className="text-[10px] text-orange-400">★ Favorite</div>}
+              </div>
+              <span className="text-zinc-500 text-xs">Change</span>
             </>
           ) : (
             <span className="text-zinc-400">{lang === 'en' ? 'Select character' : 'Выбрать персонажа'}</span>
@@ -389,7 +393,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'custom' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_280px] gap-5">
+                  <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_300px] gap-5 max-w-6xl mx-auto">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                       <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Character</p>
                       <CharacterPicker />
@@ -407,7 +411,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <div>
                         <p className="text-xs text-zinc-500 mb-2">Model</p>
                         <div className="flex flex-col gap-2">
-                          {[{id:'xSD4.5', label:'xSD'},{id:'xSD5Pro', label:'xSD Pro'}].map(m => (
+                          {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
                             <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)}
                               className={`px-3 py-2 rounded-lg text-sm text-left transition-all ${selectedModel===m.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-orange-500/50'}`}>
                               {m.label}
@@ -416,8 +420,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </div>
                       </div>
                       <div>
-                        <div className="flex justify-between text-xs text-zinc-500 mb-1"><span>Images</span><span>{numImages}</span></div>
-                        <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500" />
+                        <p className="text-xs text-zinc-500 mb-2">Size</p>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          {['1024x1024','2048x2048','1024x1536','1536x1024'].map(s => (
+                            <button key={s} type="button" onClick={() => setImageSize(s)}
+                              className={`px-2 py-1.5 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
+                              {s.replace('x','×')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs text-zinc-500 mb-2"><span>Images</span><span className="text-orange-400 font-medium">{numImages}</span></div>
+                        <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))}
+                          className="w-full h-2 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-orange-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-orange-500 [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(249,115,22,0.7)]" />
                       </div>
                       <label className="flex items-center gap-2 text-sm text-zinc-400">
                         <input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} className="accent-orange-500" />

@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     prompt: finalPrompt,
     endUserEmail: email,
     n: Math.min(Math.max(parseInt(n) || 1, 1), 7),
-    size: '2048x2048',
+    size: req.body.size || '2048x2048',
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
     guidanceScale: 10,
   };
