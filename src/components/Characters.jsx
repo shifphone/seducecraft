@@ -36,14 +36,16 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">Characters</h2>
         <div className="flex items-center gap-3">
-          <select
-            value={sort}
-            onChange={e => setSort(e.target.value)}
-            className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm"
+          <button
+            type="button"
+            onClick={() => setSort(sort === 'newest' ? 'oldest' : 'newest')}
+            className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-bg-secondary text-sm text-text-secondary hover:border-accent/50 hover:text-text-primary transition-colors"
           >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-          </select>
+            <span>{sort === 'newest' ? 'Newest' : 'Oldest'}</span>
+            <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M2 4l4 4 4-4" />
+            </svg>
+          </button>
           <button onClick={() => setCreating(true)} className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium transition-colors">Create character</button>
         </div>
       </div>
