@@ -579,14 +579,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                   </>
                 )}
-
-                {photoMode === 'undress' && (
-                  <div className="max-w-md mx-auto mt-6 p-5 bg-bg-secondary/80 border border-border rounded-2xl space-y-5">
-                    <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-base shadow-lg shadow-orange-500/40 hover:brightness-110 disabled:opacity-40">
-                      {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
-                    </button>
-                  </div>
-                )}
               </>
             )}
           </div>
