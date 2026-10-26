@@ -104,7 +104,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         throw new Error(errMsg.slice(0, 400));
       }
       const images = data.images || (data.url ? [{url: data.url}] : []);
-      const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: (selectedTemplate?.title?.[lang] || 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
+      const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : ((selectedTemplate?.title?.[lang] || 'Custom') + (images.length>1 ? ` #${i+1}` : '')), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
       saveGallery(prev => [...gens, ...prev]);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
@@ -428,9 +428,41 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         }} className="hidden" />
                       </label>
                     </div>
+                    <div className="flex justify-center gap-6 mb-6">
+                      <div className="text-center">
+                        <div className="w-20 h-24 bg-zinc-800 rounded-lg mb-1.5 flex items-center justify-center border border-zinc-700">
+                          <div className="w-8 h-16 bg-zinc-600 rounded-sm" />
+                        </div>
+                        <span className="text-[10px] text-zinc-500 uppercase">Full body</span>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-20 h-24 bg-zinc-800 rounded-lg mb-1.5 flex items-center justify-center border border-zinc-700">
+                          <div className="w-8 h-10 bg-zinc-600 rounded-sm" />
+                        </div>
+                        <span className="text-[10px] text-zinc-500 uppercase">Half body</span>
+                      </div>
+                      <div className="text-center opacity-50">
+                        <div className="w-20 h-24 bg-zinc-800 rounded-lg mb-1.5 flex items-center justify-center border border-zinc-700 relative">
+                          <div className="w-8 h-8 bg-zinc-600 rounded-full" />
+                          <div className="absolute inset-0 flex items-center justify-center text-red-500 text-2xl font-bold">✕</div>
+                        </div>
+                        <span className="text-[10px] text-zinc-500 uppercase">Face only</span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-zinc-500 mb-3">~1 token</div>
                     <button onClick={handleGenerate} disabled={!canGenerate()} className="px-10 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                       ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                     </button>
+                    {gallery.filter(g => g.title?.includes('Undress') || g.prompt?.includes('undressed')).length > 0 && (
+                      <div className="mt-8">
+                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Recent</p>
+                        <div className="grid grid-cols-3 gap-2">
+                          {gallery.filter(g => g.title?.includes('Undress') || g.prompt?.includes('undressed')).slice(0, 6).map(g => (
+                            <img key={g.id} src={g.src} alt="" className="aspect-[3/4] w-full object-cover rounded-lg" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
