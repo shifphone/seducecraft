@@ -202,6 +202,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
         </div>
       )}
+      {previewCharacter && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewCharacter(null)}>
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 max-w-sm w-full" onClick={e => e.stopPropagation()}>
             {previewCharacter.photos?.[0] && <img src={previewCharacter.photos[0]} alt="" className="w-full aspect-[3/4] object-cover rounded-xl mb-3" />}
