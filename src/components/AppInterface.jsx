@@ -717,6 +717,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </button>
                       ))}
                     </div>
+                    </div>
                     {selectedTemplate && (
                       <div className="max-w-sm mx-auto p-6 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-5">
                         <div className="text-center">
