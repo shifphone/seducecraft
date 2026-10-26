@@ -5,6 +5,8 @@ import { translations as T } from '../i18n';
 const SAMPLE_PRESETS = [
   { id: 'portrait', title: { en: 'Studio Portrait', ru: 'Студийный портрет' }, prompt: 'Professional studio portrait, soft lighting, neutral background, looking at camera, sharp focus', src: '/examples/half.jpg', tags: ['portrait'] },
   { id: 'outdoor', title: { en: 'Outdoor Full Body', ru: 'На улице в полный рост' }, prompt: 'Full body outdoor photo, natural daylight, standing pose, casual clothes, garden background', src: '/examples/full.jpg', tags: ['outdoor'] },
+  { id: 'mirror-towel', title: { en: 'Mirror Selfie', ru: 'Зеркальное селфи' }, prompt: 'Mirror selfie in a modern bathroom, wrapped in a white towel, holding phone, soft lighting, looking at camera, photorealistic', src: '/examples/half.jpg', tags: ['selfie', 'mirror'] },
+  { id: 'bedroom-selfie', title: { en: 'Bedroom Selfie', ru: 'Селфи в спальне' }, prompt: 'Casual bedroom selfie, sitting on bed, natural window light, looking at camera, relaxed expression, photorealistic', src: '/examples/face.jpg', tags: ['selfie', 'bedroom'] },
 ];
 
 export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits }) {
