@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import Characters from './Characters';
 import { translations as T } from '../i18n';
 
-const SAMPLE_PRESETS = [];
+const SAMPLE_PRESETS = [
+  { id: 'portrait', title: { en: 'Studio Portrait', ru: 'Студийный портрет' }, prompt: 'Professional studio portrait, soft lighting, neutral background, looking at camera, sharp focus', src: '/examples/half.jpg', tags: ['portrait'] },
+  { id: 'outdoor', title: { en: 'Outdoor Full Body', ru: 'На улице в полный рост' }, prompt: 'Full body outdoor photo, natural daylight, standing pose, casual clothes, garden background', src: '/examples/full.jpg', tags: ['outdoor'] },
+];
 
 export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits }) {
   const t = T[lang] || T.en;
@@ -595,45 +598,42 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'templates' && (
-                  <>
+                  <div className="max-w-5xl mx-auto">
+                    <h2 className="text-xl font-semibold mb-1 text-center">Templates</h2>
+                    <p className="text-sm text-zinc-500 mb-6 text-center">{lang === 'en' ? 'Select a template and your character' : 'Выберите шаблон и персонажа'}</p>
                     <CharacterPicker />
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                       {presets.map(p => (
-                      <button key={p.id} type="button" onClick={(e) => { e.preventDefault(); setSelectedTemplate(p); }} className={`border rounded-lg overflow-hidden transition-colors ${selectedTemplate?.id === p.id ? 'border-accent ring-1 ring-accent' : 'border-border hover:border-accent/50'}`}>
-                        <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
-                        <div className="p-2 text-xs">{p.title[lang] || p.title.en}</div>
-                      </button>
+                        <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
+                          className={`rounded-xl overflow-hidden border-2 transition-all text-left ${selectedTemplate?.id === p.id ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-zinc-800 hover:border-zinc-600'}`}>
+                          <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                          <div className="p-3 bg-zinc-900">
+                            <div className="text-sm font-medium">{p.title[lang] || p.title.en}</div>
+                          </div>
+                        </button>
                       ))}
                     </div>
-                    <div className="max-w-md mx-auto mt-6 p-5 bg-bg-secondary/80 border border-border rounded-2xl space-y-5">
-                      <div>
-                        <p className="text-xs uppercase tracking-wider text-text-secondary mb-2">Model</p>
+                    {selectedTemplate && (
+                      <div className="max-w-md mx-auto p-5 bg-zinc-900/50 border border-zinc-800 rounded-2xl space-y-4">
                         <div className="flex gap-2">
-                          {[{id:'xSD4.5', label:'xSD'},{id:'xSD5Pro', label:'xSD Pro'}].map(m => (
+                          {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
                             <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)}
-                              className={`flex-1 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${selectedModel===m.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30' : 'border border-zinc-700 text-zinc-300 hover:border-orange-500/50'}`}>
+                              className={`flex-1 py-2 rounded-lg text-sm ${selectedModel===m.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>
                               {m.label}
                             </button>
                           ))}
                         </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between items-center mb-2">
-                          <p className="text-xs uppercase tracking-wider text-text-secondary">n images</p>
-                          <span className="text-sm text-zinc-400">{numImages}</span>
+                        <div>
+                          <div className="flex justify-between text-xs text-zinc-500 mb-1"><span>Images</span><span>{numImages}</span></div>
+                          <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500" />
                         </div>
-                        <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500" />
+                        <div className="text-xs text-zinc-500 text-center">~{numImages} token{numImages > 1 ? 's' : ''}</div>
+                        <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
+                          ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
+                        </button>
                       </div>
-                      <label className="flex items-center gap-2 text-sm text-zinc-400">
-                        <input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} className="accent-orange-500" />
-                        Sequential
-                      </label>
-                      <div className="text-xs text-text-secondary text-center">Cost approx. {numImages} xToken(s)</div>
-                      <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-base shadow-lg shadow-orange-500/40 hover:brightness-110 disabled:opacity-40">
-                        {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
-                      </button>
-                    </div>
-                  </>
+                    )}
+                  </div>
                 )}
               </>
             )}
