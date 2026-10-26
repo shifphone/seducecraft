@@ -89,12 +89,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
-      const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []).slice(0, 2);
+      const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []);
       const refUrls = [];
       const base64s = [];
       for (const photo of photos) {
         if (photo && photo.startsWith('http')) refUrls.push(photo);
-        else if (photo && photo.startsWith('data:')) base64s.push(photo);
+        else if (photo && photo.startsWith('data:')) {
+          // Upload base64 first to avoid payload limit
+          try {
+            const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: photo }) });
+            const upData = await upRes.json();
+            if (upData.url) refUrls.push(upData.url);
+          } catch {}
+        }
       }
       // For templates: add template image as second reference for pose/clothing
       if (photoMode === 'templates' && selectedTemplate?.src) {
