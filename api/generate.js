@@ -44,7 +44,9 @@ export default async function handler(req, res) {
   if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
   const refUrl = refUrls;
 
-  const finalPrompt = `Use the reference image(s) only for facial identity consistency. Fully follow the following prompt for pose, body, clothing, actions, and scene: ${prompt}`;
+  const finalPrompt = model === 'xSD5Pro' 
+    ? prompt 
+    : `Use the reference image(s) only for facial identity consistency. Fully follow the following prompt for pose, body, clothing, actions, and scene: ${prompt}`;
 
   const body = {
     model: model || 'xSD4.5',
