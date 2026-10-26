@@ -7,7 +7,7 @@ const SAMPLE_PRESETS = [];
 export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits }) {
   const t = T[lang] || T.en;
   const [activeMode, setActiveMode] = useState('home');
-  const [photoMode, setPhotoMode] = useState('undress');
+  const [photoMode, setPhotoMode] = useState('templates');
   const [swapMode, setSwapMode] = useState('upload');
   const [deepMode, setDeepMode] = useState('upload');
   const [prompt, setPrompt] = useState('');
@@ -140,21 +140,21 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       ) : (
         <button
           onClick={() => setCharModal(true)}
-          className={`flex items-center gap-3 px-4 py-3 text-sm w-full max-w-sm rounded-xl border transition-all ${
+          className={`flex items-center gap-3 px-3 py-2 text-sm w-full max-w-xs rounded-xl border transition-all ${
             selectedCharacter
-              ? 'border-orange-500/60 bg-bg-secondary shadow-[0_0_12px_rgba(249,115,22,0.15)]'
-              : 'border-zinc-700 hover:border-orange-500/40'
+              ? 'border-orange-500/70 bg-zinc-900'
+              : 'border-zinc-700 hover:border-zinc-500'
           }`}
         >
           {selectedCharacter ? (
             <>
               {selectedCharacter.photos?.[0] && (
-                <img src={selectedCharacter.photos[0]} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                <img src={selectedCharacter.photos[0]} alt="" className="w-9 h-9 rounded-md object-cover flex-shrink-0" />
               )}
-              <span className="font-medium truncate">{selectedCharacter.name}</span>
+              <span className="font-medium truncate text-left flex-1">{selectedCharacter.name}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedCharacterId(null); }}
-                className="ml-auto text-zinc-500 hover:text-zinc-200 text-lg leading-none"
+                className="text-zinc-500 hover:text-white text-base leading-none px-1"
               >
                 ×
               </button>
@@ -307,9 +307,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             {activeMode === 'photo' && (
               <>
                 <div className="flex flex-wrap gap-2 mb-6 justify-center">
-                  <TabBtn active={photoMode==='undress'} onClick={() => { setPhotoMode('undress'); setSelectedTemplate(null); }}>{t.undress}</TabBtn>
                   <TabBtn active={photoMode==='templates'} onClick={() => setPhotoMode('templates')}>{t.templates}</TabBtn>
                   <TabBtn active={photoMode==='custom'} onClick={() => setPhotoMode('custom')}>{t.custom}</TabBtn>
+                  <TabBtn active={photoMode==='undress'} onClick={() => { setPhotoMode('undress'); setSelectedTemplate(null); }}>{t.undress}</TabBtn>
                 </div>
                 {photoMode === 'undress' && (
                   <div className="mb-6">
