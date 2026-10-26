@@ -297,24 +297,59 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     ))}
                   </div>
                 )}
-                <div className="flex flex-col items-center gap-4 mt-4">
-                  <div className="flex gap-4 items-center text-sm">
+                <div className="max-w-md mx-auto mt-6 p-5 bg-bg-secondary/80 border border-border rounded-2xl space-y-5">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-text-secondary mb-2">Model</p>
                     <div className="flex gap-2">
                       {[
                         {id:'xSD4.5', label:'xSD'},
                         {id:'xSD5Pro', label:'xSD Pro'}
                       ].map(m => (
-                        <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)} className={`px-4 py-2 rounded-lg text-sm border ${selectedModel===m.id ? 'bg-accent text-white border-accent' : 'border-border hover:border-accent/50'}`}>{m.label}</button>
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => setSelectedModel(m.id)}
+                          className={`flex-1 px-4 py-2.5 rounded-full text-sm font-medium transition-all ${
+                            selectedModel===m.id
+                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30'
+                              : 'border border-zinc-700 text-zinc-300 hover:border-orange-500/50'
+                          }`}
+                        >
+                          {m.label}
+                        </button>
                       ))}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <label className="text-sm">n: {numImages}</label>
-                      <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-32 accent-accent" />
-                    </div>
-                    <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} /> Sequential</label>
                   </div>
-                  <div className="text-xs text-text-secondary">Cost approx. {numImages} xToken(s) (varies by model)</div>
-                  <button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}</button>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-xs uppercase tracking-wider text-text-secondary">n images</p>
+                      <span className="text-sm text-zinc-400">{numImages}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="8"
+                      value={numImages}
+                      onChange={e => setNumImages(Number(e.target.value))}
+                      className="w-full h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-orange-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-orange-500 [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(249,115,22,0.6)]"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2 text-sm text-zinc-400">
+                    <input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} className="accent-orange-500" />
+                    Sequential
+                  </label>
+
+                  <div className="text-xs text-text-secondary text-center">Cost approx. {numImages} xToken(s)</div>
+
+                  <button
+                    onClick={handleGenerate}
+                    disabled={!canGenerate()}
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-base shadow-lg shadow-orange-500/40 hover:shadow-orange-500/60 hover:brightness-110 transition-all disabled:opacity-40 disabled:shadow-none"
+                  >
+                    {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
+                  </button>
                 </div>
               </>
             )}
