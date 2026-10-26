@@ -95,7 +95,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       });
       const data = await res.json();
       if (!res.ok) {
-        const errMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data);
+        const errMsg = data.full?.error?.code 
+          ? `${data.full.error.code}: ${data.error}` 
+          : (typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data));
         throw new Error(errMsg.slice(0, 400));
       }
       const images = data.images || (data.url ? [{url: data.url}] : []);
