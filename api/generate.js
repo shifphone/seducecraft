@@ -40,13 +40,16 @@ export default async function handler(req, res) {
   }
   if (!refUrl) return res.status(400).json({ error: 'No reference' });
 
+  const finalPrompt = `use image_1 only for the face and identity, ${prompt}`;
+
   const body = {
     model: model || 'xSD4.5',
-    prompt,
+    prompt: finalPrompt,
     endUserEmail: email,
     n: 1,
     size: '2048x2048',
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
+    guidanceScale: 10,
   };
 
   try {
