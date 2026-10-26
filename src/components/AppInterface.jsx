@@ -98,9 +98,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           // Upload base64 first to avoid payload limit
           try {
             const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: photo }) });
+            if (!upRes.ok) { console.error('Upload failed', await upRes.text()); continue; }
             const upData = await upRes.json();
             if (upData.url) refUrls.push(upData.url);
-          } catch {}
+          } catch (e) { console.error('Upload error', e); }
         }
       }
       // For templates: add template image as second reference for pose/clothing
