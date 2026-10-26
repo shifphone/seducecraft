@@ -403,6 +403,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
                         <option value="oldest">{lang === 'en' ? 'Oldest' : 'Сначала старые'}</option>
                       </select>
+                      <button onClick={() => setSelectedGallery(selectedGallery.size === gallery.length ? new Set() : new Set(gallery.map(g => g.id)))} className="h-9 px-3 border border-zinc-700 text-zinc-400 rounded-md text-sm hover:border-zinc-500">
+                        {selectedGallery.size === gallery.length ? (lang === 'en' ? 'Deselect all' : 'Снять все') : (lang === 'en' ? 'Select all' : 'Выбрать все')}
+                      </button>
                       {selectedGallery.size > 0 && <button onClick={() => setConfirmDelete(selectedGallery)} className="h-9 px-3 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm">{lang === 'en' ? `Delete (${selectedGallery.size})` : `Удалить (${selectedGallery.size})`}</button>}
                     </div>
                   )}
@@ -606,11 +609,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'templates' && (
-                  <div className="max-w-5xl mx-auto">
-                    <h2 className="text-xl font-semibold mb-1 text-center">Templates</h2>
-                    <p className="text-sm text-zinc-500 mb-6 text-center">{lang === 'en' ? 'Select a template and your character' : 'Выберите шаблон и персонажа'}</p>
+                  <div className="w-full">
                     <CharacterPicker />
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 mb-6">
                       {presets.map(p => (
                         <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
                           className={`rounded-xl overflow-hidden border-2 transition-all text-left ${selectedTemplate?.id === p.id ? 'border-orange-500 ring-2 ring-orange-500/30' : 'border-zinc-800 hover:border-zinc-600'}`}>
