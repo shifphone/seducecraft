@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Supabase not configured on server', available: keys });
   }
 
-  const { prompt, endUserEmail, model, referenceBase64, references } = req.body || {};
+  const { prompt, endUserEmail, model, n, referenceBase64, references } = req.body || {};
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft'))
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     model: model || 'xSD4.5',
     prompt: finalPrompt,
     endUserEmail: email,
-    n: 1,
+    n: Math.min(Math.max(parseInt(n) || 1, 1), 4),
     size: '2048x2048',
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
     guidanceScale: 10,
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
       if (data.status === 'succeeded') {
         const images = data.images || data.output?.images || [];
         const url = images[0]?.url || images[0] || data.output?.url;
-        return res.status(200).json({ url, requestId });
+        return res.status(200).json({ url, requestId, images });
       }
       if (data.status === 'failed' || data.status === 'expired') {
         return res.status(500).json({ error: data.error?.message || data.status });
