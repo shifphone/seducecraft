@@ -406,17 +406,29 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
 
                 {photoMode === 'undress' && (
-                  <div className="max-w-xl mx-auto">
-                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 text-center">
-                      <p className="text-sm text-zinc-400 mb-1">{lang === 'en' ? 'Upload a full body or half body photo' : 'Загрузите фото в полный рост или по пояс'}</p>
-                      <p className="text-xs text-zinc-600 mb-4">{lang === 'en' ? 'Face-only photos will not work' : 'Только лицо не сработает'}</p>
-                      <div className="border-2 border-dashed border-zinc-700 rounded-xl p-8 hover:border-orange-500/40 transition-colors">
-                        {undressPhoto ? <img src={undressPhoto} alt="" className="max-h-64 mx-auto rounded-lg mb-3" /> : <div className="text-zinc-600 text-4xl mb-2">↑</div>}
-                        <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="text-sm text-zinc-400" />
-                      </div>
+                  <div className="max-w-lg mx-auto text-center">
+                    <h2 className="text-xl font-semibold mb-1">AI Photo Undress</h2>
+                    <p className="text-sm text-zinc-500 mb-6">{lang === 'en' ? 'Upload a full-body photo to generate an undressed version' : 'Загрузите фото в полный рост для генерации'}</p>
+                    <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-10 hover:border-orange-500/40 transition-colors mb-6">
+                      {undressPhoto ? (
+                        <img src={undressPhoto} alt="" className="max-h-48 mx-auto rounded-lg mb-3" />
+                      ) : (
+                        <div className="text-orange-500 text-5xl mb-3">👤</div>
+                      )}
+                      <p className="text-zinc-300 mb-1">{lang === 'en' ? 'Drop a full-body photo here' : 'Перетащите фото сюда'}</p>
+                      <p className="text-xs text-zinc-600 mb-3">JPG, PNG · Max 10MB</p>
+                      <label className="text-orange-400 text-sm cursor-pointer hover:text-orange-300">
+                        {lang === 'en' ? 'or click to browse' : 'или нажмите для выбора'}
+                        <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="hidden" />
+                      </label>
                     </div>
-                    <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
-                      {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
+                    <div className="flex justify-center gap-4 mb-6 text-xs text-zinc-500">
+                      <div className="text-center"><div className="w-16 h-20 bg-zinc-800 rounded mb-1 flex items-center justify-center text-lg">🧍</div>Full</div>
+                      <div className="text-center"><div className="w-16 h-20 bg-zinc-800 rounded mb-1 flex items-center justify-center text-lg">🧑</div>Half</div>
+                      <div className="text-center opacity-40"><div className="w-16 h-20 bg-zinc-800 rounded mb-1 flex items-center justify-center text-lg line-through">🙂</div>Face ✕</div>
+                    </div>
+                    <button onClick={handleGenerate} disabled={!canGenerate()} className="px-10 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
+                      ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                     </button>
                   </div>
                 )}
