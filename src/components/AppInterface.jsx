@@ -49,8 +49,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   useEffect(() => {
     (async () => {
-      const anonId = localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID(); localStorage.setItem('anonId', id); return id; })();
-      const res = await fetch(`/api/characters?userId=${anonId}`);
+      const anonCode = localStorage.getItem('seducecraft.anonCode');
+      if (!anonCode) return;
+      const res = await fetch(`/api/characters?userId=${anonCode}`);
       if (res.ok) {
         const data = await res.json();
         setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
@@ -67,11 +68,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = async (list) => {
     setCharacters(list);
-    const anonId = localStorage.getItem('anonId');
-    if (!anonId) return;
+    const anonCode = localStorage.getItem('seducecraft.anonCode');
+    if (!anonCode) return;
     for (const c of list) {
       if (!c.id || c.id.length < 30) {
-        const res = await fetch(`/api/characters?userId=${anonId}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: c.name, photos: c.photos }) });
+        const res = await fetch(`/api/characters?userId=${anonCode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: c.name, photos: c.photos }) });
         if (res.ok) { const data = await res.json(); c.id = data.id; }
       }
     }
