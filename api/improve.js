@@ -3,7 +3,7 @@ export default async function handler(req, res) {
   const { prompt } = req.body || {};
   if (!prompt || !prompt.trim()) return res.status(400).json({ error: 'No prompt' });
 
-  const base = prompt.trim();
+  const base = prompt.trim().replace(/\.\s*(full body visible|realistic skin|soft natural|shallow depth|candid unposed|detailed fabric|accurate anatomy|Photorealistic).*$/i, '').trim();
   const extras = [
     'full body visible, natural pose',
     'realistic skin pores and texture',

@@ -22,6 +22,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const [previewCharacter, setPreviewCharacter] = useState(null);
+  const [lastClickedChar, setLastClickedChar] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
   const [viewer, setViewer] = useState(null);
@@ -35,7 +36,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
   const [sequential, setSequential] = useState(false);
-  const [imageSize, setImageSize] = useState('2048x2048');
+  const [imageSize, setImageSize] = useState('1920x1920');
 
   useEffect(() => {
     try {
@@ -340,7 +341,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
         </aside>
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[1600px] mx-auto">
             {activeMode === 'home' && (
               <>
                 <h2 className="text-2xl font-semibold mb-2">{t.homeTitle}</h2>
@@ -403,7 +404,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'custom' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr_300px] gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr_340px] gap-8">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-xs uppercase tracking-wider text-zinc-500">Character</p>
@@ -470,7 +471,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <p className="text-xs text-zinc-500 mb-2">Model</p>
                         <div className="flex flex-col gap-2">
                           {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
-                            <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)}
+                            <button key={m.id} type="button" onClick={() => { setSelectedModel(m.id); setImageSize(m.id === 'xSD5Pro' ? '1024x1024' : '1920x1920'); }}
                               className={`px-3 py-2 rounded-lg text-sm text-left transition-all ${selectedModel===m.id ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-orange-500/50'}`}>
                               {m.label}
                             </button>
