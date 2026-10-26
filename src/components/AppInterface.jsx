@@ -194,16 +194,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 })()}
               </div>
               <div className="flex-1 space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                <div className="flex justify-end items-center gap-2 mb-2">
+                <div className="flex justify-end items-center gap-3 mb-2">
                   <span className="text-xs text-zinc-500">{lang === 'en' ? 'Sort by' : 'Сортировка'}</span>
-                  <div className="flex rounded-lg border border-zinc-700 overflow-hidden text-xs">
+                  <div className="flex gap-1">
                     <button
                       type="button"
                       onClick={() => setCharacterSort('newest')}
-                      className={`px-3 py-1.5 transition-colors ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         characterSort === 'newest'
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
-                          : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
+                          : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
                       }`}
                     >
                       {lang === 'en' ? 'New' : 'Новые'}
@@ -211,10 +211,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <button
                       type="button"
                       onClick={() => setCharacterSort('oldest')}
-                      className={`px-3 py-1.5 border-l border-zinc-700 transition-colors ${
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         characterSort === 'oldest'
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
-                          : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
+                          : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
                       }`}
                     >
                       {lang === 'en' ? 'Old' : 'Старые'}
