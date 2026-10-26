@@ -395,11 +395,21 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 {photoMode === 'custom' && (
                   <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_320px] gap-6">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
-                      <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Character</p>
-                      <div className="space-y-2 max-h-[420px] overflow-y-auto">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs uppercase tracking-wider text-zinc-500">Character</p>
+                        <div className="flex gap-1">
+                          <button onClick={() => setCharacterSort('newest')} className={`px-2 py-0.5 rounded text-[10px] ${characterSort==='newest' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>New</button>
+                          <button onClick={() => setCharacterSort('oldest')} className={`px-2 py-0.5 rounded text-[10px] ${characterSort==='oldest' ? 'bg-orange-500 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>Old</button>
+                          <button onClick={() => setCharacterFilter(characterFilter==='favorites'?'all':'favorites')} className={`px-2 py-0.5 rounded text-[10px] ${characterFilter==='favorites' ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-500 hover:text-zinc-300'}`}>★</button>
+                        </div>
+                      </div>
+                      <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
                         {characters.length === 0 ? (
                           <button onClick={() => setActiveMode('characters')} className="text-sm text-orange-400 hover:text-orange-300">Create a character first</button>
-                        ) : characters.map(c => (
+                        ) : [...characters]
+                          .filter(c => characterFilter === 'favorites' ? c.favorite : true)
+                          .sort((a, b) => characterSort === 'oldest' ? (a.createdAt || 0) - (b.createdAt || 0) : (b.createdAt || 0) - (a.createdAt || 0))
+                          .map(c => (
                           <button
                             key={c.id}
                             onClick={() => setSelectedCharacterId(c.id)}
@@ -419,12 +429,29 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </div>
                     </div>
                     <div>
-                      <textarea
-                        value={prompt}
-                        onChange={e => setPrompt(e.target.value)}
-                        placeholder={t.placeholder}
-                        className="w-full h-64 bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 focus:border-orange-500/50 focus:outline-none resize-none"
-                      />
+                      <div className="relative">
+                        <textarea
+                          value={prompt}
+                          onChange={e => setPrompt(e.target.value)}
+                          placeholder={t.placeholder}
+                          className="w-full h-64 bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 pr-24 focus:border-orange-500/50 focus:outline-none resize-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!prompt.trim()) return;
+                            showToast(lang === 'en' ? 'Improving…' : 'Улучшаю…');
+                            try {
+                              const r = await fetch('/api/improve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
+                              const d = await r.json();
+                              if (d.improved) setPrompt(d.improved);
+                            } catch (e) { showToast('Improve failed'); }
+                          }}
+                          className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-[11px] text-zinc-300 hover:border-orange-500/50 hover:text-white"
+                        >
+                          ✦ Improve
+                        </button>
+                      </div>
                     </div>
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-4">
                       <p className="text-xs uppercase tracking-wider text-zinc-500">Settings</p>
@@ -459,7 +486,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} className="accent-orange-500" />
                         Sequential
                       </label>
-                      <div className="text-xs text-zinc-500 text-center">~{numImages} tokens</div>
+                      <div className="text-xs text-zinc-500 text-center">
+                        ~{(selectedModel === 'xSD5Pro' ? 2 : 1) * (imageSize.includes('2048') ? 2 : 1) * numImages} tokens
+                      </div>
                       <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                         {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                       </button>
