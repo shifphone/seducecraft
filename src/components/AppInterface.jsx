@@ -510,9 +510,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))}
                           className="w-full h-2 bg-zinc-800 rounded-full appearance-none cursor-pointer accent-orange-500 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-orange-500 [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(249,115,22,0.7)]" />
                       </div>
-                      <label className="flex items-center gap-2 text-sm text-zinc-400">
-                        <input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} className="accent-orange-500" />
-                        Sequential
+                      <label className={`flex items-center gap-2 text-sm ${selectedModel === 'xSD5Pro' ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                        <input type="checkbox" checked={sequential && selectedModel !== 'xSD5Pro'} onChange={e => setSequential(e.target.checked)} disabled={selectedModel === 'xSD5Pro'} className="accent-orange-500" />
+                        Sequential {selectedModel === 'xSD5Pro' && <span className="text-[10px]">(not for Pro)</span>}
                       </label>
                       <div className="text-xs text-zinc-500 text-center">
                         ~{(selectedModel === 'xSD5Pro' ? 2 : 1) * (imageSize.includes('2048') ? 2 : 1) * numImages} tokens
