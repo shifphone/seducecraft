@@ -65,6 +65,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
   const buildPrompt = () => {
+    if (photoMode === 'undress') {
+      return 'Same person, same pose, same background. Remove all clothing. Nude, naked, fully undressed. Keep face and body proportions identical. Photorealistic.';
+    }
     let p = selectedTemplate?.prompt || prompt || 'photo';
     p = p.trim();
     return p;
@@ -79,7 +82,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
-      const photos = selectedCharacter?.photos || [];
+      const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []);
       const refUrls = [];
       const base64s = [];
       for (const photo of photos) {
@@ -403,12 +406,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
 
                 {photoMode === 'undress' && (
-                  <div className="mb-6">
-                    <p className="text-sm text-text-secondary mb-3 text-center">{lang === 'en' ? 'Upload a photo to undress' : 'Загрузите фото для раздевания'}</p>
-                    <div className="dropzone p-8 text-center">
-                      {undressPhoto ? <img src={undressPhoto} alt="" className="max-h-48 mx-auto rounded-lg mb-3" /> : null}
-                      <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="text-sm" />
+                  <div className="max-w-xl mx-auto">
+                    <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 text-center">
+                      <p className="text-sm text-zinc-400 mb-1">{lang === 'en' ? 'Upload a full body or half body photo' : 'Загрузите фото в полный рост или по пояс'}</p>
+                      <p className="text-xs text-zinc-600 mb-4">{lang === 'en' ? 'Face-only photos will not work' : 'Только лицо не сработает'}</p>
+                      <div className="border-2 border-dashed border-zinc-700 rounded-xl p-8 hover:border-orange-500/40 transition-colors">
+                        {undressPhoto ? <img src={undressPhoto} alt="" className="max-h-64 mx-auto rounded-lg mb-3" /> : <div className="text-zinc-600 text-4xl mb-2">↑</div>}
+                        <input type="file" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if (f) setUndressPhoto(URL.createObjectURL(f)); }} className="text-sm text-zinc-400" />
+                      </div>
                     </div>
+                    <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full mt-4 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
+                      {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
+                    </button>
                   </div>
                 )}
 
