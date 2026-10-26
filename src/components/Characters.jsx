@@ -36,16 +36,30 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">Characters</h2>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setSort(sort === 'newest' ? 'oldest' : 'newest')}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border bg-bg-secondary text-sm text-text-secondary hover:border-accent/50 hover:text-text-primary transition-colors"
-          >
-            <span>{sort === 'newest' ? 'Newest' : 'Oldest'}</span>
-            <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M2 4l4 4 4-4" />
-            </svg>
-          </button>
+          <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+            <button
+              type="button"
+              onClick={() => setSort('newest')}
+              className={`px-3 py-1.5 transition-colors ${
+                sort === 'newest'
+                  ? 'bg-accent text-white'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+              }`}
+            >
+              New
+            </button>
+            <button
+              type="button"
+              onClick={() => setSort('oldest')}
+              className={`px-3 py-1.5 border-l border-border transition-colors ${
+                sort === 'oldest'
+                  ? 'bg-accent text-white'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
+              }`}
+            >
+              Old
+            </button>
+          </div>
           <button onClick={() => setCreating(true)} className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium transition-colors">Create character</button>
         </div>
       </div>
