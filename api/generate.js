@@ -21,24 +21,28 @@ export default async function handler(req, res) {
     ? endUserEmail
     : 'shifphone@gmail.com';
 
-  let refUrl = references;
-  if (!refUrl && referenceBase64 && referenceBase64.startsWith('data:')) {
-    try {
-      const base64 = referenceBase64.split(',')[1];
-      const mime = referenceBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
-      const buf = Buffer.from(base64, 'base64');
-      const ext = mime.includes('png') ? 'png' : 'jpg';
-      const fileName = `ref-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { error } = await supabase.storage.from('references').upload(fileName, buf, { contentType: mime, upsert: false });
-      if (error) return res.status(500).json({ error: error.message });
-      const { data } = supabase.storage.from('references').getPublicUrl(fileName);
-      refUrl = data.publicUrl;
-    } catch (e) {
-      return res.status(500).json({ error: e.message });
+  let refUrls = Array.isArray(references) ? references : (references ? [references] : []);
+  const base64List = Array.isArray(referenceBase64) ? referenceBase64 : (referenceBase64 ? [referenceBase64] : []);
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  for (const b64 of base64List) {
+    if (b64 && b64.startsWith('data:')) {
+      try {
+        const base64 = b64.split(',')[1];
+        const mime = b64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
+        const buf = Buffer.from(base64, 'base64');
+        const ext = mime.includes('png') ? 'png' : 'jpg';
+        const fileName = `ref-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { error } = await supabase.storage.from('references').upload(fileName, buf, { contentType: mime, upsert: false });
+        if (error) return res.status(500).json({ error: error.message });
+        const { data } = supabase.storage.from('references').getPublicUrl(fileName);
+        refUrls.push(data.publicUrl);
+      } catch (e) {
+        return res.status(500).json({ error: e.message });
+      }
     }
   }
-  if (!refUrl) return res.status(400).json({ error: 'No reference' });
+  if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
+  const refUrl = refUrls;
 
   const finalPrompt = `image_1 is only a face reference. Ignore clothing, pose, and background from the reference. Fully follow this description for the scene, body, and clothing: ${prompt}`;
 
@@ -46,11 +50,12 @@ export default async function handler(req, res) {
     model: model || 'xSD4.5',
     prompt: finalPrompt,
     endUserEmail: email,
-    n: Math.min(Math.max(parseInt(n) || 1, 1), 4),
+    n: Math.min(Math.max(parseInt(n) || 1, 1), 7),
     size: '2048x2048',
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
     guidanceScale: 10,
   };
+  if (req.body.sequential) body.sequential = req.body.sequential;
 
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
