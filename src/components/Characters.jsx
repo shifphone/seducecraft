@@ -35,10 +35,9 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">Characters</h2>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-text-secondary">Sort by</span>
-            <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-text-secondary hidden sm:inline">Sort by</span>
+          <div className="flex rounded-lg border border-border overflow-hidden text-sm">
             <button
               type="button"
               onClick={() => setSort('newest')}
@@ -62,14 +61,12 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
               Old
             </button>
           </div>
-          </div>
-          <button onClick={() => setCreating(true)} className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium transition-colors">Create character</button>
         </div>
       </div>
       {characters.length === 0 ? (
-        <p className="text-text-secondary text-sm">No characters yet. Create one to use in generations.</p>
+        <p className="text-text-secondary text-sm mb-6">No characters yet. Create one to use in generations.</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
           {sorted.map((c) => (
             <div key={c.id} className="border border-border rounded-lg overflow-hidden bg-bg-secondary relative group hover:border-accent/40 transition-colors">
               {c.photos?.[0] ? (
@@ -85,6 +82,14 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
           ))}
         </div>
       )}
+      <div className="flex justify-center">
+        <button
+          onClick={() => setCreating(true)}
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 hover:shadow-orange-500/50 transition-all"
+        >
+          + Create character
+        </button>
+      </div>
     </div>
   );
 }
