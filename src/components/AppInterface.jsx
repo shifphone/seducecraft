@@ -265,7 +265,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </div>
                       ))}
                     </div>
-                  </>
                 )}
               </>
             )}
