@@ -194,7 +194,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 })()}
               </div>
               <div className="flex-1 space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                <div className="flex justify-end mb-2">
+                <div className="flex justify-end items-center gap-2 mb-2">
+                  <span className="text-xs text-zinc-500">{lang === 'en' ? 'Sort by' : 'Сортировка'}</span>
                   <div className="flex rounded-lg border border-zinc-700 overflow-hidden text-xs">
                     <button
                       type="button"

@@ -36,7 +36,9 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">Characters</h2>
         <div className="flex items-center gap-3">
-          <div className="flex rounded-lg border border-border overflow-hidden text-sm">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-text-secondary">Sort by</span>
+            <div className="flex rounded-lg border border-border overflow-hidden text-sm">
             <button
               type="button"
               onClick={() => setSort('newest')}
