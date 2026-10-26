@@ -49,7 +49,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = (list) => { setCharacters(list); try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {} };
-  const saveGallery = (list) => { setGallery(list); try { localStorage.setItem('seducecraft.gallery', JSON.stringify(list)); } catch {} };
+  const saveGallery = (listOrUpdater) => {
+    setGallery(prev => {
+      const next = typeof listOrUpdater === 'function' ? listOrUpdater(prev) : listOrUpdater;
+      try { localStorage.setItem('seducecraft.gallery', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
   const buildPrompt = () => {
@@ -64,7 +70,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (!needsPhoto && !selectedCharacter) return;
     const p = buildPrompt();
     setPendingGens(c => c + 1);
-    setGenerating(true);
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, sequential: sequential ? 'auto' : undefined };
       const photos = selectedCharacter?.photos || [];
@@ -88,18 +93,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       }
       const images = data.images || (data.url ? [{url: data.url}] : []);
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: (selectedTemplate?.title?.[lang] || 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
-      saveGallery([...gens, ...gallery]);
+      saveGallery(prev => [...gens, ...prev]);
       showToast(lang === 'en' ? 'Added to gallery' : 'Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
       showToast(e.message || 'Error');
     }
     setPendingGens(c => Math.max(0, c - 1));
-    setGenerating(false);
   };
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
-  const deleteGalleryItems = (ids) => { saveGallery(gallery.filter(g => !ids.has(g.id))); setSelectedGallery(new Set()); setConfirmDelete(null); };
+  const deleteGalleryItems = (ids) => { saveGallery(prev => prev.filter(g => !ids.has(g.id))); setSelectedGallery(new Set()); setConfirmDelete(null); };
   const sortedGallery = [...gallery].sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
   const menu = [
@@ -136,7 +140,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   );
 
   const canGenerate = () => {
-    if (generating) return false;
     if (photoMode === 'undress' || (activeMode === 'faceswap' && swapMode === 'upload') || (activeMode === 'deepfake' && deepMode === 'upload')) return !!undressPhoto;
     return !!selectedCharacter;
   };
