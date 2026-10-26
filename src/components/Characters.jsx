@@ -3,6 +3,11 @@ import CharacterCreator from './CharacterCreator';
 
 export default function Characters({ onRequireTerms, termsAccepted, characters = [], onSave }) {
   const [creating, setCreating] = useState(false);
+  const [sort, setSort] = useState('newest');
+
+  const sorted = [...characters].sort((a, b) =>
+    sort === 'newest' ? (b.createdAt || 0) - (a.createdAt || 0) : (a.createdAt || 0) - (b.createdAt || 0)
+  );
 
   const handleSave = (character) => {
     const next = [character, ...characters];
@@ -30,13 +35,23 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-semibold">Characters</h2>
-        <button onClick={() => setCreating(true)} className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium transition-colors">Create character</button>
+        <div className="flex items-center gap-3">
+          <select
+            value={sort}
+            onChange={e => setSort(e.target.value)}
+            className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
+          <button onClick={() => setCreating(true)} className="h-10 px-4 bg-accent hover:bg-accent-hover text-white rounded-md text-sm font-medium transition-colors">Create character</button>
+        </div>
       </div>
       {characters.length === 0 ? (
         <p className="text-text-secondary text-sm">No characters yet. Create one to use in generations.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {characters.map((c) => (
+          {sorted.map((c) => (
             <div key={c.id} className="border border-border rounded-lg overflow-hidden bg-bg-secondary relative group hover:border-accent/40 transition-colors">
               {c.photos?.[0] ? (
                 <img src={c.photos[0]} alt="" className="aspect-[3/4] w-full object-cover" />

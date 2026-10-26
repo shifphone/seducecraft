@@ -17,6 +17,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [presets] = useState(SAMPLE_PRESETS);
   const [langOpen, setLangOpen] = useState(false);
   const [characters, setCharacters] = useState([]);
+  const [characterSort, setCharacterSort] = useState('newest');
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
@@ -192,7 +193,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 })()}
               </div>
               <div className="flex-1 space-y-2 max-h-[420px] overflow-y-auto pr-1">
-                {characters.map(c => (
+                <div className="flex justify-end mb-2">
+                  <select
+                    value={characterSort}
+                    onChange={e => setCharacterSort(e.target.value)}
+                    className="h-8 bg-zinc-900 border border-zinc-700 rounded-md px-2 text-xs text-zinc-300"
+                  >
+                    <option value="newest">{lang === 'en' ? 'Newest' : 'Новые'}</option>
+                    <option value="oldest">{lang === 'en' ? 'Oldest' : 'Старые'}</option>
+                  </select>
+                </div>
+                {[...characters].sort((a, b) => characterSort === 'newest' ? (b.createdAt || 0) - (a.createdAt || 0) : (a.createdAt || 0) - (b.createdAt || 0)).map(c => (
                   <button
                     key={c.id}
                     onClick={() => setSelectedCharacterId(c.id)}
