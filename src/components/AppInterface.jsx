@@ -46,12 +46,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [imageSize, setImageSize] = useState('1920x1920');
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('seducecraft.characters');
-      if (saved) setCharacters(JSON.parse(saved));
+    (async () => {
+      const session = await getSession();
+      if (session?.user && isSupabaseConfigured()) {
+        const { data } = await supabase.from('characters').select('*').eq('user_id', session.user.id).order('created_at', { ascending: false });
+        if (data) setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
+      } else {
+        const saved = localStorage.getItem('seducecraft.characters');
+        if (saved) setCharacters(JSON.parse(saved));
+      }
       const g = localStorage.getItem('seducecraft.gallery');
       if (g) setGallery(JSON.parse(g));
-    } catch {}
+    })();
   }, []);
 
   useEffect(() => {
@@ -61,7 +67,23 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [isLoggedIn]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
-  const saveCharacters = (list) => { setCharacters(list); try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {} };
+  const saveCharacters = async (list) => {
+    setCharacters(list);
+    const session = await getSession();
+    if (session?.user && isSupabaseConfigured()) {
+      // Sync to DB
+      for (const c of list) {
+        if (c.id?.length === 36) {
+          await supabase.from('characters').upsert({ ...c, user_id: session.user.id });
+        } else {
+          const { data } = await supabase.from('characters').insert({ name: c.name, photos: c.photos, user_id: session.user.id }).select().single();
+          if (data) c.id = data.id;
+        }
+      }
+    } else {
+      try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
+    }
+  };
   const saveGallery = (listOrUpdater) => {
     setGallery(prev => {
       const next = typeof listOrUpdater === 'function' ? listOrUpdater(prev) : listOrUpdater;
