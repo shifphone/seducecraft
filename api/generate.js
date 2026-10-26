@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
   const refUrl = refUrls;
 
-  const finalPrompt = `image_1 is only a face reference. Ignore clothing, pose, and background from the reference. Fully follow this description for the scene, body, and clothing: ${prompt}`;
+  const finalPrompt = `Use the reference image(s) only for facial identity consistency. Fully follow the following prompt for pose, body, clothing, actions, and scene: ${prompt}`;
 
   const body = {
     model: model || 'xSD4.5',
@@ -55,7 +55,10 @@ export default async function handler(req, res) {
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
     guidanceScale: 10,
   };
-  if (req.body.sequential) body.sequential = req.body.sequential;
+  if (req.body.sequential) {
+    body.sequential = req.body.sequential;
+    body.sequentialOptions = { maxImages: Math.min(Math.max(parseInt(n) || 1, 1), 15) };
+  }
 
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {

@@ -17,6 +17,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [deepMode, setDeepMode] = useState('upload');
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [pendingGens, setPendingGens] = useState(0);
   const [toast, setToast] = useState(null);
   const [presets] = useState(SAMPLE_PRESETS);
   const [langOpen, setLangOpen] = useState(false);
@@ -68,6 +69,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (needsPhoto && !undressPhoto) return;
     if (!needsPhoto && !selectedCharacter) return;
     const p = buildPrompt();
+    setPendingGens(c => c + 1);
     setGenerating(true);
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, sequential: sequential ? 'auto' : undefined };
@@ -98,6 +100,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     } catch (e) {
       showToast(e.message || 'Error');
     }
+    setPendingGens(c => Math.max(0, c - 1));
     setGenerating(false);
   };
 
@@ -306,22 +309,23 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
                 <div className="flex flex-col items-center gap-4 mt-4">
                   <div className="flex gap-4 items-center text-sm">
-                    <label>Model:
-                      <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)} className="ml-2 bg-bg-secondary border border-border rounded px-2 py-1">
-                        <option value="xSD4.5">xSD 4.5</option>
-                        <option value="xSD5Pro">xSD 5 Pro</option>
-                        <option value="xSD5Flash">xSD 5 Flash</option>
-                      </select>
-                    </label>
-                    <label>n:
-                      <select value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="ml-2 bg-bg-secondary border border-border rounded px-2 py-1">
-                        {[1,2,3,4,5].map(v => <option key={v} value={v}>{v}</option>)}
-                      </select>
-                    </label>
-                    <label className="flex items-center gap-1"><input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} /> Sequential</label>
+                    <div className="flex gap-2">
+                      {[
+                        {id:'xSD5Flash', label:'xSD Flash'},
+                        {id:'xSD4.5', label:'xSD'},
+                        {id:'xSD5Pro', label:'xSD Pro'}
+                      ].map(m => (
+                        <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)} className={`px-4 py-2 rounded-lg text-sm border ${selectedModel===m.id ? 'bg-accent text-white border-accent' : 'border-border hover:border-accent/50'}`}>{m.label}</button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm">n: {numImages}</label>
+                      <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-32 accent-accent" />
+                    </div>
+                    <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={sequential} onChange={e => setSequential(e.target.checked)} /> Sequential</label>
                   </div>
                   <div className="text-xs text-text-secondary">Cost approx. {numImages} xToken(s) (varies by model)</div>
-                  <button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{generating ? t.generating : t.generate}</button>
+                  <button onClick={handleGenerate} disabled={!canGenerate()} className="btn-glow disabled:opacity-40 text-white px-14 py-3.5 text-base font-medium">{pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}</button>
                 </div>
               </>
             )}
