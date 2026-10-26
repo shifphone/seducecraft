@@ -22,6 +22,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const [previewCharacter, setPreviewCharacter] = useState(null);
+  const [previewSrc, setPreviewSrc] = useState(null);
   const [lastClickedChar, setLastClickedChar] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
@@ -66,7 +67,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const buildPrompt = () => {
     if (photoMode === 'undress') {
-      return 'Same person, same pose, same background. Remove all clothing. Nude, naked, fully undressed. Keep face and body proportions identical. Photorealistic.';
+      return 'Keep the exact same person, exact same pose, exact same camera angle, exact same background. Only remove the clothing. Nude version of this exact photo. Do not change pose, expression, or composition.';
     }
     let p = selectedTemplate?.prompt || prompt || 'photo';
     p = p.trim();
@@ -190,7 +191,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
         </div>
       )}
-      {previewCharacter && (
+      {previewSrc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreviewSrc(null)}>
+          <div className="relative max-w-lg" onClick={e => e.stopPropagation()}>
+            <img src={previewSrc} alt="" className="max-h-[80vh] rounded-xl" />
+            <div className="flex gap-2 mt-3 justify-center">
+              <button onClick={() => downloadImage(previewSrc, 'undress')} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">Download</button>
+              <button onClick={() => setPreviewSrc(null)} className="px-4 py-2 border border-zinc-700 text-zinc-400 rounded-lg text-sm">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewCharacter(null)}>
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 max-w-sm w-full" onClick={e => e.stopPropagation()}>
             {previewCharacter.photos?.[0] && <img src={previewCharacter.photos[0]} alt="" className="w-full aspect-[3/4] object-cover rounded-xl mb-3" />}
@@ -406,7 +417,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
 
                 {photoMode === 'undress' && (
-                  <div className="max-w-lg mx-auto text-center">
+                  <div className="max-w-2xl mx-auto text-center">
                     <h2 className="text-xl font-semibold mb-1">AI Photo Undress</h2>
                     <p className="text-sm text-zinc-500 mb-6">{lang === 'en' ? 'Upload a full-body photo to generate an undressed version' : 'Загрузите фото в полный рост для генерации'}</p>
                     <div className="border-2 border-dashed border-zinc-700 rounded-2xl p-10 hover:border-orange-500/40 transition-colors mb-6">
@@ -428,24 +439,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         }} className="hidden" />
                       </label>
                     </div>
-                    <div className="flex justify-center gap-6 mb-6">
+                    <div className="flex justify-center gap-4 mb-6">
                       <div className="text-center">
-                        <div className="w-20 h-24 bg-zinc-800 rounded-lg mb-1.5 flex items-center justify-center border border-zinc-700">
-                          <div className="w-8 h-16 bg-zinc-600 rounded-sm" />
-                        </div>
+                        <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover rounded-lg mb-1 border border-zinc-700" />
                         <span className="text-[10px] text-zinc-500 uppercase">Full body</span>
                       </div>
                       <div className="text-center">
-                        <div className="w-20 h-24 bg-zinc-800 rounded-lg mb-1.5 flex items-center justify-center border border-zinc-700">
-                          <div className="w-8 h-10 bg-zinc-600 rounded-sm" />
-                        </div>
+                        <img src="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover rounded-lg mb-1 border border-zinc-700" />
                         <span className="text-[10px] text-zinc-500 uppercase">Half body</span>
                       </div>
-                      <div className="text-center opacity-50">
-                        <div className="w-20 h-24 bg-zinc-800 rounded-lg mb-1.5 flex items-center justify-center border border-zinc-700 relative">
-                          <div className="w-8 h-8 bg-zinc-600 rounded-full" />
-                          <div className="absolute inset-0 flex items-center justify-center text-red-500 text-2xl font-bold">✕</div>
-                        </div>
+                      <div className="text-center relative">
+                        <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150" alt="" className="w-16 h-20 object-cover rounded-lg mb-1 border border-zinc-700 opacity-40" />
+                        <div className="absolute inset-0 flex items-center justify-center text-red-500 text-xl font-bold -mt-3">✕</div>
                         <span className="text-[10px] text-zinc-500 uppercase">Face only</span>
                       </div>
                     </div>
@@ -453,12 +458,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <button onClick={handleGenerate} disabled={!canGenerate()} className="px-10 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                       ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                     </button>
-                    {gallery.filter(g => g.title?.includes('Undress') || g.prompt?.includes('undressed')).length > 0 && (
+                    {gallery.filter(g => g.title === 'Undress').length > 0 && (
                       <div className="mt-8">
-                        <p className="text-xs uppercase tracking-wider text-zinc-500 mb-3">Recent</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {gallery.filter(g => g.title?.includes('Undress') || g.prompt?.includes('undressed')).slice(0, 6).map(g => (
-                            <img key={g.id} src={g.src} alt="" className="aspect-[3/4] w-full object-cover rounded-lg" />
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
+                          <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                          {gallery.filter(g => g.title === 'Undress').slice(0, 8).map(g => (
+                            <button key={g.id} onClick={() => { setPreviewSrc(g.src); }} className="aspect-[3/4] rounded-lg overflow-hidden hover:ring-2 hover:ring-orange-500/50">
+                              <img src={g.src} alt="" className="w-full h-full object-cover" />
+                            </button>
                           ))}
                         </div>
                       </div>
