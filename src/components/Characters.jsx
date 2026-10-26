@@ -45,7 +45,6 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-semibold">Characters</h2>
-          <p className="text-sm text-zinc-500 mt-1">Manage your AI characters and create new ones.</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative">
@@ -95,21 +94,21 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10">
           {sorted.map((c) => (
-            <div key={c.id} className="rounded-xl overflow-hidden bg-zinc-900/60 border border-zinc-800 relative group hover:border-zinc-700 transition-colors">
+            <div key={c.id} className="rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800/80 relative group hover:border-orange-500/40 hover:shadow-lg hover:shadow-black/40 transition-all">
               {c.photos?.[0] ? (
                 <img src={c.photos[0]} alt="" className="aspect-[16/10] w-full object-cover" />
               ) : (
                 <div className="aspect-[16/10] bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">No photo</div>
               )}
-              <div className="px-4 py-3 flex items-start justify-between gap-2">
+              <div className="px-4 py-3 flex items-center justify-between gap-2 bg-zinc-900">
                 <div className="min-w-0">
                   <div className="font-medium text-sm truncate">{c.name}</div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => toggleFavorite(c.id)} className={`p-1 ${c.favorite ? 'text-orange-400' : 'text-zinc-500 hover:text-orange-400'}`}>
+                  <button onClick={() => toggleFavorite(c.id)} className={`p-1.5 rounded-md ${c.favorite ? 'text-orange-400' : 'text-zinc-500 hover:text-orange-400 hover:bg-zinc-800'}`}>
                     <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.8 3.7 4.1.6-3 2.9.7 4.1L8 10.8 4.4 12.8l.7-4.1-3-2.9 4.1-.6L8 1.5z" /></svg>
                   </button>
-                  <button onClick={() => handleDelete(c.id)} className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity px-1">Delete</button>
+                  <button onClick={() => handleDelete(c.id)} className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity px-1.5 py-1 rounded-md hover:bg-zinc-800">Delete</button>
                 </div>
               </div>
             </div>
