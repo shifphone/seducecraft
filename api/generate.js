@@ -55,7 +55,7 @@ export default async function handler(req, res) {
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
     guidanceScale: 10,
   };
-  if (req.body.sequential) {
+  if (req.body.sequential && model !== 'xSD5Pro') {
     body.sequential = req.body.sequential;
     body.sequentialOptions = { maxImages: Math.min(Math.max(parseInt(n) || 1, 1), 15) };
   }
