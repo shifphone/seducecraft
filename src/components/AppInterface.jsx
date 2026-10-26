@@ -133,7 +133,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const menu = [
     { id: 'home', name: t.home },
     { id: 'characters', name: t.myCharacters },
-    { id: 'photo', name: t.photo },
+    { id: 'photo', name: t.photo, subs: [
+      { id: 'templates', name: t.templates },
+      { id: 'custom', name: t.custom },
+      { id: 'undress', name: t.undress },
+    ]},
     { id: 'faceswap', name: t.faceSwap },
     { id: 'video', name: t.video },
     { id: 'deepfake', name: t.deepfake },
@@ -369,8 +373,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-56 border-r border-border bg-bg-secondary flex flex-col">
           <nav className="flex-1 py-4">
-            {menu.map(({id, name}) => (
-              <button key={id} onClick={() => setActiveMode(id)} className={`menu-item w-full text-left px-5 py-2.5 text-sm ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary'}`}>{name}</button>
+            {menu.map(({id, name, subs}) => (
+              <div key={id}>
+                <button onClick={() => setActiveMode(id)} className={`menu-item w-full text-left px-5 py-2.5 text-sm ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary'}`}>{name}</button>
+                {subs && activeMode === id && (
+                  <div className="ml-4 border-l border-zinc-800">
+                    {subs.map(s => (
+                      <button key={s.id} onClick={() => setPhotoMode(s.id)} className={`w-full text-left px-4 py-1.5 text-xs ${photoMode===s.id ? 'text-orange-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </nav>
           {!isAnonymous && <div className="p-4 border-t border-border"><button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary">{t.terms}</button></div>}
