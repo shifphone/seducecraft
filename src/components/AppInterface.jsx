@@ -195,7 +195,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 {characters.map(c => (
                   <button
                     key={c.id}
-                    onClick={() => { setSelectedCharacterId(c.id); setCharModal(false); }}
+                    onClick={() => setSelectedCharacterId(c.id)}
                     className={`w-full flex items-center gap-3 p-2.5 rounded-xl border text-left transition-all ${
                       selectedCharacterId === c.id
                         ? 'border-orange-500/60 bg-zinc-900'
@@ -210,6 +210,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   </button>
                 ))}
               </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setCharModal(false)}
+                disabled={!selectedCharacterId}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40"
+              >
+                {lang === 'en' ? 'Confirm' : 'Подтвердить'}
+              </button>
             </div>
           </div>
         </div>
