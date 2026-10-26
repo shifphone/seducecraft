@@ -66,26 +66,28 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
       {characters.length === 0 ? (
         <p className="text-text-secondary text-sm mb-6">No characters yet. Create one to use in generations.</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-10 max-w-4xl">
           {sorted.map((c) => (
-            <div key={c.id} className="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 relative group hover:border-orange-500/40 transition-colors">
+            <div key={c.id} className="rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 relative group hover:border-orange-500/30 transition-colors">
               {c.photos?.[0] ? (
-                <img src={c.photos[0]} alt="" className="aspect-[3/4] w-full object-cover" />
+                <img src={c.photos[0]} alt="" className="aspect-[16/10] w-full object-cover" />
               ) : (
-                <div className="aspect-[3/4] bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">No photo</div>
+                <div className="aspect-[16/10] bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">No photo</div>
               )}
-              <div className="p-3 flex items-center justify-between">
-                <span className="text-sm font-medium truncate">{c.name}</span>
+              <div className="px-4 py-3 flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-sm">{c.name}</div>
+                </div>
                 <button onClick={() => handleDelete(c.id)} className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">Delete</button>
               </div>
             </div>
           ))}
         </div>
       )}
-      <div className="flex justify-center pt-2">
+      <div className="flex justify-center">
         <button
           onClick={() => setCreating(true)}
-          className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-base shadow-lg shadow-orange-500/40 hover:brightness-110 hover:shadow-orange-500/60 transition-all"
+          className="px-10 py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium text-base shadow-lg shadow-orange-500/40 hover:brightness-110 transition-all"
         >
           + Create character
         </button>
