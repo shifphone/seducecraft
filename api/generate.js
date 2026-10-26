@@ -21,9 +21,10 @@ export default async function handler(req, res) {
     ? endUserEmail
     : 'shifphone@gmail.com';
 
-  let refUrls = Array.isArray(references) ? references : (references ? [references] : []);
+  let refUrls = [];
   const base64List = Array.isArray(referenceBase64) ? referenceBase64 : (referenceBase64 ? [referenceBase64] : []);
   const supabase = createClient(supabaseUrl, supabaseKey);
+  // Upload base64 first so character photos are image_1
   for (const b64 of base64List) {
     if (b64 && b64.startsWith('data:')) {
       try {
@@ -41,6 +42,9 @@ export default async function handler(req, res) {
       }
     }
   }
+  // Then add URL references (template images)
+  const urlRefs = Array.isArray(references) ? references : (references ? [references] : []);
+  refUrls.push(...urlRefs);
   if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
   const refUrl = refUrls;
 
@@ -55,7 +59,7 @@ export default async function handler(req, res) {
     n: Math.min(Math.max(parseInt(n) || 1, 1), 7),
     size: req.body.size || '2048x2048',
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
-    guidanceScale: 10,
+    guidanceScale: req.body.guidanceScale || 10,
   };
   if (req.body.sequential && model !== 'xSD5Pro') {
     body.sequential = req.body.sequential;
