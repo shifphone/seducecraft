@@ -87,7 +87,8 @@ export default async function handler(req, res) {
         return res.status(200).json({ url, requestId, images });
       }
       if (data.status === 'failed' || data.status === 'expired') {
-        return res.status(500).json({ error: data.error?.message || data.status });
+        const errDetail = data.error?.message || data.error?.code || JSON.stringify(data.error || data);
+        return res.status(500).json({ error: errDetail, full: data });
       }
     }
     return res.status(504).json({ error: 'Timeout' });
