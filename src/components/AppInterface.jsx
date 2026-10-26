@@ -70,6 +70,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (!needsPhoto && !selectedCharacter) return;
     const p = buildPrompt();
     setPendingGens(c => c + 1);
+    showToast(lang === 'en' ? 'Added to queue, generating…' : 'В очереди, генерируется…');
     try {
       const body = { prompt: p, endUserEmail: userName || 'shifphone@gmail.com', model: selectedModel, n: numImages, sequential: sequential ? 'auto' : undefined };
       const photos = selectedCharacter?.photos || [];
