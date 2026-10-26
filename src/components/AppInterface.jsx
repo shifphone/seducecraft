@@ -99,7 +99,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (photoMode === 'undress') {
       return 'Inpaint edit: keep this exact photograph unchanged. Same framing, same crop, same camera distance, same pose, same face, same body proportions, same background, same lighting. The only modification is removing the clothing. Replace clothes with bare skin. Do not regenerate, do not reframe, do not change anything else.';
     }
-    let p = selectedTemplate?.prompt || prompt || 'photo';
+    let p = (photoMode === 'templates' && selectedTemplate?.prompt) || prompt || 'photo';
     p = p.trim();
     return p;
   };
@@ -151,7 +151,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         throw new Error(errMsg.slice(0, 400));
       }
       const images = data.images || (data.url ? [{url: data.url}] : []);
-      const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : ((selectedTemplate?.title?.[lang] || 'Custom') + (images.length>1 ? ` #${i+1}` : '')), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
+      const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
       saveGallery(prev => [...gens, ...prev]);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
