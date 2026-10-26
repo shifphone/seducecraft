@@ -21,6 +21,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [characterFilter, setCharacterFilter] = useState('all');
   const [sortOpen, setSortOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
+  const [previewCharacter, setPreviewCharacter] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
   const [viewer, setViewer] = useState(null);
@@ -176,7 +177,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {toast && <div className="fixed top-[55%] left-1/2 -translate-x-1/2 z-[100] max-w-lg"><div className="bg-green-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-xl break-all">{toast}</div></div>}
+      {previewCharacter && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreviewCharacter(null)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            {previewCharacter.photos?.[0] && <img src={previewCharacter.photos[0]} alt="" className="w-full aspect-[3/4] object-cover rounded-xl mb-3" />}
+            <div className="font-medium text-center">{previewCharacter.name}</div>
+            {previewCharacter.favorite && <div className="text-xs text-orange-400 text-center mt-1">★ Favorite</div>}
+            <button onClick={() => setPreviewCharacter(null)} className="mt-3 w-full py-2 rounded-lg border border-zinc-700 text-sm text-zinc-400 hover:border-zinc-500">Close</button>
+          </div>
+        </div>
+      )}
       {charModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={() => setCharModal(false)}>
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 max-w-3xl w-full" onClick={e => e.stopPropagation()}>
@@ -412,7 +422,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           .map(c => (
                           <button
                             key={c.id}
-                            onClick={() => setSelectedCharacterId(c.id)}
+                            onClick={() => { setSelectedCharacterId(c.id); setPreviewCharacter(c); }}
                             className={`w-full flex items-center gap-2.5 p-2 rounded-lg border text-left transition-all ${
                               selectedCharacterId === c.id
                                 ? 'border-orange-500/60 bg-zinc-800'
@@ -470,7 +480,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <div>
                         <p className="text-xs text-zinc-500 mb-2">Size</p>
                         <div className="grid grid-cols-2 gap-1.5">
-                          {['2048x2048','1920x1920','1920x2560','2560x1920'].map(s => (
+                          {(selectedModel === 'xSD5Pro' 
+                            ? ['1024x1024','1536x1536','2048x2048','1536x2048'] 
+                            : ['2048x2048','1920x1920','2560x2560','2048x3072']
+                          ).map(s => (
                             <button key={s} type="button" onClick={() => setImageSize(s)}
                               className={`px-2 py-1.5 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                               {s.replace('x','×')}
