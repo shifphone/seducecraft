@@ -503,14 +503,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       {viewer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => { setViewer(null); setShowPrompt(false); }}>
           <div className="max-w-3xl w-full" onClick={e => e.stopPropagation()}>
-            <img src={viewer.src} alt="" className="w-full max-h-[70vh] object-contain rounded-md" />
+            {viewer.type === 'video' || viewer.src?.includes('.mp4') ? (
+              <video src={viewer.src} controls className="w-full max-h-[70vh] object-contain rounded-md" />
+            ) : (
+              <img src={viewer.src} alt="" className="w-full max-h-[70vh] object-contain rounded-md" />
+            )}
             {showPrompt && viewer.prompt && (
               <div className="mt-3 p-3 bg-bg-secondary border border-border rounded-lg text-sm text-text-secondary">{viewer.prompt}</div>
             )}
             <div className="mt-4 flex items-center justify-between text-sm">
               <div><div className="font-medium">{viewer.title}</div><div className="text-text-secondary text-xs">{viewer.characterName}</div></div>
               <div className="flex gap-2">
-                {viewer.prompt && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
+                {viewer.prompt && (viewer.title === 'Custom' || viewer.title?.startsWith('Custom') || viewer.type === 'video') && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
                 <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
               </div>
@@ -739,6 +743,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       if (!res.ok) throw new Error(data.error || 'Failed');
                       const gen = { id: crypto.randomUUID(), title: 'Face Swap', prompt: body.prompt, characterName: 'Swap', src: data.url || data.images?.[0]?.url || data.images?.[0], createdAt: Date.now() };
                       saveGallery(prev => [gen, ...prev]);
+                      addNotification(lang === 'en' ? 'Face swap complete' : 'Замена лица готова');
                       showToast(lang === 'en' ? 'Face swap done' : 'Замена готова');
                     } catch (e) {
                       showToast(e.message || 'Error');
@@ -748,7 +753,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   disabled={!swapSource || !swapTarget}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40"
                 >
-                  {lang === 'en' ? 'Swap Face' : 'Заменить лицо'}
+                  {pendingGens > 0 ? (lang === 'en' ? `Swapping (${pendingGens})` : `Замена (${pendingGens})`) : (lang === 'en' ? 'Swap Face' : 'Заменить лицо')}
                 </button>
               </div>
             )}
