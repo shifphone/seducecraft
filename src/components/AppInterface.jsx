@@ -1139,11 +1139,22 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </div>
                         <div className="flex gap-2 p-1 bg-zinc-800 rounded-xl">
                           {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
-                            <button key={m.id} type="button" onClick={() => setSelectedModel(m.id)}
+                            <button key={m.id} type="button" onClick={() => { setSelectedModel(m.id); setImageSize(m.id === 'xSD5Pro' ? '1K' : '1920x1920'); }}
                               className={`flex-1 py-2 rounded-lg text-sm transition-all ${selectedModel===m.id ? 'bg-orange-500 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}`}>
                               {m.label}
                             </button>
                           ))}
+                        </div>
+                        <div>
+                          <p className="text-xs text-zinc-500 mb-2">Size</p>
+                          <div className="flex gap-1 flex-wrap">
+                            {(selectedModel === 'xSD5Pro' ? ['1K','1.5K','2K'] : ['1920x1920','2048x2048']).map(s => (
+                              <button key={s} type="button" onClick={() => setImageSize(s)}
+                                className={`px-2 py-1 rounded text-xs ${imageSize===s ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>
+                                {s.replace('x','×')}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                         <div>
                           <div className="flex justify-between text-xs text-zinc-500 mb-2"><span>Images</span><span className="text-white font-medium">{numImages}</span></div>
