@@ -143,7 +143,7 @@ export default async function handler(req, res) {
       }
       if (data.status === 'failed' || data.status === 'expired') {
         const errDetail = data.error?.message || data.error?.code || JSON.stringify(data.error || data);
-        return res.status(500).json({ error: errDetail, full: data });
+        return res.status(500).json({ error: errDetail, full: data, requestId });
       }
     }
     return res.status(504).json({ error: 'Timeout' });
