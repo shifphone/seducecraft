@@ -1155,10 +1155,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       { title: lang === 'en' ? 'Slow smile' : 'Медленная улыбка', prompt: 'woman slowly smiles and looks at camera, soft natural lighting, gentle head movement' },
                       { title: lang === 'en' ? 'Walking' : 'Идёт', prompt: 'woman walking towards camera, confident pose, outdoor lighting, natural motion' },
                       { title: lang === 'en' ? 'Looking back' : 'Оглядывается', prompt: 'woman looks back over shoulder, seductive expression, bedroom lighting, slow motion' },
-                    ].map(t => (
-                      <button key={t.title} onClick={() => { setPrompt(t.prompt); setVideoMode('text'); }} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-left hover:border-orange-500/50">
-                        <div className="font-medium text-sm">{t.title}</div>
-                        <div className="text-xs text-zinc-500 mt-1 line-clamp-2">{t.prompt}</div>
+                    ].map(tpl => (
+                      <button key={tpl.title} onClick={() => { setPrompt(tpl.prompt); setVideoMode('text'); }} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-left hover:border-orange-500/50">
+                        <div className="font-medium text-sm">{tpl.title}</div>
+                        <div className="text-xs text-zinc-500 mt-1 line-clamp-2">{tpl.prompt}</div>
                       </button>
                     ))}
                   </div>
