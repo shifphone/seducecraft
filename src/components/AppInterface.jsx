@@ -29,7 +29,25 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [generating, setGenerating] = useState(false);
   const [pendingGens, setPendingGens] = useState(0);
   const [toast, setToast] = useState(null);
-  const [presets] = useState(SAMPLE_PRESETS);
+  const [presets, setPresets] = useState(SAMPLE_PRESETS);
+  const [notionLoaded, setNotionLoaded] = useState(false);
+  useEffect(() => {
+    if (notionLoaded) return;
+    fetch('/api/templates')
+      .then(r => r.json())
+      .then(d => {
+        if (d.templates && d.templates.length > 0) {
+          setPresets(prev => {
+            const ids = new Set(prev.map(p => p.id));
+            const extra = d.templates.filter(t => !ids.has(t.id));
+            return [...prev, ...extra];
+          });
+        }
+        setNotionLoaded(true);
+      })
+      .catch(() => setNotionLoaded(true));
+  }, [notionLoaded]);
+
   const [langOpen, setLangOpen] = useState(false);
   const [characters, setCharacters] = useState([]);
   const [characterSort, setCharacterSort] = useState('newest');
@@ -1248,7 +1266,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 {photoMode === 'templates' && (
                   <div className="w-full">
                     <div className="flex gap-2 mb-4 flex-wrap">
-                      {['all', 'selfie', 'pose', 'outfit'].map(cat => (
+                      {['all', ...Array.from(new Set(presets.flatMap(p => p.tags || []))).filter(t => ['selfie','mirror','bedroom','bathroom','kitchen','topless','nude','lingerie','ass','kneeling','standing','POV','full body'].includes(t)).slice(0,12)].map(cat => (
                         <button key={cat} onClick={() => setTemplateCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs ${templateCategory===cat ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                           {cat === 'all' ? (lang === 'en' ? 'All' : 'Все') : cat}
                         </button>
