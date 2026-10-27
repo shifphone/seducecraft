@@ -4,28 +4,35 @@ export default async function handler(req, res) {
 
   const token = process.env.NOTION_API_KEY;
   const dbId = process.env.NOTION_DATABASE_ID || '1b4a358ee82e47eb89051b2dbb1fd4d4';
-  if (!token) {
-    return res.status(200).json({ templates: [], error: 'NOTION_API_KEY not set', fallback: true });
-  }
+  if (!token) return res.status(200).json({ templates: [], error: 'NO_KEY', fallback: true });
+
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Notion-Version': '2022-06-28',
+    'Content-Type': 'application/json',
+  };
 
   try {
-    const r = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ page_size: 100 }),
-    });
-    if (!r.ok) {
-      const err = await r.text();
-      return res.status(200).json({ templates: [], error: err, fallback: true });
-    }
-    const data = await r.json();
-    const templates = (data.results || []).map(page => {
+    let all = [];
+    let cursor;
+    do {
+      const body = { page_size: 100 };
+      if (cursor) body.start_cursor = cursor;
+      const r = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+        method: 'POST', headers, body: JSON.stringify(body),
+      });
+      if (!r.ok) {
+        const err = await r.text();
+        return res.status(200).json({ templates: [], error: err, fallback: true });
+      }
+      const data = await r.json();
+      all = all.concat(data.results || []);
+      cursor = data.has_more ? data.next_cursor : null;
+    } while (cursor && all.length < 500);
+
+    const templates = all.map(page => {
       const props = page.properties || {};
-      const title = props['Название']?.title?.[0]?.plain_text || page.id.slice(0, 8);
+      const ruTitle = props['Название']?.title?.[0]?.plain_text || page.id.slice(0, 8);
       const prompt = props['Промпт']?.rich_text?.[0]?.plain_text || props['Промпт']?.title?.[0]?.plain_text || '';
       if (!prompt || /faceid:/i.test(prompt)) return null;
 
@@ -34,12 +41,15 @@ export default async function handler(req, res) {
       const angle = (props['Ракурс']?.multi_select || []).map(o => o.name);
       const clothing = (props['Одежда']?.multi_select || []).map(o => o.name);
       const tags = (props['Тэги']?.multi_select || []).map(o => o.name);
-
       const categories = [...new Set([...loc, ...pose, ...angle, ...clothing, ...tags])].filter(Boolean);
+
+      // simple English fallback from first useful tag + location
+      const enBits = [angle[0], loc[0], clothing[0]].filter(Boolean);
+      const enTitle = enBits.length ? enBits.join(' · ') : ruTitle;
 
       return {
         id: page.id,
-        title: { en: title, ru: title },
+        title: { en: enTitle, ru: ruTitle },
         prompt,
         src: `/api/template-image?id=${page.id}`,
         tags: categories,
@@ -47,7 +57,7 @@ export default async function handler(req, res) {
       };
     }).filter(Boolean);
 
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.setHeader('Cache-Control', 's-maxage=180, stale-while-revalidate=300');
     return res.status(200).json({ templates, count: templates.length });
   } catch (e) {
     return res.status(200).json({ templates: [], error: String(e.message || e), fallback: true });
