@@ -43,10 +43,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [dailyClaimed, setDailyClaimed] = useState(() => localStorage.getItem('seducecraft.daily') === new Date().toDateString());
   const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
 
-  const totalGens = gallery.length;
-  const rank = totalGens >= 500 ? 'VIP' : totalGens >= 200 ? 'Pro' : totalGens >= 50 ? 'Active' : 'Newbie';
-  const rankColor = rank === 'VIP' ? 'text-yellow-400' : rank === 'Pro' ? 'text-purple-400' : rank === 'Active' ? 'text-blue-400' : 'text-zinc-400';
-
   const claimDaily = () => {
     if (dailyClaimed) return;
     const bonus = 5;
@@ -57,7 +53,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     addNotification(lang === 'en' ? `Daily bonus: +${bonus}` : `Ежедневный бонус: +${bonus}`);
   };
   const [undressPhoto, setUndressPhoto] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templateCategory, setTemplateCategory] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
   const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));
@@ -94,7 +90,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return next;
     });
   };
-  const [compareMode, setCompareMode] = useState(false);
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
   const [sequential, setSequential] = useState(false);
@@ -565,7 +560,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             <div className="mt-4 flex items-center justify-between text-sm">
               <div><div className="font-medium">{viewer.title}</div><div className="text-text-secondary text-xs">{viewer.characterName}</div></div>
               <div className="flex gap-2">
-                {viewer.title === 'Undress' && viewer.prompt && <button onClick={() => setCompareMode(!compareMode)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{compareMode ? 'Hide' : 'Compare'}</button>}
                 {viewer.prompt && (viewer.title === 'Custom' || viewer.title?.startsWith('Custom') || viewer.type === 'video') && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
                 <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
@@ -596,7 +590,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">
                 {balance !== null ? balance : credits} {t.credits}
               </button>
-              <span className={`text-xs ${rankColor}`}>{rank}</span>
               {!dailyClaimed && (
                 <button onClick={claimDaily} className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full hover:bg-orange-500/30">+5</button>
               )}
@@ -1213,6 +1206,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
                 {photoMode === 'templates' && (
                   <div className="w-full">
+                    <div className="flex gap-2 mb-4 flex-wrap">
+                      {['all', 'selfie', 'pose', 'outfit'].map(cat => (
+                        <button key={cat} onClick={() => setTemplateCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs ${templateCategory===cat ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
+                          {cat === 'all' ? (lang === 'en' ? 'All' : 'Все') : cat}
+                        </button>
+                      ))}
+                    </div>
                     <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] gap-6 mb-6">
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                         <div className="flex items-center justify-between mb-3">
@@ -1249,7 +1249,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {presets.map(p => (
+                      {presets.filter(p => templateCategory === 'all' || p.tags?.includes(templateCategory) || p.title?.en?.toLowerCase().includes(templateCategory)).map(p => (
                         <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
                           className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left ${selectedTemplate?.id === p.id ? 'ring-2 ring-orange-500 scale-[1.02]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-zinc-600'}`}>
                           <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
@@ -1326,7 +1326,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
 
                 {videoMode === 'templates' && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  <div className="mb-6">
+                    <div className="flex gap-2 mb-4 justify-center">
+                      {['all', 'motion', 'pose'].map(cat => (
+                        <button key={cat} onClick={() => setTemplateCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs ${templateCategory===cat ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>
+                          {cat === 'all' ? (lang === 'en' ? 'All' : 'Все') : cat}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {[
                       { title: lang === 'en' ? 'Slow smile' : 'Медленная улыбка', prompt: 'woman slowly smiles and looks at camera, soft natural lighting, gentle head movement' },
                       { title: lang === 'en' ? 'Walking' : 'Идёт', prompt: 'woman walking towards camera, confident pose, outdoor lighting, natural motion' },
@@ -1337,6 +1345,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <div className="text-xs text-zinc-500 mt-1 line-clamp-2">{tpl.prompt}</div>
                       </button>
                     ))}
+                    </div>
                   </div>
                 )}
 
