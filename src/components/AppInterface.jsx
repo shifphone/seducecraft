@@ -67,6 +67,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [templateCategory, setTemplateCategory] = useState([]);
+  const [templateSort, setTemplateSort] = useState('az');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
@@ -1252,8 +1253,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
                 {photoMode === 'templates' && (
                   <div className="w-full">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex gap-2">
+                        <button onClick={() => setTemplateSort('az')} className={`px-2 py-1 rounded text-xs ${templateSort==='az'?'bg-zinc-700 text-white':'text-zinc-500'}`}>A–Z</button>
+                        <button onClick={() => setTemplateSort('za')} className={`px-2 py-1 rounded text-xs ${templateSort==='za'?'bg-zinc-700 text-white':'text-zinc-500'}`}>Z–A</button>
+                      </div>
+                    </div>
                     <div className="flex gap-2 mb-4 flex-wrap">
-                      {['all', ...Array.from(new Set(presets.flatMap(p => p.tags || []))).filter(t => ['selfie','mirror','bedroom','bathroom','kitchen','topless','nude','lingerie','ass','kneeling','standing','POV','full body','cowgirl','doggy','lying down','sitting','from behind','closeup','high angle','low angle'].includes(t))].map(cat => (
+                      {['all', ...Array.from(new Set(presets.flatMap(p => p.tags || []))).sort()].map(cat => (
                         <button key={cat} onClick={() => { setTemplateCategory(prev => cat === 'all' ? [] : prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat]) }} className={`px-3 py-1.5 rounded-full text-xs ${ (cat === 'all' && templateCategory.length === 0) || templateCategory.includes(cat) ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                           {cat === 'all' ? (lang === 'en' ? 'All' : 'Все') : cat}
                         </button>
@@ -1295,7 +1302,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {presets.filter(p => templateCategory.length === 0 || templateCategory.every(c => p.tags?.includes(c))).map(p => (
+                      {[...presets.filter(p => templateCategory.length === 0 || templateCategory.every(c => p.tags?.includes(c)))].sort((a,b) => templateSort==='za' ? (b.title?.en||'').localeCompare(a.title?.en||'') : (a.title?.en||'').localeCompare(b.title?.en||'')).map(p => (
                         <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
                           className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left ${selectedTemplate?.id === p.id ? 'ring-2 ring-orange-500 scale-[1.02]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-zinc-600'}`}>
                           <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
@@ -1303,7 +1310,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
                             <div className="text-sm font-medium text-white">{p.title.en || p.title[lang]}</div>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {p.tags?.slice(0, 5).map(t => (
+                              {p.tags?.slice(0, 7).map(t => (
                                 <span key={t} className="text-[10px] px-1.5 py-0.5 bg-white/20 text-white/80 rounded backdrop-blur-sm">{t}</span>
                               ))}
                             </div>
