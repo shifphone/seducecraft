@@ -43,8 +43,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [balance, setBalance] = useState(null);
   const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));
   const [notifications, setNotifications] = useState(() => JSON.parse(localStorage.getItem('seducecraft.notifs') || '[]'));
-  const PHOTO_COST = 10;
-  const VIDEO_COST = 50;
+  const PHOTO_COST = 1;
+  const VIDEO_COST = 5;
 
   const addNotification = (msg) => {
     const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
