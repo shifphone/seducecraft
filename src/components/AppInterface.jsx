@@ -76,25 +76,35 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const saveCharacters = async (list) => {
     setCharacters(list);
     const userId = getUserId();
-    console.log('Saving characters for userId:', userId);
     for (const c of list) {
       if (!c.saved) {
         try {
-          const payload = { action: 'saveCharacter', userId, name: c.name, photos: c.photos };
-          console.log('Payload size:', JSON.stringify(payload).length);
-          const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-          const text = await res.text();
-          console.log('Save response:', res.status, text.slice(0, 200));
+          // Upload photos first, get URLs
+          const photoUrls = [];
+          for (const photo of (c.photos || [])) {
+            if (photo.startsWith('http')) {
+              photoUrls.push(photo);
+            } else if (photo.startsWith('data:')) {
+              const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: photo }) });
+              if (upRes.ok) {
+                const upData = await upRes.json();
+                if (upData.url) photoUrls.push(upData.url);
+              }
+            }
+          }
+          // Save character with URLs only
+          const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveCharacter', userId, name: c.name, photos: photoUrls }) });
           if (res.ok) { 
-            const data = JSON.parse(text); 
+            const data = await res.json(); 
             c.id = data.id;
             c.saved = true;
+            c.photos = photoUrls;
             showToast('Character saved!');
           } else {
-            showToast('Save failed: ' + text.slice(0, 100));
+            const text = await res.text();
+            showToast('Save failed: ' + text.slice(0, 50));
           }
         } catch (e) { 
-          console.error('Save error:', e);
           showToast('Save error: ' + e.message);
         }
       }
