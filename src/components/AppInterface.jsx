@@ -41,6 +41,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
+  const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));
+  const PHOTO_COST = 10;
+  const VIDEO_COST = 50;
   const [showPrompt, setShowPrompt] = useState(false);
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
@@ -432,7 +435,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             <div className="flex items-center gap-3 text-sm">
               <button onClick={() => setActiveMode('profile')} className="hover:text-orange-400 transition-colors">{userName}</button>
               <span className="text-zinc-600">·</span>
-              <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">{balance !== null ? balance : credits} {t.credits}</button>
+              <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors group relative">
+                {balance !== null ? balance : credits} {t.credits}
+                <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                  <div>📷 {Math.floor((balance ?? credits) / PHOTO_COST)} {lang === 'en' ? 'photos' : 'фото'}</div>
+                  <div>🎬 {Math.floor((balance ?? credits) / VIDEO_COST)} {lang === 'en' ? 'videos' : 'видео'}</div>
+                </div>
+              </button>
             </div>
           )}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary">{t.login}</button>}
@@ -605,6 +614,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Generations' : 'Генераций'}</div>
                     <div className="font-medium">{gallery.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Credits spent' : 'Потрачено кредитов'}</div>
+                    <div className="font-medium text-orange-400">{spentCredits}</div>
                   </div>
                 </div>
               </div>
