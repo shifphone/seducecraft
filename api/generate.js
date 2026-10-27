@@ -138,7 +138,8 @@ export default async function handler(req, res) {
       if (data.status === 'succeeded') {
         const images = data.images || data.output?.images || [];
         const url = images[0]?.url || images[0] || data.output?.url;
-        return res.status(200).json({ url, requestId, images });
+        const cost = data.cost?.xTokens || data.cost || 1;
+        return res.status(200).json({ url, requestId, images, cost });
       }
       if (data.status === 'failed' || data.status === 'expired') {
         const errDetail = data.error?.message || data.error?.code || JSON.stringify(data.error || data);
