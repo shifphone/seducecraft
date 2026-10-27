@@ -47,6 +47,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const PHOTO_COST = 1;
   const VIDEO_COST = 5;
 
+  const calcPhotoCost = () => {
+    let base = selectedModel === 'xSD5Pro' ? 2 : 1;
+    if (imageSize.includes('2048') || imageSize.includes('1920')) base *= 1.5;
+    return Math.round(base * numImages);
+  };
+
   const addNotification = (msg) => {
     const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
     setNotifications(prev => {
@@ -214,7 +220,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       images = data.images || (data.url ? [{url: data.url}] : []);
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
       saveGallery(prev => [...gens, ...prev]);
-      const cost = PHOTO_COST * images.length;
+      const cost = calcPhotoCost();
       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
       addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
@@ -920,7 +926,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <span className="text-[10px] text-zinc-500 uppercase">Face only</span>
                       </div>
                     </div>
-                    <div className="text-xs text-zinc-500 mb-3">~1 token</div>
+                    <div className="text-xs text-zinc-500 mb-3">~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}</div>
                     <button onClick={handleGenerate} disabled={!canGenerate()} className="px-10 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                       ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                     </button>
@@ -1047,7 +1053,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         Sequential {selectedModel === 'xSD5Pro' && <span className="text-[10px]">(not for Pro)</span>}
                       </label>
                       <div className="text-xs text-zinc-500 text-center">
-                        ~{(selectedModel === 'xSD5Pro' ? 2 : 1) * (imageSize.includes('2048') ? 2 : 1) * numImages} tokens
+                        ~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}
                       </div>
                       <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                         {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
@@ -1136,7 +1142,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <div className="flex justify-between text-xs text-zinc-500 mb-2"><span>Images</span><span className="text-white font-medium">{numImages}</span></div>
                           <input type="range" min="1" max="8" value={numImages} onChange={e => setNumImages(Number(e.target.value))} className="w-full accent-orange-500 h-2" />
                         </div>
-                        <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-800 rounded-lg">~{numImages} token{numImages > 1 ? 's' : ''}</div>
+                        <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-800 rounded-lg">~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}</div>
                         <button onClick={handleGenerate} disabled={!canGenerate()} className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40 transition-all">
                           ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                         </button>
@@ -1263,7 +1269,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         {videoStatus === 'error' && (lang === 'en' ? 'Failed' : 'Ошибка')}
                       </div>
                     )}
-                    <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-900 border border-zinc-800 rounded-lg">~{VIDEO_COST} tokens</div>
+                    <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-900 border border-zinc-800 rounded-lg">
+                      ~{VIDEO_COST * (videoDuration === 10 ? 2 : 1) * (videoModel === 'xW3.0sPro' ? 1.5 : 1)} tokens
+                    </div>
                     <button
                       onClick={handleVideoGenerate}
                       disabled={(videoMode === 'image' ? !videoImage : !selectedCharacter) || !prompt.trim()}
