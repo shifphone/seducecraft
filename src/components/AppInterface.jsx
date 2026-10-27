@@ -164,6 +164,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     const p = buildPrompt();
     setPendingGens(c => c + numImages);
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
+    let images = [];
     try {
       const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID().slice(0,8); localStorage.setItem('anonId', id); return id; })()}@seducecraft.app`;
       const body = { prompt: p, endUserEmail: email, model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
@@ -204,7 +205,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         const rid = data.requestId ? ` [id: ${data.requestId}]` : '';
         throw new Error((errMsg + rid).slice(0, 500));
       }
-      const images = data.images || (data.url ? [{url: data.url}] : []);
+      images = data.images || (data.url ? [{url: data.url}] : []);
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
       saveGallery(prev => [...gens, ...prev]);
       const cost = PHOTO_COST * images.length;
@@ -215,7 +216,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     } catch (e) {
       showToast(e.message || 'Error');
     }
-    setPendingGens(c => Math.max(0, c - images.length));
+    setPendingGens(c => Math.max(0, c - (images?.length || numImages)));
   };
 
   const handleVideoGenerate = async () => {
