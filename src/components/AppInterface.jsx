@@ -54,6 +54,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [templateCategory, setTemplateCategory] = useState('all');
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
   const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));

@@ -107,8 +107,10 @@ export default async function handler(req, res) {
     n: Math.min(Math.max(parseInt(n) || 1, 1), 7),
     size: req.body.size || '2048x2048',
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
-    guidanceScale: req.body.guidanceScale || 10,
   };
+  if (model !== 'xSD5Pro') {
+    body.guidanceScale = req.body.guidanceScale || 10;
+  }
   if (req.body.sequential && model !== 'xSD5Pro') {
     body.sequential = req.body.sequential;
     body.sequentialOptions = { maxImages: Math.min(Math.max(parseInt(n) || 1, 1), 15) };
