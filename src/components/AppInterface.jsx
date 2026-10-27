@@ -1104,6 +1104,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
 
                 {photoMode === 'custom' && (
+                  <>
                   <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr_340px] gap-8">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
@@ -1218,6 +1219,22 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </button>
                     </div>
                   </div>
+                  {gallery.filter(g => g.title?.startsWith('Custom')).length > 0 && (
+                    <div className="mt-8">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
+                        <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
+                      </div>
+                      <div className="grid grid-cols-4 lg:grid-cols-6 gap-3">
+                        {gallery.filter(g => g.title?.startsWith('Custom')).slice(0, 6).map(g => (
+                          <button key={g.id} onClick={() => setViewer(g)} className="rounded-lg overflow-hidden border border-zinc-800">
+                            <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  </>
                 )}
 
                 {photoMode === 'templates' && (
