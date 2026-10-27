@@ -201,6 +201,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     { id: 'video', name: t.video },
     { id: 'deepfake', name: t.deepfake },
     { id: 'gallery', name: t.myGallery },
+    { id: 'balance', name: lang === 'en' ? 'Balance' : 'Баланс' },
+    { id: 'notifications', name: lang === 'en' ? 'Notifications' : 'Уведомления' },
+    { id: 'profile', name: lang === 'en' ? 'Profile' : 'Профиль' },
+    { id: 'help', name: lang === 'en' ? 'Help' : 'Помощь' },
   ];
 
   const TabBtn = ({ active, onClick, children }) => (
@@ -496,6 +500,86 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                 )}
               </>
+            )}
+            {activeMode === 'balance' && (
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-6">{lang === 'en' ? 'Balance' : 'Баланс'}</h2>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+                  <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Current balance' : 'Текущий баланс'}</div>
+                  <div className="text-4xl font-bold text-orange-500">{balance ?? credits} <span className="text-lg text-zinc-400">{lang === 'en' ? 'credits' : 'кредитов'}</span></div>
+                </div>
+                <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'Top up' : 'Пополнить'}</h3>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {[100, 500, 1000].map(amount => (
+                    <button key={amount} onClick={() => onAddCredits(amount)} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-orange-500/50 transition-colors">
+                      <div className="text-xl font-bold">{amount}</div>
+                      <div className="text-xs text-zinc-500">{lang === 'en' ? 'credits' : 'кредитов'}</div>
+                    </button>
+                  ))}
+                </div>
+                <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'History' : 'История'}</h3>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">
+                  {lang === 'en' ? 'No transactions yet' : 'Транзакций пока нет'}
+                </div>
+              </div>
+            )}
+            {activeMode === 'notifications' && (
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-6">{lang === 'en' ? 'Notifications' : 'Уведомления'}</h2>
+                <div className="space-y-3">
+                  {pendingGens > 0 && (
+                    <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 flex items-center gap-3">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                      <span>{lang === 'en' ? `${pendingGens} generation(s) in progress` : `${pendingGens} генераций в процессе`}</span>
+                    </div>
+                  )}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">
+                    {lang === 'en' ? 'No notifications' : 'Нет уведомлений'}
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeMode === 'profile' && (
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-6">{lang === 'en' ? 'Profile' : 'Профиль'}</h2>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Username' : 'Имя'}</div>
+                    <div className="font-medium">{userName || 'Anonymous'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Login code' : 'Код входа'}</div>
+                    <div className="font-mono text-orange-400">{localStorage.getItem('seducecraft.anonCode') || '—'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Characters' : 'Персонажей'}</div>
+                    <div className="font-medium">{characters.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Generations' : 'Генераций'}</div>
+                    <div className="font-medium">{gallery.length}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeMode === 'help' && (
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-6">{lang === 'en' ? 'Help' : 'Помощь'}</h2>
+                <div className="space-y-4">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'How to create a character?' : 'Как создать персонажа?'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Go to My Characters → Create character → Upload photos or create fictional' : 'Перейдите в Мои персонажи → Создать → Загрузите фото или создайте вымышленного'}</div>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'How to generate?' : 'Как генерировать?'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Select a character, choose a template or write a prompt, click Generate' : 'Выберите персонажа, выберите шаблон или напишите промпт, нажмите Генерировать'}</div>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'Lost your code?' : 'Потеряли код?'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Your login code is shown in Profile. Save it to access your data later.' : 'Ваш код входа показан в Профиле. Сохраните его для доступа к данным.'}</div>
+                  </div>
+                </div>
+              </div>
             )}
             {activeMode === 'photo' && (
               <>
