@@ -215,7 +215,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
-  const deleteGalleryItems = (ids) => { saveGallery(prev => prev.filter(g => !ids.has(g.id))); setSelectedGallery(new Set()); setConfirmDelete(null); };
   const sortedGallery = [...gallery].sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
   const menu = [
