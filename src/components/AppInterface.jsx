@@ -456,19 +456,60 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
           <div className="w-full">
             {activeMode === 'home' && (
-              <>
-                <h2 className="text-2xl font-semibold mb-2">{t.homeTitle}</h2>
-                <p className="text-text-secondary mb-8">{t.homeSub}</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                  {[{id:'photo',label:t.photo},{id:'faceswap',label:t.faceSwap},{id:'video',label:t.video},{id:'deepfake',label:t.deepfake}].map(m => (
-                    <button key={m.id} onClick={() => setActiveMode(m.id)} className="border border-border rounded-xl p-5 text-center hover:border-accent/50 transition-colors">{m.label}</button>
+              <div className="space-y-6">
+                {/* Balance bar */}
+                <div className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-orange-500">{balance ?? credits}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'credits' : 'кредитов'}</div>
+                  </div>
+                  <button onClick={() => setActiveMode('balance')} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">
+                    {lang === 'en' ? 'Top up' : 'Пополнить'}
+                  </button>
+                </div>
+
+                {/* Promo banner */}
+                <div className="bg-gradient-to-r from-orange-500/20 to-purple-500/20 border border-orange-500/30 rounded-xl p-4 flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{lang === 'en' ? '+25% bonus on first top-up' : '+25% к первому пополнению'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Limited time offer' : 'Ограниченное предложение'}</div>
+                  </div>
+                  <button onClick={() => setActiveMode('balance')} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">
+                    {lang === 'en' ? 'Get bonus' : 'Получить'}
+                  </button>
+                </div>
+
+                {/* Section cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {[
+                    { id: 'photo', label: lang === 'en' ? 'Photo' : 'Фото', desc: lang === 'en' ? 'Generate images' : 'Генерация изображений', icon: '🖼️' },
+                    { id: 'faceswap', label: 'Face Swap', desc: lang === 'en' ? 'Swap faces' : 'Замена лица', icon: '🔄' },
+                    { id: 'video', label: lang === 'en' ? 'Video' : 'Видео', desc: lang === 'en' ? 'Coming soon' : 'Скоро', icon: '🎬' },
+                    { id: 'deepfake', label: 'DeepFake', desc: lang === 'en' ? 'Face in video' : 'Лицо в видео', icon: '🎭' },
+                    { id: 'characters', label: lang === 'en' ? 'Characters' : 'Персонажи', desc: lang === 'en' ? 'Manage faces' : 'Управление лицами', icon: '👤' },
+                    { id: 'gallery', label: lang === 'en' ? 'Gallery' : 'Галерея', desc: lang === 'en' ? 'Your creations' : 'Ваши работы', icon: '📁' },
+                  ].map(m => (
+                    <button key={m.id} onClick={() => setActiveMode(m.id)} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 text-left hover:border-orange-500/50 transition-all group">
+                      <div className="text-3xl mb-3">{m.icon}</div>
+                      <div className="font-medium group-hover:text-orange-400 transition-colors">{m.label}</div>
+                      <div className="text-xs text-zinc-500 mt-1">{m.desc}</div>
+                    </button>
                   ))}
                 </div>
-                <h3 className="text-lg font-semibold mb-4">{t.readyWorks}</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {presets.map(p => <img key={p.id} src={p.src} alt="" className="aspect-[3/4] w-full object-cover rounded-lg border border-border" />)}
+
+                {/* Recent templates */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">{lang === 'en' ? 'Templates' : 'Шаблоны'}</h3>
+                  <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                    {presets.slice(0, 6).map(p => (
+                      <button key={p.id} onClick={() => { setActiveMode('photo'); setPhotoMode('templates'); setSelectedTemplate(p); }} className="relative group rounded-xl overflow-hidden">
+                        <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover group-hover:scale-105 transition-transform" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </>
+              </div>
             )}
             {activeMode === 'characters' && <Characters onRequireTerms={onRequireTerms} termsAccepted={termsAccepted} characters={characters} onSave={saveCharacters} />}
             {activeMode === 'gallery' && (
