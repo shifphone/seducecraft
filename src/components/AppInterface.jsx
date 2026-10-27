@@ -125,6 +125,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [isLoggedIn]);
 
   useEffect(() => {
+    if (activeMode === 'faceswap') setSelectedModel('xSD5Pro');
+  }, [activeMode]);
+
+  useEffect(() => {
     if (isLoggedIn) {
       fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     }
