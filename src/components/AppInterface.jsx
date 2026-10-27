@@ -42,8 +42,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
   const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));
+  const [notifications, setNotifications] = useState(() => JSON.parse(localStorage.getItem('seducecraft.notifs') || '[]'));
   const PHOTO_COST = 10;
   const VIDEO_COST = 50;
+
+  const addNotification = (msg) => {
+    const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
+    setNotifications(prev => {
+      const next = [n, ...prev].slice(0, 50);
+      localStorage.setItem('seducecraft.notifs', JSON.stringify(next));
+      return next;
+    });
+  };
   const [showPrompt, setShowPrompt] = useState(false);
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
@@ -180,6 +190,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const images = data.images || (data.url ? [{url: data.url}] : []);
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
       saveGallery(prev => [...gens, ...prev]);
+      const cost = PHOTO_COST * images.length;
+      setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
+      addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
@@ -435,12 +448,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             <div className="flex items-center gap-3 text-sm">
               <button onClick={() => setActiveMode('profile')} className="hover:text-orange-400 transition-colors">{userName}</button>
               <span className="text-zinc-600">·</span>
-              <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors group relative">
+              <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">
                 {balance !== null ? balance : credits} {t.credits}
-                <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-xs text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
-                  <div>📷 {Math.floor((balance ?? credits) / PHOTO_COST)} {lang === 'en' ? 'photos' : 'фото'}</div>
-                  <div>🎬 {Math.floor((balance ?? credits) / VIDEO_COST)} {lang === 'en' ? 'videos' : 'видео'}</div>
-                </div>
               </button>
             </div>
           )}
@@ -581,17 +590,34 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             )}
             {activeMode === 'notifications' && (
               <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-semibold mb-6">{lang === 'en' ? 'Notifications' : 'Уведомления'}</h2>
-                <div className="space-y-3">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold">{lang === 'en' ? 'Notifications' : 'Уведомления'}</h2>
+                  {notifications.length > 0 && (
+                    <div className="flex gap-2">
+                      <button onClick={() => { setNotifications(prev => { const next = prev.map(n => ({...n, read: true})); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-sm text-zinc-400 hover:text-white">{lang === 'en' ? 'Read all' : 'Прочитать все'}</button>
+                      <button onClick={() => { setNotifications([]); localStorage.setItem('seducecraft.notifs', '[]'); }} className="text-sm text-red-400 hover:text-red-300">{lang === 'en' ? 'Clear all' : 'Очистить'}</button>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
                   {pendingGens > 0 && (
                     <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 flex items-center gap-3">
                       <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
                       <span>{lang === 'en' ? `${pendingGens} generation(s) in progress` : `${pendingGens} генераций в процессе`}</span>
                     </div>
                   )}
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">
-                    {lang === 'en' ? 'No notifications' : 'Нет уведомлений'}
-                  </div>
+                  {notifications.length === 0 && pendingGens === 0 && (
+                    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">{lang === 'en' ? 'No notifications' : 'Нет уведомлений'}</div>
+                  )}
+                  {notifications.map(n => (
+                    <div key={n.id} className={`bg-zinc-900 border rounded-xl p-4 flex items-center justify-between ${n.read ? 'border-zinc-800' : 'border-orange-500/30'}`}>
+                      <div>
+                        <div className={n.read ? 'text-zinc-400' : 'text-white'}>{n.msg}</div>
+                        <div className="text-xs text-zinc-600">{new Date(n.time).toLocaleString()}</div>
+                      </div>
+                      <button onClick={() => { setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-zinc-600 hover:text-red-400">×</button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
