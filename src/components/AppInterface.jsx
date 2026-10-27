@@ -77,10 +77,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     setCharacters(list);
     const userId = getUserId();
     for (const c of list) {
-      if (!c.id || c.id.length < 30) {
+      if (!c.saved) {
         try {
           const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveCharacter', userId, name: c.name, photos: c.photos }) });
-          if (res.ok) { const data = await res.json(); c.id = data.id; }
+          if (res.ok) { 
+            const data = await res.json(); 
+            c.id = data.id;
+            c.saved = true;
+          }
         } catch {}
       }
     }
