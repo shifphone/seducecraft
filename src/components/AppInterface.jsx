@@ -36,8 +36,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallery, setGallery] = useState([]);
   const [viewer, setViewer] = useState(null);
   const [gallerySort, setGallerySort] = useState('newest');
-  const [gallerySearch, setGallerySearch] = useState('');
-  const [selectedGallery, setSelectedGallery] = useState(new Set());
+  const [galleryFilter, setGalleryFilter] = useState('all');
+  const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
+  const [activeTasks, setActiveTasks] = useState([]);
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -60,7 +61,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     return Math.round(base * numImages);
   };
 
-  const addNotification = (msg) => {
+  const addTx = (desc, amount) => {
+    const tx = { id: crypto.randomUUID(), desc, amount, at: Date.now() };
+    setTransactions(prev => {
+      const next = [tx, ...prev].slice(0, 50);
+      localStorage.setItem('seducecraft.txs', JSON.stringify(next));
+      return next;
+    });
+  };
     const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
     setNotifications(prev => {
       const next = [n, ...prev].slice(0, 50);
@@ -229,6 +237,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       saveGallery(prev => [...gens, ...prev]);
       const cost = calcPhotoCost();
       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
+      addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost);
       addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
@@ -293,6 +302,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         localStorage.setItem('seducecraft.spent', String(next));
         return next;
       });
+      addTx(videoMode === 'image' ? 'Image to Video' : 'Video', VIDEO_COST);
       addNotification(lang === 'en' ? 'Video generation complete' : 'Видео готово');
       showToast(lang === 'en' ? 'Video added to gallery' : 'Видео добавлено в галерею');
       setVideoStatus('done');
@@ -305,7 +315,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
   const sortedGallery = [...gallery]
-    .filter(g => !gallerySearch || g.title?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.characterName?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.prompt?.toLowerCase().includes(gallerySearch.toLowerCase()))
+    .filter(g => {
+      if (gallerySearch && !(g.title?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.characterName?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.prompt?.toLowerCase().includes(gallerySearch.toLowerCase()))) return false;
+      if (galleryFilter === 'video') return g.type === 'video';
+      if (galleryFilter === 'photo') return g.type !== 'video';
+      if (galleryFilter === 'undress') return g.title === 'Undress';
+      if (galleryFilter === 'swap') return g.title === 'Face Swap';
+      return true;
+    })
     .sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
   const menu = [
@@ -655,6 +672,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   {gallery.length > 0 && (
                     <div className="flex items-center gap-3 flex-wrap">
                       <input value={gallerySearch} onChange={e => setGallerySearch(e.target.value)} placeholder={lang === 'en' ? 'Search...' : 'Поиск...'} className="h-9 bg-bg-secondary border border-border rounded-md px-3 text-sm w-40" />
+                      <select value={galleryFilter} onChange={e => setGalleryFilter(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
+                        <option value="all">{lang === 'en' ? 'All' : 'Все'}</option>
+                        <option value="photo">{lang === 'en' ? 'Photos' : 'Фото'}</option>
+                        <option value="video">{lang === 'en' ? 'Videos' : 'Видео'}</option>
+                        <option value="undress">Undress</option>
+                        <option value="swap">Face Swap</option>
+                      </select>
                       <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
                         <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
                         <option value="oldest">{lang === 'en' ? 'Oldest' : 'Сначала старые'}</option>
@@ -712,6 +736,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           r.readAsDataURL(f);
                         }} />
                       </label>
+                      {characters.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or from characters' : 'или из персонажей'}</p>
+                          <div className="flex gap-2 justify-center flex-wrap">
+                            {characters.slice(0, 6).map(c => (
+                              <button key={c.id} onClick={() => setSwapSource(c.photos?.[0])} className={`w-10 h-10 rounded-full overflow-hidden border-2 ${swapSource === c.photos?.[0] ? 'border-orange-500' : 'border-zinc-700'}`}>
+                                {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-full h-full object-cover" />}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -728,6 +764,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           r.readAsDataURL(f);
                         }} />
                       </label>
+                      {gallery.filter(g => g.type !== 'video').length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</p>
+                          <div className="flex gap-2 justify-center flex-wrap">
+                            {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
+                              <button key={g.id} onClick={() => setSwapTarget(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${swapTarget === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
+                                <img src={g.src} alt="" className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -791,8 +839,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   ))}
                 </div>
                 <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'History' : 'История'}</h3>
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">
-                  {lang === 'en' ? 'No transactions yet' : 'Транзакций пока нет'}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm">
+                  {transactions.length === 0 ? (
+                    <div className="text-zinc-500">{lang === 'en' ? 'No transactions yet' : 'Транзакций пока нет'}</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {transactions.slice(0, 20).map(tx => (
+                        <div key={tx.id} className="flex justify-between items-center py-1 border-b border-zinc-800 last:border-0">
+                          <span className="text-zinc-300">{tx.desc}</span>
+                          <span className="text-zinc-500 text-xs">{new Date(tx.at).toLocaleString()}</span>
+                          <span className="text-orange-400">-{tx.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -934,6 +994,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </div>
                     </div>
                     <div className="text-xs text-zinc-500 mb-3">~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}</div>
+                    <div className="flex justify-center gap-3 mb-4">
+                      <select value={selectedModel} onChange={e => { setSelectedModel(e.target.value); setImageSize(e.target.value === 'xSD5Pro' ? '1K' : '1920x1920'); }} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="xSD4.5">Normal</option>
+                        <option value="xSD5Pro">Pro</option>
+                      </select>
+                      <select value={imageSize} onChange={e => setImageSize(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
+                        {(selectedModel === 'xSD5Pro' ? ['1K','1.5K','2K'] : ['1920x1920','2048x2048']).map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
                     <button onClick={handleGenerate} disabled={!canGenerate()} className="px-10 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40">
                       ✦ {pendingGens > 0 ? `${t.generating} (${pendingGens})` : t.generate}
                     </button>
