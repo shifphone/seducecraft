@@ -76,16 +76,27 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const saveCharacters = async (list) => {
     setCharacters(list);
     const userId = getUserId();
+    console.log('Saving characters for userId:', userId);
     for (const c of list) {
       if (!c.saved) {
         try {
-          const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveCharacter', userId, name: c.name, photos: c.photos }) });
+          const payload = { action: 'saveCharacter', userId, name: c.name, photos: c.photos };
+          console.log('Payload size:', JSON.stringify(payload).length);
+          const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+          const text = await res.text();
+          console.log('Save response:', res.status, text.slice(0, 200));
           if (res.ok) { 
-            const data = await res.json(); 
+            const data = JSON.parse(text); 
             c.id = data.id;
             c.saved = true;
+            showToast('Character saved!');
+          } else {
+            showToast('Save failed: ' + text.slice(0, 100));
           }
-        } catch {}
+        } catch (e) { 
+          console.error('Save error:', e);
+          showToast('Save error: ' + e.message);
+        }
       }
     }
   };
