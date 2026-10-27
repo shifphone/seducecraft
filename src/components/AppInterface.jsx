@@ -892,6 +892,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           reader.readAsDataURL(f);
                         }} className="hidden" />
                       </label>
+                      {gallery.filter(g => g.type !== 'video').length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or pick from gallery' : 'или выберите из галереи'}</p>
+                          <div className="flex gap-2 justify-center flex-wrap">
+                            {gallery.filter(g => g.type !== 'video').slice(0, 8).map(g => (
+                              <button key={g.id} onClick={() => setUndressPhoto(g.src)} className={`w-12 h-16 rounded overflow-hidden border-2 ${undressPhoto === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
+                                <img src={g.src} alt="" className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="flex justify-center gap-6 mb-6">
                       <div className="text-center">
@@ -1183,6 +1195,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                               r.readAsDataURL(f);
                             }} />
                           </label>
+                          {gallery.filter(g => g.type !== 'video').length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</p>
+                              <div className="flex gap-2 justify-center flex-wrap">
+                                {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
+                                  <button key={g.id} onClick={() => setVideoImage(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${videoImage === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
+                                    <img src={g.src} alt="" className="w-full h-full object-cover" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
