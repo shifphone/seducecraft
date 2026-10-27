@@ -42,6 +42,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [dailyClaimed, setDailyClaimed] = useState(() => localStorage.getItem('seducecraft.daily') === new Date().toDateString());
+  const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
 
   const claimDaily = () => {
     if (dailyClaimed) return;
