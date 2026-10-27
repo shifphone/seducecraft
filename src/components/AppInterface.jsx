@@ -52,17 +52,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   useEffect(() => {
     (async () => {
       const userId = getUserId();
+      console.log('Loading characters for:', userId, 'isLoggedIn:', isLoggedIn);
+      if (!isLoggedIn) return;
       try {
         const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId }) });
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length) setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
+        const data = await res.json();
+        console.log('Loaded:', data);
+        if (res.ok && Array.isArray(data)) {
+          setCharacters(data.map(c => ({ ...c, photos: c.photos || [], saved: true })));
+          if (data.length) showToast(`Loaded ${data.length} characters`);
         }
-      } catch {}
-      try {
-        const saved = localStorage.getItem('seducecraft.gallery');
-        if (saved) setGallery(JSON.parse(saved));
-      } catch {}
+      } catch (e) { console.error('Load error:', e); }
     })();
   }, [isLoggedIn]);
 
