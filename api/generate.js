@@ -29,6 +29,26 @@ export default async function handler(req, res) {
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json(data || []);
   }
+  if (action === 'saveGallery') {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { item } = req.body;
+    const { error } = await supabase.from('anon_gallery').insert({ user_id: userId, ...item });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
+  }
+  if (action === 'loadGallery') {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase.from('anon_gallery').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json(data || []);
+  }
+  if (action === 'deleteGallery') {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { id } = req.body;
+    const { error } = await supabase.from('anon_gallery').delete().eq('id', id).eq('user_id', userId);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
+  }
   
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 

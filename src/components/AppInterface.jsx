@@ -63,19 +63,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
 
   useEffect(() => {
-    try {
-      const g = localStorage.getItem('seducecraft.gallery');
-      if (g) setGallery(JSON.parse(g));
-    } catch {}
     (async () => {
       const userId = getUserId();
       if (!isLoggedIn) return;
       try {
-        const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId }) });
-        const data = await res.json();
-        if (res.ok && Array.isArray(data)) {
-          setCharacters(data.map(c => ({ ...c, photos: c.photos || [], saved: true })));
-        }
+        const [charRes, galRes] = await Promise.all([
+          fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId }) }),
+          fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadGallery', userId }) })
+        ]);
+        const charData = await charRes.json();
+        const galData = await galRes.json();
+        if (charRes.ok && Array.isArray(charData)) setCharacters(charData.map(c => ({ ...c, photos: c.photos || [], saved: true })));
+        if (galRes.ok && Array.isArray(galData)) setGallery(galData);
       } catch {}
     })();
   }, [isLoggedIn]);
@@ -124,12 +123,25 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       }
     }
   };
-  const saveGallery = (listOrUpdater) => {
+  const saveGallery = async (listOrUpdater) => {
     setGallery(prev => {
       const next = typeof listOrUpdater === 'function' ? listOrUpdater(prev) : listOrUpdater;
-      try { localStorage.setItem('seducecraft.gallery', JSON.stringify(next)); } catch {}
+      const userId = getUserId();
+      const newItems = next.filter(g => !prev.find(p => p.id === g.id));
+      newItems.forEach(g => {
+        fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveGallery', userId, item: g }) });
+      });
       return next;
     });
+  };
+  const deleteGalleryItems = async (ids) => {
+    setGallery(prev => prev.filter(g => !ids.has(g.id)));
+    const userId = getUserId();
+    for (const id of ids) {
+      fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteGallery', userId, id }) });
+    }
+    setSelectedGallery(new Set());
+    setConfirmDelete(null);
   };
   const selectedCharacter = characters.find(c => c.id === selectedCharacterId) || null;
 
