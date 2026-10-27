@@ -788,13 +788,19 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     setPendingGens(c => c + 1);
                     showToast(lang === 'en' ? 'Face swap started…' : 'Замена лица запущена…');
                     try {
-                      const up = async (b64) => {
-                        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: b64 }) });
-                        const d = await res.json();
-                        return d.url;
+                      const ensureUrl = async (img) => {
+                        if (!img) return null;
+                        if (img.startsWith('http')) return img;
+                        if (img.startsWith('data:')) {
+                          const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: img }) });
+                          const d = await res.json();
+                          return d.url;
+                        }
+                        return null;
                       };
-                      const srcUrl = await up(swapSource);
-                      const tgtUrl = await up(swapTarget);
+                      const srcUrl = await ensureUrl(swapSource);
+                      const tgtUrl = await ensureUrl(swapTarget);
+                      if (!srcUrl || !tgtUrl) throw new Error('Failed to prepare images');
                       const body = {
                         prompt: 'Replace the face in image_2 with the face from image_1. Keep the body, pose, clothing and background from image_2 exactly. Only change the face.',
                         model: selectedModel,
