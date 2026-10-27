@@ -584,6 +584,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
                   <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Current balance' : 'Текущий баланс'}</div>
                   <div className="text-4xl font-bold text-orange-500">{balance ?? credits} <span className="text-lg text-zinc-400">{lang === 'en' ? 'credits' : 'кредитов'}</span></div>
+                  <div className="mt-3 text-sm text-zinc-400">
+                    📷 {Math.floor((balance ?? credits) / PHOTO_COST)} {lang === 'en' ? 'photos' : 'фото'} · 🎬 {Math.floor((balance ?? credits) / VIDEO_COST)} {lang === 'en' ? 'videos' : 'видео'}
+                  </div>
                 </div>
                 <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'Top up' : 'Пополнить'}</h3>
                 <div className="grid grid-cols-3 gap-3 mb-6">
