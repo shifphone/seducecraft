@@ -1,1 +1,1 @@
-PLACEHOLDER WILL BE REPLACED
+PLACEHOLDER - will be replaced with full content
