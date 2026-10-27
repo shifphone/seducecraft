@@ -47,14 +47,24 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [sequential, setSequential] = useState(false);
   const [imageSize, setImageSize] = useState('1920x1920');
 
+  const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
+
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('seducecraft.characters');
-      if (saved) setCharacters(JSON.parse(saved));
-      const g = localStorage.getItem('seducecraft.gallery');
-      if (g) setGallery(JSON.parse(g));
-    } catch {}
-  }, []);
+    (async () => {
+      const userId = getUserId();
+      try {
+        const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId }) });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length) setCharacters(data.map(c => ({ ...c, photos: c.photos || [] })));
+        }
+      } catch {}
+      try {
+        const saved = localStorage.getItem('seducecraft.gallery');
+        if (saved) setGallery(JSON.parse(saved));
+      } catch {}
+    })();
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -63,9 +73,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [isLoggedIn]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
-  const saveCharacters = (list) => {
+  const saveCharacters = async (list) => {
     setCharacters(list);
-    try { localStorage.setItem('seducecraft.characters', JSON.stringify(list)); } catch {}
+    const userId = getUserId();
+    for (const c of list) {
+      if (!c.id || c.id.length < 30) {
+        try {
+          const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'saveCharacter', userId, name: c.name, photos: c.photos }) });
+          if (res.ok) { const data = await res.json(); c.id = data.id; }
+        } catch {}
+      }
+    }
   };
   const saveGallery = (listOrUpdater) => {
     setGallery(prev => {
