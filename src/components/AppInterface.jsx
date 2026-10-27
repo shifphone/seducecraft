@@ -802,7 +802,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       const tgtUrl = await ensureUrl(swapTarget);
                       if (!srcUrl || !tgtUrl) throw new Error('Failed to prepare images');
                       const body = {
-                        prompt: 'Replace the face in image_2 with the face from image_1. Keep the body, pose, clothing and background from image_2 exactly. Only change the face.',
+                        prompt: 'Take the face from image_1 and place it onto the person in image_2. Match the face identity exactly from image_1. Keep the pose, body, clothing, lighting and background from image_2 unchanged. Seamless face replacement, natural skin tone match.',
                         model: selectedModel,
                         n: 1,
                         size: imageSize,
@@ -814,6 +814,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       if (!res.ok) throw new Error(data.error || 'Failed');
                       const gen = { id: crypto.randomUUID(), title: 'Face Swap', prompt: body.prompt, characterName: 'Swap', src: data.url || data.images?.[0]?.url || data.images?.[0], createdAt: Date.now() };
                       saveGallery(prev => [gen, ...prev]);
+                      const cost = calcPhotoCost();
+                      setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
+                      addTx('Face Swap', cost);
                       addNotification(lang === 'en' ? 'Face swap complete' : 'Замена лица готова');
                       showToast(lang === 'en' ? 'Face swap done' : 'Замена готова');
                     } catch (e) {
@@ -826,6 +829,22 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 >
                   {pendingGens > 0 ? (lang === 'en' ? `Swapping (${pendingGens})` : `Замена (${pendingGens})`) : (lang === 'en' ? 'Swap Face' : 'Заменить лицо')}
                 </button>
+                <div className="text-xs text-zinc-500 text-center mt-2">~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}</div>
+                {gallery.filter(g => g.title === 'Face Swap').length > 0 && (
+                  <div className="mt-8">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
+                      <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
+                    </div>
+                    <div className="grid grid-cols-4 lg:grid-cols-6 gap-3">
+                      {gallery.filter(g => g.title === 'Face Swap').slice(0, 6).map(g => (
+                        <button key={g.id} onClick={() => setViewer(g)} className="rounded-lg overflow-hidden border border-zinc-800">
+                          <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {activeMode === 'balance' && (
@@ -1150,6 +1169,21 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </button>
                     </div>
                   </div>
+                  {gallery.filter(g => g.title?.startsWith('Custom')).length > 0 && (
+                    <div className="mt-8">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
+                        <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
+                      </div>
+                      <div className="grid grid-cols-4 lg:grid-cols-6 gap-3">
+                        {gallery.filter(g => g.title?.startsWith('Custom')).slice(0, 6).map(g => (
+                          <button key={g.id} onClick={() => setViewer(g)} className="rounded-lg overflow-hidden border border-zinc-800">
+                            <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 )}
 
                 {photoMode === 'templates' && (
@@ -1379,6 +1413,21 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </button>
                   </div>
                 </div>
+                {gallery.filter(g => g.type === 'video').length > 0 && (
+                  <div className="mt-8">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
+                      <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
+                    </div>
+                    <div className="grid grid-cols-4 lg:grid-cols-6 gap-3">
+                      {gallery.filter(g => g.type === 'video').slice(0, 6).map(g => (
+                        <button key={g.id} onClick={() => setViewer(g)} className="rounded-lg overflow-hidden border border-zinc-800">
+                          <video src={g.src} className="aspect-[3/4] w-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
