@@ -49,7 +49,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const calcPhotoCost = () => {
     let base = selectedModel === 'xSD5Pro' ? 2 : 1;
-    if (imageSize.includes('2048') || imageSize.includes('1920')) base *= 1.5;
+    if (selectedModel === 'xSD5Pro') {
+      if (imageSize === '1.5K') base = 3;
+      if (imageSize === '2K') base = 4;
+    } else {
+      if (imageSize.includes('2048')) base = 1.5;
+      if (imageSize.includes('2560')) base = 2;
+      if (imageSize.includes('3072')) base = 3;
+    }
     return Math.round(base * numImages);
   };
 
