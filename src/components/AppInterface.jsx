@@ -80,8 +80,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [templateCategory, setTemplateCategory] = useState([]);
-  const [templatePage, setTemplatePage] = useState(1);
-  const TEMPLATES_PER_PAGE = 16;
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
@@ -1269,7 +1267,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <div className="w-full">
                     <div className="flex gap-2 mb-4 flex-wrap">
                       {['all', ...Array.from(new Set(presets.flatMap(p => p.tags || []))).filter(t => ['selfie','mirror','bedroom','bathroom','kitchen','topless','nude','lingerie','ass','kneeling','standing','POV','full body','cowgirl','doggy','lying down','sitting','from behind','closeup','high angle','low angle'].includes(t))].map(cat => (
-                        <button key={cat} onClick={() => { setTemplateCategory(prev => cat === 'all' ? [] : prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat]); setTemplatePage(1); }} className={`px-3 py-1.5 rounded-full text-xs ${ (cat === 'all' && templateCategory.length === 0) || templateCategory.includes(cat) ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
+                        <button key={cat} onClick={() => { setTemplateCategory(prev => cat === 'all' ? [] : prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat]) }} className={`px-3 py-1.5 rounded-full text-xs ${ (cat === 'all' && templateCategory.length === 0) || templateCategory.includes(cat) ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
                           {cat === 'all' ? (lang === 'en' ? 'All' : 'Все') : cat}
                         </button>
                       ))}
@@ -1310,11 +1308,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         </div>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                      {(() => {
-                        const filtered = presets.filter(p => templateCategory.length === 0 || templateCategory.every(c => p.tags?.includes(c)));
-                        const start = (templatePage - 1) * TEMPLATES_PER_PAGE;
-                        return filtered.slice(start, start + TEMPLATES_PER_PAGE);
-                      })().map(p => (
+                      {presets.filter(p => templateCategory.length === 0 || templateCategory.every(c => p.tags?.includes(c))).map(p => (
                         <button key={p.id} type="button" onClick={() => setSelectedTemplate(p)} 
                           className={`group relative rounded-2xl overflow-hidden transition-all duration-300 text-left ${selectedTemplate?.id === p.id ? 'ring-2 ring-orange-500 scale-[1.02]' : 'hover:scale-[1.02] hover:ring-1 hover:ring-zinc-600'}`}>
                           <img src={p.src} alt="" className="aspect-[3/4] w-full object-cover" />
@@ -1334,11 +1328,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           )}
                         </button>
                       ))}
-                    </div>
-                    <div className="flex items-center justify-center gap-2 mt-6">
-                      <button disabled={templatePage<=1} onClick={() => { setTemplatePage(p => Math.max(1, p-1)); window.scrollTo({top:0,behavior:'smooth'}); }} className="px-3 py-1.5 rounded-lg border border-zinc-700 text-sm disabled:opacity-40">Prev</button>
-                      <span className="text-sm text-zinc-400">Page {templatePage}</span>
-                      <button onClick={() => { setTemplatePage(p => p+1); window.scrollTo({top:0,behavior:'smooth'}); }} className="px-3 py-1.5 rounded-lg border border-zinc-700 text-sm">Next</button>
                     </div>
                     {selectedTemplate && (
                       <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 h-fit sticky top-4">
