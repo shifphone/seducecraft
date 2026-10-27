@@ -94,7 +94,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return next;
     });
   };
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
   const [selectedModel, setSelectedModel] = useState('xSD4.5');
   const [numImages, setNumImages] = useState(1);
   const [sequential, setSequential] = useState(false);
@@ -339,6 +339,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (galleryFilter === 'photo') return g.type !== 'video';
       if (galleryFilter === 'undress') return g.title === 'Undress';
       if (galleryFilter === 'swap') return g.title === 'Face Swap';
+      if (galleryFilter === 'template') return g.title && !['Undress','Face Swap','Custom','Video','Image to Video'].includes(g.title) && !g.title.startsWith('Custom');
       if (galleryFilter === 'fav') return g.fav;
       return true;
     })
@@ -564,6 +565,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             <div className="mt-4 flex items-center justify-between text-sm">
               <div><div className="font-medium">{viewer.title}</div><div className="text-text-secondary text-xs">{viewer.characterName}</div></div>
               <div className="flex gap-2">
+                {viewer.title === 'Undress' && viewer.prompt && <button onClick={() => setCompareMode(!compareMode)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{compareMode ? 'Hide' : 'Compare'}</button>}
                 {viewer.prompt && (viewer.title === 'Custom' || viewer.title?.startsWith('Custom') || viewer.type === 'video') && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
                 <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
@@ -701,6 +703,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <option value="video">{lang === 'en' ? 'Videos' : 'Видео'}</option>
                         <option value="undress">Undress</option>
                         <option value="swap">Face Swap</option>
+                        <option value="template">{lang === 'en' ? 'Templates' : 'Шаблоны'}</option>
                         <option value="fav">{lang === 'en' ? 'Favorites' : 'Избранное'}</option>
                       </select>
                       <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
@@ -866,10 +869,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
                 <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'Top up' : 'Пополнить'}</h3>
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                  {[100, 500, 1000].map(amount => (
-                    <button key={amount} onClick={() => onAddCredits(amount)} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-orange-500/50 transition-colors">
+                  {[
+                    { amount: 100, bonus: 0 },
+                    { amount: 500, bonus: 25 },
+                    { amount: 1000, bonus: 100 },
+                  ].map(({amount, bonus}) => (
+                    <button key={amount} onClick={() => onAddCredits(amount + bonus)} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-orange-500/50 transition-colors relative">
+                      {bonus > 0 && <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">+{bonus}</div>}
                       <div className="text-xl font-bold">{amount}</div>
-                      <div className="text-xs text-zinc-500">{lang === 'en' ? 'credits' : 'кредитов'}</div>
+                      <div className="text-xs text-zinc-500">{lang === 'en' ? 'credits' : 'кредитов'}{bonus > 0 ? ` (+${bonus})` : ''}</div>
                     </button>
                   ))}
                 </div>
