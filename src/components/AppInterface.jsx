@@ -35,6 +35,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
   const [viewer, setViewer] = useState(null);
+  const [showPrompt, setShowPrompt] = useState(false);
   const [gallerySort, setGallerySort] = useState('newest');
   const [galleryFilter, setGalleryFilter] = useState('all');
   const [gallerySearch, setGallerySearch] = useState('');
@@ -75,8 +76,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     return Math.round(base * numImages);
   };
 
-  const addTx = (desc, amount) => {
-    const tx = { id: crypto.randomUUID(), desc, amount, at: Date.now() };
+  const addTx = (desc, amount, details) => {
+    const tx = { id: crypto.randomUUID(), desc, amount, details, at: Date.now() };
     setTransactions(prev => {
       const next = [tx, ...prev].slice(0, 50);
       localStorage.setItem('seducecraft.txs', JSON.stringify(next));
@@ -251,7 +252,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       saveGallery(prev => [...gens, ...prev]);
       const cost = calcPhotoCost();
       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
-      addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost);
+      addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost, `${selectedModel === 'xSD5Pro' ? 'Pro' : 'Normal'} ${imageSize}`);
       addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
@@ -822,9 +823,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       if (!srcUrl || !tgtUrl) throw new Error('Failed to prepare images');
                       const body = {
                         prompt: 'Take the face from image_1 and place it onto the person in image_2. Match the face identity exactly from image_1. Keep the pose, body, clothing, lighting and background from image_2 unchanged. Seamless face replacement, natural skin tone match.',
-                        model: selectedModel,
+                        model: 'xSD5Pro',
                         n: 1,
-                        size: imageSize,
+                        size: '1K',
                         references: [srcUrl, tgtUrl],
                         endUserEmail: `anon@seducecraft.app`,
                       };
@@ -835,7 +836,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       saveGallery(prev => [gen, ...prev]);
                       const cost = calcPhotoCost();
                       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
-                      addTx('Face Swap', cost);
+                      addTx('Face Swap', cost, `Pro ${imageSize}`);
                       addNotification(lang === 'en' ? 'Face swap complete' : 'Замена лица готова');
                       showToast(lang === 'en' ? 'Face swap done' : 'Замена готова');
                     } catch (e) {
@@ -892,7 +893,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <div className="space-y-2">
                       {transactions.slice(0, 20).map(tx => (
                         <div key={tx.id} className="flex justify-between items-center py-1 border-b border-zinc-800 last:border-0">
-                          <span className="text-zinc-300">{tx.desc}</span>
+                          <div>
+                            <span className="text-zinc-300">{tx.desc}</span>
+                            {tx.details && <span className="text-zinc-500 text-xs ml-2">{tx.details}</span>}
+                          </div>
                           <span className="text-zinc-500 text-xs">{new Date(tx.at).toLocaleString()}</span>
                           <span className="text-orange-400">-{tx.amount}</span>
                         </div>
