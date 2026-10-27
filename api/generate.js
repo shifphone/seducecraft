@@ -52,9 +52,7 @@ export default async function handler(req, res) {
   
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
-  const email = (endUserEmail && endUserEmail.includes('@') && !endUserEmail.includes('seducecraft'))
-    ? endUserEmail
-    : 'shifphone@gmail.com';
+  const email = endUserEmail || 'anon@seducecraft.app';
 
   let refUrls = [];
   const base64List = Array.isArray(referenceBase64) ? referenceBase64 : (referenceBase64 ? [referenceBase64] : []);

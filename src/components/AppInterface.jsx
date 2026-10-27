@@ -162,7 +162,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     setPendingGens(c => c + numImages);
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
-      const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID().slice(0,8); localStorage.setItem('anonId', id); return id; })()}@seducecraft.app`;
+      const anonCode = getUserId();
+      const email = `${anonCode}@seducecraft.app`;
       const body = { prompt: p, endUserEmail: email, model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
       const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []);
       const refUrls = [];
