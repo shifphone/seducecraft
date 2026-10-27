@@ -65,6 +65,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [videoModel, setVideoModel] = useState('xW3.0s');
   const [videoMode, setVideoMode] = useState('text'); // text | image | templates
   const [videoImage, setVideoImage] = useState(null);
+  const [videoStatus, setVideoStatus] = useState(null);
   const [swapSource, setSwapSource] = useState(null);
   const [swapTarget, setSwapTarget] = useState(null);
 
