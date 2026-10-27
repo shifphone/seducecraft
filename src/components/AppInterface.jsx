@@ -823,9 +823,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       if (!srcUrl || !tgtUrl) throw new Error('Failed to prepare images');
                       const body = {
                         prompt: 'Take the face from image_1 and place it onto the person in image_2. Match the face identity exactly from image_1. Keep the pose, body, clothing, lighting and background from image_2 unchanged. Seamless face replacement, natural skin tone match.',
-                        model: 'xSD5Pro',
+                        model: selectedModel,
                         n: 1,
-                        size: '1K',
+                        size: selectedModel === 'xSD5Pro' ? '1K' : imageSize,
                         references: [srcUrl, tgtUrl],
                         endUserEmail: `anon@seducecraft.app`,
                       };
@@ -850,6 +850,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   {pendingGens > 0 ? (lang === 'en' ? `Swapping (${pendingGens})` : `Замена (${pendingGens})`) : (lang === 'en' ? 'Swap Face' : 'Заменить лицо')}
                 </button>
                 <div className="text-xs text-zinc-500 text-center mt-2">~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}</div>
+                <div className="flex justify-center gap-2 mt-3">
+                  {[{id:'xSD4.5', label:'Normal'},{id:'xSD5Pro', label:'Pro'}].map(m => (
+                    <button key={m.id} onClick={() => setSelectedModel(m.id)} className={`px-3 py-1.5 rounded-lg text-xs ${selectedModel===m.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {activeMode === 'balance' && (
