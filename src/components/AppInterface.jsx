@@ -1176,13 +1176,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         >
                           ✦ Improve
                         </button>
-                        {promptHistory.length > 0 && (
-                          <select onChange={e => e.target.value && setPrompt(e.target.value)} className="absolute bottom-2 right-2 bg-zinc-800 border border-zinc-700 rounded text-[10px] text-zinc-400 px-1 py-0.5">
-                            <option value="">{lang === 'en' ? 'History' : 'История'}</option>
-                            {promptHistory.map((p, i) => <option key={i} value={p}>{p.slice(0, 30)}...</option>)}
-                          </select>
-                        )}
                       </div>
+                      {promptHistory.length > 0 && (
+                        <div className="mt-2">
+                          <select onChange={e => e.target.value && setPrompt(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-300">
+                            <option value="">{lang === 'en' ? 'Prompt history' : 'История промптов'}</option>
+                            {promptHistory.map((p, i) => <option key={i} value={p}>{p.slice(0, 40)}...</option>)}
+                          </select>
+                        </div>
+                      )}
                     </div>
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-4">
                       <p className="text-xs uppercase tracking-wider text-zinc-500">Settings</p>
