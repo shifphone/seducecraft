@@ -43,9 +43,9 @@ export default async function handler(req, res) {
       const tags = (props['Тэги']?.multi_select || []).map(o => o.name);
       const categories = [...new Set([...loc, ...pose, ...angle, ...clothing, ...tags])].filter(Boolean);
 
-      // simple English fallback from first useful tag + location
-      const enBits = [angle[0], loc[0], clothing[0]].filter(Boolean);
-      const enTitle = enBits.length ? enBits.join(' · ') : ruTitle;
+      // English title from Notion fields (angle + location + clothing + pose)
+      const enBits = [angle[0], loc[0], clothing[0], pose[0]].filter(Boolean);
+      const enTitle = enBits.length ? enBits.slice(0, 3).map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' · ') : ruTitle;
 
       return {
         id: page.id,

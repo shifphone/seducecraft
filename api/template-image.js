@@ -16,10 +16,21 @@ export default async function handler(req, res) {
 
     const img = await fetch(url);
     if (!img.ok) return res.status(502).send('image fetch failed');
-    const buf = Buffer.from(await img.arrayBuffer());
-    const ct = img.headers.get('content-type') || 'image/jpeg';
-    res.setHeader('Content-Type', ct);
-    res.setHeader('Cache-Control', 'public, max-age=3600');
+    let buf = Buffer.from(await img.arrayBuffer());
+
+    // try sharp for resize/compress if available
+    try {
+      const sharp = (await import('sharp')).default;
+      buf = await sharp(buf)
+        .resize(480, 640, { fit: 'cover', withoutEnlargement: true })
+        .jpeg({ quality: 72, progressive: true })
+        .toBuffer();
+      res.setHeader('Content-Type', 'image/jpeg');
+    } catch {
+      res.setHeader('Content-Type', img.headers.get('content-type') || 'image/jpeg');
+    }
+
+    res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
     return res.status(200).send(buf);
   } catch (e) {
     return res.status(500).send(String(e.message || e));
