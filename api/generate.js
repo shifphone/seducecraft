@@ -32,15 +32,30 @@ export default async function handler(req, res) {
   if (action === 'saveGallery') {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { item } = req.body;
-    const { error } = await supabase.from('anon_gallery').insert({ user_id: userId, ...item });
-    if (error) return res.status(500).json({ error: error.message });
-    return res.status(200).json({ ok: true });
+    const row = {
+      user_id: userId,
+      title: item.title || null,
+      prompt: item.prompt || null,
+      character_name: item.characterName || null,
+      src: item.src
+    };
+    const { data, error } = await supabase.from('anon_gallery').insert(row).select().single();
+    if (error) return res.status(500).json({ error: error.message, details: error });
+    return res.status(200).json(data);
   }
   if (action === 'loadGallery') {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase.from('anon_gallery').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
-    return res.status(200).json(data || []);
+    const mapped = (data || []).map(d => ({
+      id: d.id,
+      title: d.title,
+      prompt: d.prompt,
+      characterName: d.character_name,
+      src: d.src,
+      createdAt: new Date(d.created_at).getTime()
+    }));
+    return res.status(200).json(mapped);
   }
   if (action === 'deleteGallery') {
     const supabase = createClient(supabaseUrl, supabaseKey);
