@@ -201,7 +201,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         const errMsg = data.full?.error?.code 
           ? `${data.full.error.code}: ${data.error}` 
           : (typeof data.error === 'string' ? data.error : JSON.stringify(data.error || data));
-        throw new Error(errMsg.slice(0, 400));
+        const rid = data.requestId ? ` [id: ${data.requestId}]` : '';
+        throw new Error((errMsg + rid).slice(0, 500));
       }
       const images = data.images || (data.url ? [{url: data.url}] : []);
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
