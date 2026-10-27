@@ -37,6 +37,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [viewer, setViewer] = useState(null);
   const [gallerySort, setGallerySort] = useState('newest');
   const [galleryFilter, setGalleryFilter] = useState('all');
+  const [gallerySearch, setGallerySearch] = useState('');
+  const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [activeTasks, setActiveTasks] = useState([]);
   const [undressPhoto, setUndressPhoto] = useState(null);
@@ -69,6 +71,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return next;
     });
   };
+  const addNotification = (msg) => {
     const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
     setNotifications(prev => {
       const next = [n, ...prev].slice(0, 50);
