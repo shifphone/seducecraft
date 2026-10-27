@@ -59,6 +59,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [numImages, setNumImages] = useState(1);
   const [sequential, setSequential] = useState(false);
   const [imageSize, setImageSize] = useState('1920x1920');
+  const [videoDuration, setVideoDuration] = useState(5);
+  const [videoRatio, setVideoRatio] = useState('16:9');
+  const [videoModel, setVideoModel] = useState('xW3.0s');
 
   const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
 
@@ -212,6 +215,64 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       showToast(e.message || 'Error');
     }
     setPendingGens(c => Math.max(0, c - images.length));
+  };
+
+  const handleVideoGenerate = async () => {
+    if (!selectedCharacter || !prompt.trim()) return;
+    setPendingGens(c => c + 1);
+    showToast(lang === 'en' ? 'Sent to video generation…' : 'Отправлено на генерацию видео…');
+    try {
+      const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || crypto.randomUUID().slice(0,8)}@seducecraft.app`;
+      const photos = selectedCharacter?.photos || [];
+      const refUrls = [];
+      for (const photo of photos) {
+        if (photo?.startsWith('http')) refUrls.push(photo);
+        else if (photo?.startsWith('data:')) {
+          try {
+            const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: photo }) });
+            if (upRes.ok) {
+              const upData = await upRes.json();
+              if (upData.url) refUrls.push(upData.url);
+            }
+          } catch {}
+        }
+      }
+      const body = {
+        prompt: prompt.trim(),
+        endUserEmail: email,
+        model: videoModel,
+        duration: videoDuration,
+        ratio: videoRatio,
+        references: refUrls,
+      };
+      const res = await fetch('/api/video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.detail || 'Video generation failed');
+      const gen = {
+        id: crypto.randomUUID(),
+        title: 'Video',
+        prompt: prompt.trim(),
+        characterName: selectedCharacter?.name || 'Video',
+        src: data.url,
+        type: 'video',
+        createdAt: Date.now()
+      };
+      saveGallery(prev => [gen, ...prev]);
+      setSpentCredits(prev => {
+        const next = prev + VIDEO_COST;
+        localStorage.setItem('seducecraft.spent', String(next));
+        return next;
+      });
+      addNotification(lang === 'en' ? 'Video generation complete' : 'Видео готово');
+      showToast(lang === 'en' ? 'Video added to gallery' : 'Видео добавлено в галерею');
+    } catch (e) {
+      showToast(e.message || 'Error');
+    }
+    setPendingGens(c => Math.max(0, c - 1));
   };
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
@@ -525,7 +586,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   {[
                     { id: 'photo', label: lang === 'en' ? 'Photo' : 'Фото', desc: lang === 'en' ? 'Generate images' : 'Генерация изображений', icon: '🖼️' },
                     { id: 'faceswap', label: 'Face Swap', desc: lang === 'en' ? 'Swap faces' : 'Замена лица', icon: '🔄' },
-                    { id: 'video', label: lang === 'en' ? 'Video' : 'Видео', desc: lang === 'en' ? 'Coming soon' : 'Скоро', icon: '🎬' },
+                    { id: 'video', label: lang === 'en' ? 'Video' : 'Видео', desc: lang === 'en' ? 'Generate videos' : 'Генерация видео', icon: '🎬' },
                     { id: 'deepfake', label: 'DeepFake', desc: lang === 'en' ? 'Face in video' : 'Лицо в видео', icon: '🎭' },
                     { id: 'characters', label: lang === 'en' ? 'Characters' : 'Персонажи', desc: lang === 'en' ? 'Manage faces' : 'Управление лицами', icon: '👤' },
                     { id: 'gallery', label: lang === 'en' ? 'Gallery' : 'Галерея', desc: lang === 'en' ? 'Your creations' : 'Ваши работы', icon: '📁' },
@@ -575,7 +636,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     {sortedGallery.map(g => (
                       <div key={g.id} className="relative group border border-border rounded-lg overflow-hidden bg-bg-secondary">
                         <label className="absolute top-2 left-2 z-10"><input type="checkbox" checked={selectedGallery.has(g.id)} onChange={() => { const n = new Set(selectedGallery); n.has(g.id) ? n.delete(g.id) : n.add(g.id); setSelectedGallery(n); }} className="w-4 h-4" /></label>
-                        <button onClick={() => setViewer(g)} className="text-left w-full"><img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" /><div className="p-3 text-sm"><div className="font-medium">{g.title}</div><div className="text-xs text-text-secondary">{g.characterName}</div></div></button>
+                        <button onClick={() => setViewer(g)} className="text-left w-full">
+                          {g.type === 'video' || g.src?.includes('.mp4') ? (
+                            <video src={g.src} controls className="aspect-[3/4] w-full object-cover" />
+                          ) : (
+                            <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
+                          )}
+                          <div className="p-3 text-sm"><div className="font-medium">{g.title}</div><div className="text-xs text-text-secondary">{g.characterName}</div></div>
+                        </button>
                         <button onClick={() => setConfirmDelete(new Set([g.id]))} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-600 text-white text-xs rounded flex items-center justify-center">×</button>
                       </div>
                       ))}
@@ -959,6 +1027,57 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   </div>
                 )}
               </>
+            )}
+            {activeMode === 'video' && (
+              <div className="max-w-4xl mx-auto py-6">
+                <h2 className="text-2xl font-semibold mb-6 text-center">{t.video || (lang === 'en' ? 'Video' : 'Видео')}</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8">
+                  <div>
+                    <CharacterPicker />
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-zinc-400 mb-2">Prompt</label>
+                      <textarea
+                        value={prompt}
+                        onChange={e => setPrompt(e.target.value)}
+                        className="w-full h-36 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-orange-500/50"
+                        placeholder={lang === 'en' ? 'Describe the action, motion, and scene...' : 'Опишите действие, движение и сцену...'}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-6">
+                      <div>
+                        <p className="text-xs text-zinc-500 mb-2">Duration</p>
+                        <div className="flex gap-2">
+                          {[5, 10].map(d => (
+                            <button key={d} onClick={() => setVideoDuration(d)} className={`px-4 py-2 rounded-lg text-sm transition-all ${videoDuration===d ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
+                              {d}s
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs text-zinc-500 mb-2">Ratio</p>
+                        <div className="flex gap-2">
+                          {['16:9', '9:16', '1:1'].map(r => (
+                            <button key={r} onClick={() => setVideoRatio(r)} className={`px-3 py-2 rounded-lg text-sm transition-all ${videoRatio===r ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
+                              {r}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-900 border border-zinc-800 rounded-lg">~{VIDEO_COST} tokens</div>
+                    <button
+                      onClick={handleVideoGenerate}
+                      disabled={!selectedCharacter || !prompt.trim()}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40 transition-all"
+                    >
+                      {lang === 'en' ? 'Generate Video' : 'Сгенерировать видео'}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </main>
