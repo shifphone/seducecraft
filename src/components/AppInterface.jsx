@@ -42,7 +42,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [dailyClaimed, setDailyClaimed] = useState(() => localStorage.getItem('seducecraft.daily') === new Date().toDateString());
-  const [promptHistory, setPromptHistory] = useState(() => JSON.parse(localStorage.getItem('seducecraft.prompts') || '[]'));
 
   const claimDaily = () => {
     if (dailyClaimed) return;
@@ -252,16 +251,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         throw new Error((errMsg + rid).slice(0, 500));
       }
       images = data.images || (data.url ? [{url: data.url}] : []);
-      const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now() }));
+      const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
       saveGallery(prev => [...gens, ...prev]);
       const cost = calcPhotoCost();
       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
       addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost, `${selectedModel === 'xSD5Pro' ? 'Pro' : 'Normal'} ${imageSize}`);
-      if (prompt.trim() && !promptHistory.includes(prompt.trim())) {
-        const next = [prompt.trim(), ...promptHistory].slice(0, 10);
-        setPromptHistory(next);
-        localStorage.setItem('seducecraft.prompts', JSON.stringify(next));
-      }
       addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
@@ -741,7 +735,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           ) : (
                             <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
                           )}
-                          <div className="p-3 text-sm"><div className="font-medium">{g.title}</div><div className="text-xs text-text-secondary">{g.characterName}</div></div>
+                          <div className="p-3 text-sm"><div className="font-medium">{g.title}</div><div className="text-xs text-text-secondary">{g.characterName}</div>{g.model && <div className="text-[10px] text-zinc-500">{g.model === 'xSD5Pro' ? 'Pro' : 'Normal'} · {g.size}</div>}</div>
                         </button>
                         <button onClick={() => setConfirmDelete(new Set([g.id]))} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-600 text-white text-xs rounded flex items-center justify-center">×</button>
                         <button onClick={() => saveGallery(prev => prev.map(x => x.id === g.id ? {...x, fav: !x.fav} : x))} className={`absolute top-2 right-10 opacity-0 group-hover:opacity-100 w-6 h-6 text-xs rounded flex items-center justify-center ${g.fav ? 'bg-orange-500 text-white' : 'bg-zinc-700 text-zinc-300'}`}>★</button>
@@ -842,7 +836,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                       const data = await res.json();
                       if (!res.ok) throw new Error(data.error || 'Failed');
-                      const gen = { id: crypto.randomUUID(), title: 'Face Swap', prompt: body.prompt, characterName: 'Swap', src: data.url || data.images?.[0]?.url || data.images?.[0], createdAt: Date.now() };
+                      const gen = { id: crypto.randomUUID(), title: 'Face Swap', prompt: body.prompt, characterName: 'Swap', src: data.url || data.images?.[0]?.url || data.images?.[0], createdAt: Date.now(), model: selectedModel, size: selectedModel === 'xSD5Pro' ? '1K' : imageSize };
                       saveGallery(prev => [gen, ...prev]);
                       const cost = calcPhotoCost();
                       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
@@ -1177,14 +1171,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           ✦ Improve
                         </button>
                       </div>
-                      {promptHistory.length > 0 && (
-                        <div className="mt-2">
-                          <select onChange={e => e.target.value && setPrompt(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-300">
-                            <option value="">{lang === 'en' ? 'Prompt history' : 'История промптов'}</option>
-                            {promptHistory.map((p, i) => <option key={i} value={p}>{p.slice(0, 40)}...</option>)}
-                          </select>
-                        </div>
-                      )}
                     </div>
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-4">
                       <p className="text-xs uppercase tracking-wider text-zinc-500">Settings</p>
