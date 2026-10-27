@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
-  const { prompt, endUserEmail, model = 'xW3.0s', duration = 5, ratio = '16:9', references, referenceBase64 } = req.body || {};
+  const { prompt, endUserEmail, model = 'xW3.0s', duration = 5, ratio = '16:9', references, referenceBase64, image } = req.body || {};
 
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
@@ -53,6 +53,9 @@ export default async function handler(req, res) {
   if (refUrls.length) {
     body.reference_images = refUrls;
   }
+  if (image) {
+    body.image = image;
+  }
 
   try {
     const createRes = await fetch('https://api.xmode.ai/v1/videos', {
@@ -86,7 +89,7 @@ export default async function handler(req, res) {
       }
       if (data.status === 'failed' || data.status === 'expired') {
         const errDetail = data.error?.message || data.error?.code || JSON.stringify(data.error || data);
-        return res.status(500).json({ error: errDetail, full: data });
+        return res.status(500).json({ error: errDetail, full: data, requestId });
       }
     }
     return res.status(504).json({ error: 'Timeout' });

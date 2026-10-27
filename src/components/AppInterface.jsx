@@ -62,6 +62,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [videoDuration, setVideoDuration] = useState(5);
   const [videoRatio, setVideoRatio] = useState('16:9');
   const [videoModel, setVideoModel] = useState('xW3.0s');
+  const [videoMode, setVideoMode] = useState('text'); // text | image | templates
+  const [videoImage, setVideoImage] = useState(null);
+  const [videoStatus, setVideoStatus] = useState(null);
 
   const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
 
@@ -220,12 +223,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
 
   const handleVideoGenerate = async () => {
-    if (!selectedCharacter || !prompt.trim()) return;
+    if (videoMode === 'image' && !videoImage) return;
+    if (videoMode !== 'image' && !selectedCharacter) return;
+    if (!prompt.trim()) return;
     setPendingGens(c => c + 1);
+    setVideoStatus('queued');
     showToast(lang === 'en' ? 'Sent to video generation…' : 'Отправлено на генерацию видео…');
     try {
       const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || crypto.randomUUID().slice(0,8)}@seducecraft.app`;
-      const photos = selectedCharacter?.photos || [];
+      const photos = videoMode === 'image' ? [videoImage] : (selectedCharacter?.photos || []);
       const refUrls = [];
       for (const photo of photos) {
         if (photo?.startsWith('http')) refUrls.push(photo);
@@ -242,11 +248,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const body = {
         prompt: prompt.trim(),
         endUserEmail: email,
-        model: videoModel,
+        model: videoMode === 'image' ? 'xW2.7S' : videoModel,
         duration: videoDuration,
         ratio: videoRatio,
-        references: refUrls,
+        references: videoMode === 'image' ? [] : refUrls,
+        image: videoMode === 'image' ? refUrls[0] : undefined,
       };
+      setVideoStatus('processing');
       const res = await fetch('/api/video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -256,7 +264,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (!res.ok) throw new Error(data.error || data.detail || 'Video generation failed');
       const gen = {
         id: crypto.randomUUID(),
-        title: 'Video',
+        title: videoMode === 'image' ? 'Image to Video' : 'Video',
         prompt: prompt.trim(),
         characterName: selectedCharacter?.name || 'Video',
         src: data.url,
@@ -271,8 +279,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       });
       addNotification(lang === 'en' ? 'Video generation complete' : 'Видео готово');
       showToast(lang === 'en' ? 'Video added to gallery' : 'Видео добавлено в галерею');
+      setVideoStatus('done');
     } catch (e) {
       showToast(e.message || 'Error');
+      setVideoStatus('error');
     }
     setPendingGens(c => Math.max(0, c - 1));
   };
@@ -1031,11 +1041,56 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               </>
             )}
             {activeMode === 'video' && (
-              <div className="max-w-4xl mx-auto py-6">
-                <h2 className="text-2xl font-semibold mb-6 text-center">{t.video || (lang === 'en' ? 'Video' : 'Видео')}</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8">
+              <div className="max-w-5xl mx-auto py-6">
+                <h2 className="text-2xl font-semibold mb-4 text-center">{t.video || (lang === 'en' ? 'Video' : 'Видео')}</h2>
+                <div className="flex justify-center gap-2 mb-6">
+                  {[
+                    { id: 'text', label: lang === 'en' ? 'Text to Video' : 'Текст в видео' },
+                    { id: 'image', label: lang === 'en' ? 'Image to Video' : 'Фото в видео' },
+                    { id: 'templates', label: lang === 'en' ? 'Templates' : 'Шаблоны' },
+                  ].map(m => (
+                    <button key={m.id} onClick={() => setVideoMode(m.id)} className={`px-4 py-2 rounded-full text-sm ${videoMode===m.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300'}`}>
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+
+                {videoMode === 'templates' && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {[
+                      { title: lang === 'en' ? 'Slow smile' : 'Медленная улыбка', prompt: 'woman slowly smiles and looks at camera, soft natural lighting, gentle head movement' },
+                      { title: lang === 'en' ? 'Walking' : 'Идёт', prompt: 'woman walking towards camera, confident pose, outdoor lighting, natural motion' },
+                      { title: lang === 'en' ? 'Looking back' : 'Оглядывается', prompt: 'woman looks back over shoulder, seductive expression, bedroom lighting, slow motion' },
+                    ].map(t => (
+                      <button key={t.title} onClick={() => { setPrompt(t.prompt); setVideoMode('text'); }} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-left hover:border-orange-500/50">
+                        <div className="font-medium text-sm">{t.title}</div>
+                        <div className="text-xs text-zinc-500 mt-1 line-clamp-2">{t.prompt}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8">
                   <div>
-                    <CharacterPicker />
+                    {videoMode !== 'image' && <CharacterPicker />}
+                    {videoMode === 'image' && (
+                      <div className="mb-4">
+                        <label className="block text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Source image' : 'Исходное фото'}</label>
+                        <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center">
+                          {videoImage ? <img src={videoImage} alt="" className="max-h-40 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">🖼️</div>}
+                          <label className="text-orange-400 text-sm cursor-pointer">
+                            {lang === 'en' ? 'Upload image' : 'Загрузить фото'}
+                            <input type="file" accept="image/*" className="hidden" onChange={e => {
+                              const f = e.target.files?.[0];
+                              if (!f) return;
+                              const r = new FileReader();
+                              r.onload = () => setVideoImage(r.result);
+                              r.readAsDataURL(f);
+                            }} />
+                          </label>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-4">
                     <div>
@@ -1043,16 +1098,28 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <textarea
                         value={prompt}
                         onChange={e => setPrompt(e.target.value)}
-                        className="w-full h-36 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-orange-500/50"
-                        placeholder={lang === 'en' ? 'Describe the action, motion, and scene...' : 'Опишите действие, движение и сцену...'}
+                        className="w-full h-32 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm resize-none focus:outline-none focus:border-orange-500/50"
+                        placeholder={lang === 'en' ? 'Describe the action and motion...' : 'Опишите действие и движение...'}
                       />
                     </div>
+                    {videoMode !== 'image' && (
+                      <div>
+                        <p className="text-xs text-zinc-500 mb-2">Model</p>
+                        <div className="flex gap-2">
+                          {[{id:'xW3.0s', label:'Normal'},{id:'xW3.0sPro', label:'Pro'}].map(m => (
+                            <button key={m.id} onClick={() => setVideoModel(m.id)} className={`px-4 py-2 rounded-lg text-sm ${videoModel===m.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300'}`}>
+                              {m.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-6">
                       <div>
                         <p className="text-xs text-zinc-500 mb-2">Duration</p>
                         <div className="flex gap-2">
                           {[5, 10].map(d => (
-                            <button key={d} onClick={() => setVideoDuration(d)} className={`px-4 py-2 rounded-lg text-sm transition-all ${videoDuration===d ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
+                            <button key={d} onClick={() => setVideoDuration(d)} className={`px-4 py-2 rounded-lg text-sm ${videoDuration===d ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300'}`}>
                               {d}s
                             </button>
                           ))}
@@ -1062,18 +1129,26 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <p className="text-xs text-zinc-500 mb-2">Ratio</p>
                         <div className="flex gap-2">
                           {['16:9', '9:16', '1:1'].map(r => (
-                            <button key={r} onClick={() => setVideoRatio(r)} className={`px-3 py-2 rounded-lg text-sm transition-all ${videoRatio===r ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
+                            <button key={r} onClick={() => setVideoRatio(r)} className={`px-3 py-2 rounded-lg text-sm ${videoRatio===r ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-300'}`}>
                               {r}
                             </button>
                           ))}
                         </div>
                       </div>
                     </div>
+                    {videoStatus && (
+                      <div className="text-sm text-center py-2 rounded-lg bg-zinc-900 border border-zinc-800">
+                        {videoStatus === 'queued' && (lang === 'en' ? 'Queued…' : 'В очереди…')}
+                        {videoStatus === 'processing' && (lang === 'en' ? 'Generating…' : 'Генерация…')}
+                        {videoStatus === 'done' && (lang === 'en' ? 'Done' : 'Готово')}
+                        {videoStatus === 'error' && (lang === 'en' ? 'Failed' : 'Ошибка')}
+                      </div>
+                    )}
                     <div className="text-xs text-zinc-500 text-center py-2 bg-zinc-900 border border-zinc-800 rounded-lg">~{VIDEO_COST} tokens</div>
                     <button
                       onClick={handleVideoGenerate}
-                      disabled={!selectedCharacter || !prompt.trim()}
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40 transition-all"
+                      disabled={(videoMode === 'image' ? !videoImage : !selectedCharacter) || !prompt.trim()}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40"
                     >
                       {lang === 'en' ? 'Generate Video' : 'Сгенерировать видео'}
                     </button>
