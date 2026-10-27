@@ -40,7 +40,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallerySearch, setGallerySearch] = useState('');
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
-  const [activeTasks, setActiveTasks] = useState([]);
+  const [dailyClaimed, setDailyClaimed] = useState(() => localStorage.getItem('seducecraft.daily') === new Date().toDateString());
+  const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
+
+  const totalGens = gallery.length;
+  const rank = totalGens >= 500 ? 'VIP' : totalGens >= 200 ? 'Pro' : totalGens >= 50 ? 'Active' : 'Newbie';
+  const rankColor = rank === 'VIP' ? 'text-yellow-400' : rank === 'Pro' ? 'text-purple-400' : rank === 'Active' ? 'text-blue-400' : 'text-zinc-400';
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -71,7 +76,16 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return next;
     });
   };
-  const addNotification = (msg) => {
+  const claimDaily = () => {
+    if (dailyClaimed) return;
+    const bonus = 5;
+    setSpentCredits(prev => { const next = Math.max(0, prev - bonus); localStorage.setItem('seducecraft.spent', String(next)); return next; });
+    onAddCredits(bonus);
+    setDailyClaimed(true);
+    localStorage.setItem('seducecraft.daily', new Date().toDateString());
+    showToast(lang === 'en' ? `+${bonus} daily bonus!` : `+${bonus} ежедневный бонус!`);
+    addNotification(lang === 'en' ? `Daily bonus: +${bonus}` : `Ежедневный бонус: +${bonus}`);
+  };
     const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
     setNotifications(prev => {
       const next = [n, ...prev].slice(0, 50);
@@ -324,6 +338,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (galleryFilter === 'photo') return g.type !== 'video';
       if (galleryFilter === 'undress') return g.title === 'Undress';
       if (galleryFilter === 'swap') return g.title === 'Face Swap';
+      if (galleryFilter === 'fav') return g.fav;
       return true;
     })
     .sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
@@ -578,6 +593,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">
                 {balance !== null ? balance : credits} {t.credits}
               </button>
+              <span className={`text-xs ${rankColor}`}>{rank}</span>
+              {!dailyClaimed && (
+                <button onClick={claimDaily} className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full hover:bg-orange-500/30">
+                  +5
+                </button>
+              )}
             </div>
           )}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary">{t.login}</button>}
@@ -681,6 +702,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <option value="video">{lang === 'en' ? 'Videos' : 'Видео'}</option>
                         <option value="undress">Undress</option>
                         <option value="swap">Face Swap</option>
+                        <option value="fav">{lang === 'en' ? 'Favorites' : 'Избранное'}</option>
                       </select>
                       <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
                         <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
@@ -715,6 +737,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <div className="p-3 text-sm"><div className="font-medium">{g.title}</div><div className="text-xs text-text-secondary">{g.characterName}</div></div>
                         </button>
                         <button onClick={() => setConfirmDelete(new Set([g.id]))} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-600 text-white text-xs rounded flex items-center justify-center">×</button>
+                        <button onClick={() => saveGallery(prev => prev.map(x => x.id === g.id ? {...x, fav: !x.fav} : x))} className={`absolute top-2 right-10 opacity-0 group-hover:opacity-100 w-6 h-6 text-xs rounded flex items-center justify-center ${g.fav ? 'bg-orange-500 text-white' : 'bg-zinc-700 text-zinc-300'}`}>★</button>
                       </div>
                       ))}
                     </div>
@@ -866,7 +889,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </button>
                   ))}
                 </div>
-                <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'History' : 'История'}</h3>
+                <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'Referral' : 'Рефералка'}</h3>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+                  <div className="text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Your code' : 'Ваш код'}</div>
+                  <div className="flex gap-2">
+                    <input value={referralCode} onChange={e => setReferralCode(e.target.value)} placeholder={lang === 'en' ? 'Enter or generate code' : 'Введите или создайте код'} className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
+                    <button onClick={() => { const code = crypto.randomUUID().slice(0, 8).toUpperCase(); setReferralCode(code); localStorage.setItem('seducecraft.ref', code); }} className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm">{lang === 'en' ? 'Generate' : 'Создать'}</button>
+                  </div>
+                  <div className="text-xs text-zinc-500 mt-2">{lang === 'en' ? 'Share this code. Both get +50 credits when used.' : 'Поделитесь кодом. Оба получат +50 кредитов при использовании.'}</div>
+                </div>
                 <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm">
                   {transactions.length === 0 ? (
                     <div className="text-zinc-500">{lang === 'en' ? 'No transactions yet' : 'Транзакций пока нет'}</div>
@@ -950,15 +981,31 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <div className="space-y-4">
                   <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                     <div className="font-medium mb-2">{lang === 'en' ? 'How to create a character?' : 'Как создать персонажа?'}</div>
-                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Go to My Characters → Create character → Upload photos or create fictional' : 'Перейдите в Мои персонажи → Создать → Загрузите фото или создайте вымышленного'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Go to My Characters → Create character → Upload 1-5 clear face photos. More photos = better face consistency.' : 'Перейдите в Мои персонажи → Создать → Загрузите 1-5 чётких фото лица. Больше фото = лучше консистентность лица.'}</div>
                   </div>
                   <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                     <div className="font-medium mb-2">{lang === 'en' ? 'How to generate?' : 'Как генерировать?'}</div>
-                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Select a character, choose a template or write a prompt, click Generate' : 'Выберите персонажа, выберите шаблон или напишите промпт, нажмите Генерировать'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Select a character, choose a template or write a prompt in Custom, click Generate. Results appear in Gallery.' : 'Выберите персонажа, выберите шаблон или напишите промпт в Custom, нажмите Генерировать. Результаты появятся в Галерее.'}</div>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'Face Swap tips' : 'Советы по Face Swap'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Use a clear front-facing face as source. Target should have similar lighting. Results vary — try Pro model for better quality.' : 'Используйте чёткое лицо анфас как источник. Цель должна иметь похожее освещение. Результаты варьируются — попробуйте Pro модель для лучшего качества.'}</div>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'Undress tips' : 'Советы по Undress'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Works best with full-body or half-body photos. Face-only photos will not work well. Higher sizes cost more but give better detail.' : 'Лучше работает с фото в полный рост или по пояс. Только лицо работает плохо. Большие размеры стоят дороже, но дают больше деталей.'}</div>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'Pricing' : 'Цены'}</div>
+                    <div className="text-sm text-zinc-400">{lang === 'en' ? 'Normal: 1-3 tokens depending on size. Pro: 2-4 tokens. Video: 5-15 tokens. Price shown before generation.' : 'Normal: 1-3 токена в зависимости от размера. Pro: 2-4 токена. Видео: 5-15 токенов. Цена показывается перед генерацией.'}</div>
                   </div>
                   <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
                     <div className="font-medium mb-2">{lang === 'en' ? 'Lost your code?' : 'Потеряли код?'}</div>
                     <div className="text-sm text-zinc-400">{lang === 'en' ? 'Your login code is shown in Profile. Save it to access your data later.' : 'Ваш код входа показан в Профиле. Сохраните его для доступа к данным.'}</div>
+                  </div>
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                    <div className="font-medium mb-2">{lang === 'en' ? 'Contact' : 'Контакт'}</div>
+                    <div className="text-sm text-zinc-400">Telegram: @seducecraft_support</div>
                   </div>
                 </div>
               </div>
