@@ -63,19 +63,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
 
   useEffect(() => {
+    try {
+      const g = localStorage.getItem('seducecraft.gallery');
+      if (g) setGallery(JSON.parse(g));
+    } catch {}
     (async () => {
       const userId = getUserId();
-      console.log('Loading characters for:', userId, 'isLoggedIn:', isLoggedIn);
       if (!isLoggedIn) return;
       try {
         const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId }) });
         const data = await res.json();
-        console.log('Loaded:', data);
         if (res.ok && Array.isArray(data)) {
           setCharacters(data.map(c => ({ ...c, photos: c.photos || [], saved: true })));
-          if (data.length) showToast(`Loaded ${data.length} characters`);
         }
-      } catch (e) { console.error('Load error:', e); }
+      } catch {}
     })();
   }, [isLoggedIn]);
 
