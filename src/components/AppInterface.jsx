@@ -42,7 +42,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [dailyClaimed, setDailyClaimed] = useState(() => localStorage.getItem('seducecraft.daily') === new Date().toDateString());
-  const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
+  const [promptHistory, setPromptHistory] = useState(() => JSON.parse(localStorage.getItem('seducecraft.prompts') || '[]'));
 
   const claimDaily = () => {
     if (dailyClaimed) return;
@@ -257,11 +257,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const cost = calcPhotoCost();
       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
       addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost, `${selectedModel === 'xSD5Pro' ? 'Pro' : 'Normal'} ${imageSize}`);
+      if (prompt.trim() && !promptHistory.includes(prompt.trim())) {
+        const next = [prompt.trim(), ...promptHistory].slice(0, 10);
+        setPromptHistory(next);
+        localStorage.setItem('seducecraft.prompts', JSON.stringify(next));
+      }
       addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
-      showToast(e.message || 'Error');
+      const msg = e.message || 'Error';
+      showToast(msg.includes('{') ? 'Generation failed' : msg);
     }
     setPendingGens(c => Math.max(0, c - (images?.length || numImages)));
   };
@@ -1170,6 +1176,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         >
                           ✦ Improve
                         </button>
+                        {promptHistory.length > 0 && (
+                          <select onChange={e => e.target.value && setPrompt(e.target.value)} className="absolute bottom-2 right-2 bg-zinc-800 border border-zinc-700 rounded text-[10px] text-zinc-400 px-1 py-0.5">
+                            <option value="">{lang === 'en' ? 'History' : 'История'}</option>
+                            {promptHistory.map((p, i) => <option key={i} value={p}>{p.slice(0, 30)}...</option>)}
+                          </select>
+                        )}
                       </div>
                     </div>
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 space-y-4">
@@ -1344,6 +1356,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               </>
             )}
             {activeMode === 'video' && (
+              <>
               <div className="max-w-5xl mx-auto py-6">
                 <h2 className="text-2xl font-semibold mb-4 text-center">{t.video || (lang === 'en' ? 'Video' : 'Видео')}</h2>
                 <div className="flex justify-center gap-2 mb-6">
@@ -1481,6 +1494,22 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   </div>
                 </div>
               </div>
+              {gallery.filter(g => g.type === 'video').length > 0 && (
+                <div className="mt-8 max-w-5xl mx-auto">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs uppercase tracking-wider text-zinc-500">Recent</p>
+                    <button onClick={() => setActiveMode('gallery')} className="text-xs text-orange-400 hover:text-orange-300">→ Gallery</button>
+                  </div>
+                  <div className="grid grid-cols-4 lg:grid-cols-6 gap-3">
+                    {gallery.filter(g => g.type === 'video').slice(0, 6).map(g => (
+                      <button key={g.id} onClick={() => setViewer(g)} className="rounded-lg overflow-hidden border border-zinc-800">
+                        <video src={g.src} className="aspect-[3/4] w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              </>
             )}
           </div>
         </main>
