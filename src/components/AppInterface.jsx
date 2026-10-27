@@ -36,6 +36,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallery, setGallery] = useState([]);
   const [viewer, setViewer] = useState(null);
   const [gallerySort, setGallerySort] = useState('newest');
+  const [gallerySearch, setGallerySearch] = useState('');
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -64,7 +65,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [videoModel, setVideoModel] = useState('xW3.0s');
   const [videoMode, setVideoMode] = useState('text'); // text | image | templates
   const [videoImage, setVideoImage] = useState(null);
-  const [videoStatus, setVideoStatus] = useState(null);
+  const [swapSource, setSwapSource] = useState(null);
+  const [swapTarget, setSwapTarget] = useState(null);
 
   const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
 
@@ -288,7 +290,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
-  const sortedGallery = [...gallery].sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
+  const sortedGallery = [...gallery]
+    .filter(g => !gallerySearch || g.title?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.characterName?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.prompt?.toLowerCase().includes(gallerySearch.toLowerCase()))
+    .sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
 
   const menu = [
     { id: 'home', name: t.home },
@@ -631,7 +635,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-semibold">{t.myGallery}</h2>
                   {gallery.length > 0 && (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <input value={gallerySearch} onChange={e => setGallerySearch(e.target.value)} placeholder={lang === 'en' ? 'Search...' : 'Поиск...'} className="h-9 bg-bg-secondary border border-border rounded-md px-3 text-sm w-40" />
                       <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
                         <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
                         <option value="oldest">{lang === 'en' ? 'Oldest' : 'Сначала старые'}</option>
@@ -639,7 +644,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <button onClick={() => setSelectedGallery(selectedGallery.size === gallery.length ? new Set() : new Set(gallery.map(g => g.id)))} className="h-9 px-3 border border-zinc-700 text-zinc-400 rounded-md text-sm hover:border-zinc-500">
                         {selectedGallery.size === gallery.length ? (lang === 'en' ? 'Deselect all' : 'Снять все') : (lang === 'en' ? 'Select all' : 'Выбрать все')}
                       </button>
-                      {selectedGallery.size > 0 && <button onClick={() => setConfirmDelete(selectedGallery)} className="h-9 px-3 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm">{lang === 'en' ? `Delete (${selectedGallery.size})` : `Удалить (${selectedGallery.size})`}</button>}
+                      {selectedGallery.size > 0 && (
+                        <>
+                          <button onClick={() => {
+                            const items = gallery.filter(g => selectedGallery.has(g.id));
+                            items.forEach((g, i) => setTimeout(() => downloadImage(g.src, g.title || 'item'), i * 300));
+                          }} className="h-9 px-3 border border-zinc-700 text-zinc-300 rounded-md text-sm hover:border-zinc-500">{lang === 'en' ? `Download (${selectedGallery.size})` : `Скачать (${selectedGallery.size})`}</button>
+                          <button onClick={() => setConfirmDelete(selectedGallery)} className="h-9 px-3 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm">{lang === 'en' ? `Delete (${selectedGallery.size})` : `Удалить (${selectedGallery.size})`}</button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -662,6 +675,82 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                 )}
               </>
+            )}
+            {activeMode === 'faceswap' && (
+              <div className="max-w-4xl mx-auto py-6">
+                <h2 className="text-2xl font-semibold mb-6 text-center">{lang === 'en' ? 'Face Swap' : 'Замена лица'}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Source face' : 'Лицо'}</label>
+                    <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center">
+                      {swapSource ? <img src={swapSource} alt="" className="max-h-40 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">👤</div>}
+                      <label className="text-orange-400 text-sm cursor-pointer">
+                        {lang === 'en' ? 'Upload face' : 'Загрузить лицо'}
+                        <input type="file" accept="image/*" className="hidden" onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          const r = new FileReader();
+                          r.onload = () => setSwapSource(r.result);
+                          r.readAsDataURL(f);
+                        }} />
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Target photo' : 'Целевое фото'}</label>
+                    <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center">
+                      {swapTarget ? <img src={swapTarget} alt="" className="max-h-40 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">🖼️</div>}
+                      <label className="text-orange-400 text-sm cursor-pointer">
+                        {lang === 'en' ? 'Upload target' : 'Загрузить цель'}
+                        <input type="file" accept="image/*" className="hidden" onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          const r = new FileReader();
+                          r.onload = () => setSwapTarget(r.result);
+                          r.readAsDataURL(f);
+                        }} />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!swapSource || !swapTarget) return;
+                    setPendingGens(c => c + 1);
+                    showToast(lang === 'en' ? 'Face swap started…' : 'Замена лица запущена…');
+                    try {
+                      const up = async (b64) => {
+                        const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: b64 }) });
+                        const d = await res.json();
+                        return d.url;
+                      };
+                      const srcUrl = await up(swapSource);
+                      const tgtUrl = await up(swapTarget);
+                      const body = {
+                        prompt: 'Replace the face in image_2 with the face from image_1. Keep the body, pose, clothing and background from image_2 exactly. Only change the face.',
+                        model: selectedModel,
+                        n: 1,
+                        size: imageSize,
+                        references: [srcUrl, tgtUrl],
+                        endUserEmail: `anon@seducecraft.app`,
+                      };
+                      const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error || 'Failed');
+                      const gen = { id: crypto.randomUUID(), title: 'Face Swap', prompt: body.prompt, characterName: 'Swap', src: data.url || data.images?.[0]?.url || data.images?.[0], createdAt: Date.now() };
+                      saveGallery(prev => [gen, ...prev]);
+                      showToast(lang === 'en' ? 'Face swap done' : 'Замена готова');
+                    } catch (e) {
+                      showToast(e.message || 'Error');
+                    }
+                    setPendingGens(c => Math.max(0, c - 1));
+                  }}
+                  disabled={!swapSource || !swapTarget}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium shadow-lg shadow-orange-500/30 hover:brightness-110 disabled:opacity-40"
+                >
+                  {lang === 'en' ? 'Swap Face' : 'Заменить лицо'}
+                </button>
+              </div>
             )}
             {activeMode === 'balance' && (
               <div className="max-w-2xl mx-auto">
