@@ -428,7 +428,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               </div>
             )}
           </div>
-          {isLoggedIn && <span className="text-sm">{userName} · {balance !== null ? balance : credits} {t.credits}</span>}
+          {isLoggedIn && (
+            <div className="flex items-center gap-3 text-sm">
+              <button onClick={() => setActiveMode('profile')} className="hover:text-orange-400 transition-colors">{userName}</button>
+              <span className="text-zinc-600">·</span>
+              <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">{balance !== null ? balance : credits} {t.credits}</button>
+            </div>
+          )}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary">{t.login}</button>}
           {isLoggedIn && <button onClick={onLogout} className="text-sm text-text-secondary hover:text-text-primary">{t.logout}</button>}
         </div>
