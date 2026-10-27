@@ -159,7 +159,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (needsPhoto && !undressPhoto) return;
     if (!needsPhoto && !selectedCharacter) return;
     const p = buildPrompt();
-    setPendingGens(c => c + 1);
+    setPendingGens(c => c + numImages);
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     try {
       const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID().slice(0,8); localStorage.setItem('anonId', id); return id; })()}@seducecraft.app`;
@@ -211,7 +211,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     } catch (e) {
       showToast(e.message || 'Error');
     }
-    setPendingGens(c => Math.max(0, c - 1));
+    setPendingGens(c => Math.max(0, c - images.length));
   };
 
   const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
@@ -474,7 +474,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           <nav className="flex-1 py-4">
             {menu.map(({id, name, subs}) => (
               <div key={id}>
-                <button onClick={() => setActiveMode(id)} className={`menu-item w-full text-left px-5 py-2.5 text-sm ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary'}`}>{name}</button>
+                <button onClick={() => setActiveMode(id)} className={`menu-item w-full text-left px-5 py-2.5 text-sm flex items-center justify-between ${activeMode===id ? 'menu-active text-text-primary' : 'text-text-secondary'}`}>
+                  <span>{name}</span>
+                  {id === 'notifications' && notifications.filter(n => !n.read).length > 0 && (
+                    <span className="w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center">{notifications.filter(n => !n.read).length}</span>
+                  )}
+                </button>
                 {subs && activeMode === id && (
                   <div className="ml-4 border-l border-zinc-800">
                     {subs.map(s => (
