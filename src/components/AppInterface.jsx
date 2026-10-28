@@ -1126,7 +1126,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </label>
                       {gallery.filter(g => g.type !== 'video').length > 0 && (
                         <div className="mt-3">
-                          <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or pick from gallery' : 'или выберите из галереи'}</p>
+                          <button onClick={() => setGalleryPicker('undress')} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or pick from gallery' : 'или выберите из галереи'}</button>
                           <div className="flex gap-2 justify-center flex-wrap">
                             {gallery.filter(g => g.type !== 'video').slice(0, 8).map(g => (
                               <button key={g.id} onClick={() => setUndressPhoto(g.src)} className={`w-12 h-16 rounded overflow-hidden border-2 ${undressPhoto === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
