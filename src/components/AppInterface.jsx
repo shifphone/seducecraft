@@ -300,7 +300,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
       const msg = e.message || 'Error';
-      showToast(msg.includes('{') ? 'Generation failed' : msg);
+      const cost = calcPhotoCost();
+      onAddCredits(cost);
+      addTx('Refund', -cost, 'Generation failed');
+      addNotification(lang === 'en' ? `Refunded ${cost} credits` : `Возвращено ${cost} кредитов`);
+      showToast(msg.includes('{') ? 'Generation failed — refunded' : msg + ' — refunded');
     }
     setPendingGens(c => Math.max(0, c - (images?.length || numImages)));
   };
