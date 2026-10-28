@@ -1217,8 +1217,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Language' : 'Язык'}</div>
                     <div className="flex gap-2">
-                      <button onClick={() => onLangChange('en')} className={`px-4 py-2 rounded-lg text-sm ${lang==='en' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>EN</button>
-                      <button onClick={() => onLangChange('ru')} className={`px-4 py-2 rounded-lg text-sm ${lang==='ru' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>RU</button>
+                      <button onClick={() => onLangChange('en')} className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${lang==='en' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>🇺🇸 English</button>
+                      <button onClick={() => onLangChange('ru')} className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${lang==='ru' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>🇷🇺 Русский</button>
                     </div>
                   </div>
                   <button onClick={() => { if (confirm(lang === 'en' ? 'Delete all data?' : 'Удалить все данные?')) { localStorage.clear(); window.location.reload(); } }} className="text-sm text-red-400 hover:text-red-300">{lang === 'en' ? 'Delete account data' : 'Удалить данные аккаунта'}</button>
