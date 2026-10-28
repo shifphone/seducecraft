@@ -109,7 +109,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [videoMode, setVideoMode] = useState('text'); // text | image | templates
   const [videoImage, setVideoImage] = useState(null);
   const [customPhoto, setCustomPhoto] = useState(null);
-  const [galleryPicker, setGalleryPicker] = useState(null);
+  const [galleryPicker, setGalleryPicker] = useState(null); // 'swap' | 'video' | 'undress' | 'custom'
   const [videoStatus, setVideoStatus] = useState(null);
   const [swapSource, setSwapSource] = useState(null);
   const [swapTarget, setSwapTarget] = useState(null);
@@ -645,7 +645,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 overflow-y-auto">
               {gallery.filter(g => g.type !== 'video' && !g.src?.includes('.mp4')).map(g => (
-                <button key={g.id} onClick={() => { galleryPicker(g.src); setGalleryPicker(null); }} className="aspect-[3/4] rounded-lg overflow-hidden border border-zinc-800 hover:border-orange-500">
+                <button key={g.id} onClick={() => {
+                  if (galleryPicker === 'swap') setSwapTarget(g.src);
+                  else if (galleryPicker === 'video') setVideoImage(g.src);
+                  else if (galleryPicker === 'undress') setUndressPhoto(g.src);
+                  else if (galleryPicker === 'custom') setCustomPhoto(g.src);
+                  setGalleryPicker(null);
+                }} className="aspect-[3/4] rounded-lg overflow-hidden border border-zinc-800 hover:border-orange-500">
                   <img src={g.src} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
@@ -827,8 +833,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Source face' : 'Лицо'}</label>
-                    <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center">
-                      {swapSource ? <img src={swapSource} alt="" className="max-h-40 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">👤</div>}
+                    <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center min-h-[280px]">
+                      {swapSource ? <img src={swapSource} alt="" className="max-h-64 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">👤</div>}
                       <label className="text-orange-400 text-sm cursor-pointer">
                         {lang === 'en' ? 'Upload face' : 'Загрузить лицо'}
                         <input type="file" accept="image/*" className="hidden" onChange={e => {
@@ -855,8 +861,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   </div>
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Target photo' : 'Целевое фото'}</label>
-                    <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center">
-                      {swapTarget ? <img src={swapTarget} alt="" className="max-h-40 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">🖼️</div>}
+                    <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center min-h-[280px]">
+                      {swapTarget ? <img src={swapTarget} alt="" className="max-h-64 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">🖼️</div>}
                       <label className="text-orange-400 text-sm cursor-pointer">
                         {lang === 'en' ? 'Upload target' : 'Загрузить цель'}
                         <input type="file" accept="image/*" className="hidden" onChange={e => {
@@ -869,7 +875,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </label>
                       {gallery.filter(g => g.type !== 'video').length > 0 && (
                         <div className="mt-3">
-                          <button onClick={() => setGalleryPicker(src => setSwapTarget(src))} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
+                          <button onClick={() => setGalleryPicker('swap')} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
                           <div className="flex gap-2 justify-center flex-wrap">
                             {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
                               <button key={g.id} onClick={() => setSwapTarget(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${swapTarget === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
@@ -1512,8 +1518,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     {videoMode === 'image' && (
                       <div className="mb-4">
                         <label className="block text-sm text-zinc-400 mb-2">{lang === 'en' ? 'Source image' : 'Исходное фото'}</label>
-                        <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center">
-                          {videoImage ? <img src={videoImage} alt="" className="max-h-40 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">🖼️</div>}
+                        <div className="border-2 border-dashed border-zinc-700 rounded-xl p-6 text-center min-h-[280px]">
+                          {videoImage ? <img src={videoImage} alt="" className="max-h-64 mx-auto rounded-lg mb-2" /> : <div className="text-4xl mb-2">🖼️</div>}
                           <label className="text-orange-400 text-sm cursor-pointer">
                             {lang === 'en' ? 'Upload image' : 'Загрузить фото'}
                             <input type="file" accept="image/*" className="hidden" onChange={e => {
@@ -1526,7 +1532,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           </label>
                           {gallery.filter(g => g.type !== 'video').length > 0 && (
                             <div className="mt-3">
-                              <button onClick={() => setGalleryPicker(src => setVideoImage(src))} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
+                              <button onClick={() => setGalleryPicker('video')} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
                               <div className="flex gap-2 justify-center flex-wrap">
                                 {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
                                   <button key={g.id} onClick={() => setVideoImage(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${videoImage === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
