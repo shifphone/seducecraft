@@ -57,6 +57,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
+  const [checkoutPkg, setCheckoutPkg] = useState(null);
+  const [paying, setPaying] = useState(false);
 
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [undressStyle, setUndressStyle] = useState('nude');
@@ -83,6 +85,32 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (imageSize.includes('3072')) base = 3;
     }
     return Math.round(base * numImages);
+  };
+
+    const handlePurchase = async (packageId) => {
+    setPaying(true);
+    try {
+      const userId = getUserId();
+      const res = await fetch('/api/payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'checkout', packageId, userId }) });
+      const data = await res.json();
+      if (data.demo) {
+        const confirm = await fetch('/api/payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', packageId, userId }) });
+        const result = await confirm.json();
+        if (result.ok) {
+          onAddCredits(data.credits);
+          addTx('Purchase', data.credits, `$${data.price}`);
+          showToast(lang === 'en' ? `Added ${data.credits} credits` : `Добавлено ${data.credits} кредитов`);
+        }
+      } else if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error || 'Payment error');
+      }
+    } catch (e) {
+      showToast(e.message || 'Payment failed');
+    }
+    setPaying(false);
+    setCheckoutPkg(null);
   };
 
   const addTx = (desc, amount, details) => {
@@ -676,6 +704,24 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
         </div>
       )}
+
+      {checkoutPkg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setCheckoutPkg(null)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">{lang === 'en' ? 'Confirm purchase' : 'Подтвердить покупку'}</h3>
+            <div className="text-center mb-4">
+              <div className="text-3xl font-bold text-orange-500">{checkoutPkg.credits}</div>
+              <div className="text-sm text-zinc-400">{lang === 'en' ? 'credits' : 'кредитов'}</div>
+              <div className="text-xl mt-2">${checkoutPkg.price}</div>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setCheckoutPkg(null)} className="flex-1 py-2 border border-zinc-700 rounded-lg text-sm">{lang === 'en' ? 'Cancel' : 'Отмена'}</button>
+              <button onClick={() => handlePurchase(checkoutPkg.id)} disabled={paying} className="flex-1 py-2 bg-orange-500 text-white rounded-lg text-sm disabled:opacity-50">{paying ? '...' : (lang === 'en' ? 'Pay' : 'Оплатить')}</button>
+            </div>
+            <p className="text-[10px] text-zinc-600 mt-3 text-center">{lang === 'en' ? 'Demo mode — credits added instantly' : 'Демо — кредиты добавятся сразу'}</p>
+          </div>
+        </div>
+      )}
 <header className="border-b border-border h-16 flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <img src="/layer-logo-icon.png" alt="" className="h-11 w-11 object-contain" />
@@ -987,14 +1033,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 <h3 className="text-lg font-medium mb-4">{lang === 'en' ? 'Top up' : 'Пополнить'}</h3>
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   {[
-                    { amount: 100, bonus: 0 },
-                    { amount: 500, bonus: 25 },
-                    { amount: 1000, bonus: 100 },
-                  ].map(({amount, bonus}) => (
-                    <button key={amount} onClick={() => onAddCredits(amount + bonus)} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-orange-500/50 transition-colors relative">
-                      {bonus > 0 && <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">+{bonus}</div>}
-                      <div className="text-xl font-bold">{amount}</div>
-                      <div className="text-xs text-zinc-500">{lang === 'en' ? 'credits' : 'кредитов'}{bonus > 0 ? ` (+${bonus})` : ''}</div>
+                    { id: 100, credits: 100, price: 9.99 },
+                    { id: 500, credits: 525, price: 39.99 },
+                    { id: 1000, credits: 1100, price: 69.99 },
+                  ].map(pkg => (
+                    <button key={pkg.id} onClick={() => setCheckoutPkg(pkg)} disabled={paying} className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl hover:border-orange-500/50 transition-colors relative disabled:opacity-50">
+                      {pkg.credits > pkg.id && <div className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">+{pkg.credits - pkg.id}</div>}
+                      <div className="text-xl font-bold">{pkg.credits}</div>
+                      <div className="text-xs text-zinc-500">{lang === 'en' ? 'credits' : 'кредитов'}</div>
+                      <div className="text-sm text-orange-400 mt-1">${pkg.price}</div>
                     </button>
                   ))}
                 </div>
