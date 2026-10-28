@@ -1320,7 +1320,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/90 to-transparent">
                             <div className="text-sm font-medium text-white">{p.title.en || p.title[lang]}</div>
                             <div className="flex flex-wrap gap-1 mt-1">
-                              {p.tags?.slice(0, 7).map(t => (
+                              {p.tags?.slice(0, 10).map(t => (
                                 <span key={t} className="text-[10px] px-1.5 py-0.5 bg-white/20 text-white/80 rounded backdrop-blur-sm">{t}</span>
                               ))}
                             </div>
