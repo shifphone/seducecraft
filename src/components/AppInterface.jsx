@@ -59,6 +59,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
 
   const [undressPhoto, setUndressPhoto] = useState(null);
+  const [undressStyle, setUndressStyle] = useState('nude');
   const [templateCategory, setTemplateCategory] = useState([]);
   const [templateSort, setTemplateSort] = useState('az');
   const [catSearch, setCatSearch] = useState('');
@@ -234,7 +235,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const buildPrompt = () => {
     if (photoMode === 'undress') {
-      return 'Inpaint edit: keep this exact photograph unchanged. Same framing, same crop, same camera distance, same pose, same face, same body proportions, same background, same lighting. The only modification is removing the clothing. Replace clothes with bare skin. Do not regenerate, do not reframe, do not change anything else.';
+      const styles = {
+        nude: 'Replace clothes with bare skin.',
+        lingerie: 'Replace clothes with elegant lingerie (bra and panties).',
+        bikini: 'Replace clothes with a bikini.',
+      };
+      return `Inpaint edit: keep this exact photograph unchanged. Same framing, same crop, same camera distance, same pose, same face, same body proportions, same background, same lighting. The only modification is changing the clothing. ${styles[undressStyle] || styles.nude} Do not regenerate, do not reframe, do not change anything else.`;
     }
     let p = (photoMode === 'templates' && selectedTemplate?.prompt) || prompt || 'photo';
     p = p.trim();
@@ -1159,6 +1165,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           </div>
                         </div>
                       )}
+                    </div>
+                    <div className="flex justify-center gap-2 mb-4">
+                      {[{id:'nude',label:'Nude'},{id:'lingerie',label:'Lingerie'},{id:'bikini',label:'Bikini'}].map(s => (
+                        <button key={s.id} onClick={() => setUndressStyle(s.id)} className={`px-4 py-2 rounded-full text-sm ${undressStyle===s.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>{s.label}</button>
+                      ))}
                     </div>
                     <div className="flex justify-center gap-6 mb-6">
                       <div className="text-center">
