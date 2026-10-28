@@ -8,6 +8,8 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
   const [style, setStyle] = useState('realistic');
   const [photos, setPhotos] = useState([]);
   const [showGuidance, setShowGuidance] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [processError, setProcessError] = useState('');
   const [params, setParams] = useState({
     hairStyle: 'Long',
     hairColor: 'Brown',
@@ -51,8 +53,34 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
     setMode(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
+    if (isPhotoMode && photos.length) {
+      setProcessing(true); setProcessError('');
+      try {
+        const r = await fetch('/api/portraits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64: photos, n: 5 }),
+        });
+        const d = await r.json();
+        if (!r.ok || !d.urls?.length) throw new Error(d.error || 'portrait failed');
+        onSave({
+          id: crypto.randomUUID(),
+          name: name.trim(),
+          style: null,
+          photos: d.urls,
+          params: null,
+          createdAt: Date.now(),
+        });
+      } catch (e) {
+        setProcessError(e.message || 'Failed');
+        setProcessing(false);
+        return;
+      }
+      setProcessing(false);
+      return;
+    }
     onSave({
       id: crypto.randomUUID(),
       name: name.trim(),
@@ -141,7 +169,8 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
         )}
 
         {(isFictionalMode || (isPhotoMode && hasPhotos)) && (
-          <button onClick={handleSave} disabled={!name.trim()} className="h-12 px-6 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white rounded-md text-sm font-medium transition-colors">Save character</button>
+          {processError && <p className="text-xs text-red-400">{processError}</p>}
+          <button onClick={handleSave} disabled={!name.trim() || processing} className="h-12 px-6 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white rounded-md text-sm font-medium transition-colors">{processing ? 'Generating portraits...' : 'Save character'}</button>
         )}
       </div>
 
