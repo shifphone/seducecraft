@@ -41,7 +41,10 @@ export default async function handler(req, res) {
       const angle = (props['Ракурс']?.multi_select || []).map(o => o.name);
       const clothing = (props['Одежда']?.multi_select || []).map(o => o.name);
       const tags = (props['Тэги']?.multi_select || []).map(o => o.name);
-      const categories = [...new Set([...loc, ...pose, ...angle, ...clothing, ...tags])].filter(Boolean);
+      const partner = (props['Партнер']?.multi_select || []).map(o => o.name);
+      const sex = (props['Тип секса']?.multi_select || []).map(o => o.name);
+      const body = (props['Части тела']?.multi_select || []).map(o => o.name);
+      const categories = [...new Set([...loc, ...pose, ...angle, ...clothing, ...tags, ...partner, ...sex, ...body])].filter(Boolean);
 
       // English title from Notion fields (angle + location + clothing + pose)
       const enBits = [angle[0], loc[0], clothing[0], pose[0]].filter(Boolean);
