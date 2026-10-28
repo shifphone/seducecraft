@@ -53,6 +53,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallerySort, setGallerySort] = useState('newest');
   const [galleryFilter, setGalleryFilter] = useState('all');
   const [gallerySearch, setGallerySearch] = useState('');
+  const [galleryDate, setGalleryDate] = useState('');
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
@@ -393,6 +394,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (galleryFilter === 'swap') return g.title === 'Face Swap';
       if (galleryFilter === 'template') return g.title && !['Undress','Face Swap','Custom','Video','Image to Video'].includes(g.title) && !g.title.startsWith('Custom');
       if (galleryFilter === 'fav') return g.fav;
+      if (galleryDate) {
+        const d = new Date(g.createdAt).toISOString().slice(0, 10);
+        if (d !== galleryDate) return false;
+      }
       return true;
     })
     .sort((a, b) => gallerySort === 'newest' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt);
@@ -782,7 +787,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <h2 className="text-2xl font-semibold">{t.myGallery}</h2>
                   {gallery.length > 0 && (
                     <div className="flex items-center gap-3 flex-wrap">
-                      <input value={gallerySearch} onChange={e => setGallerySearch(e.target.value)} placeholder={lang === 'en' ? 'Search...' : 'Поиск...'} className="h-9 bg-bg-secondary border border-border rounded-md px-3 text-sm w-40" />
+                      <input value={gallerySearch} onChange={e => setGallerySearch(e.target.value)} placeholder={lang === 'en' ? 'Search prompt, name...' : 'Поиск по промпту...'} className="h-9 bg-bg-secondary border border-border rounded-md px-3 text-sm w-40" />
                       <select value={galleryFilter} onChange={e => setGalleryFilter(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
                         <option value="all">{lang === 'en' ? 'All' : 'Все'}</option>
                         <option value="photo">{lang === 'en' ? 'Photos' : 'Фото'}</option>
@@ -792,6 +797,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <option value="template">{lang === 'en' ? 'Templates' : 'Шаблоны'}</option>
                         <option value="fav">{lang === 'en' ? 'Favorites' : 'Избранное'}</option>
                       </select>
+                      <input type="date" value={galleryDate} onChange={e => setGalleryDate(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm text-zinc-400" />
                       <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
                         <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
                         <option value="oldest">{lang === 'en' ? 'Oldest' : 'Сначала старые'}</option>
