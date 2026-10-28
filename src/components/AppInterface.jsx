@@ -142,10 +142,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.frequency.value = 800;
-      gain.gain.value = 0.1;
+      osc.frequency.value = 600;
+      osc.type = 'sine';
+      gain.gain.value = 0.03;
       osc.start();
-      osc.stop(ctx.currentTime + 0.15);
+      osc.stop(ctx.currentTime + 0.1);
     } catch {}
   };
 
@@ -785,12 +786,18 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       <button onClick={() => { setNotifications(prev => { const next = prev.map(n => ({...n, read: true})); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-xs text-zinc-500 hover:text-white">{lang === 'en' ? 'Read all' : 'Прочитать'}</button>
                     </div>
                     <div className="overflow-y-auto max-h-60">
-                      {notifications.length === 0 ? (
+                      {activeGens.length > 0 && (
+                        <div className="p-3 border-b border-orange-500/30 bg-orange-500/10 flex items-center gap-2">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                          <span className="text-sm">{lang === 'en' ? `${activeGens.length} generating...` : `${activeGens.length} генерируется...`}</span>
+                        </div>
+                      )}
+                      {notifications.length === 0 && activeGens.length === 0 ? (
                         <div className="p-4 text-sm text-zinc-500 text-center">{lang === 'en' ? 'No notifications' : 'Нет уведомлений'}</div>
                       ) : notifications.slice(0, 10).map(n => (
-                        <div key={n.id} className={`p-3 border-b border-zinc-800 flex justify-between ${n.read ? '' : 'bg-orange-500/5'}`}>
+                        <div key={n.id} onClick={() => { setActiveMode('gallery'); setNotifOpen(false); }} className={`p-3 border-b border-zinc-800 flex justify-between cursor-pointer hover:bg-zinc-800 ${n.read ? '' : 'bg-orange-500/5'}`}>
                           <div className="text-sm">{n.msg}</div>
-                          <button onClick={() => setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; })} className="text-zinc-600 hover:text-red-400 ml-2">×</button>
+                          <button onClick={(e) => { e.stopPropagation(); setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-zinc-600 hover:text-red-400 ml-2">×</button>
                         </div>
                       ))}
                     </div>
