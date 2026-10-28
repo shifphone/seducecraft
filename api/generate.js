@@ -1,7 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
+const rateMap = new Map();
+function rateLimit(key, limit = 10, windowMs = 60000) {
+  const now = Date.now();
+  const entry = rateMap.get(key) || { count: 0, start: now };
+  if (now - entry.start > windowMs) { entry.count = 0; entry.start = now; }
+  entry.count++;
+  rateMap.set(key, entry);
+  return entry.count <= limit;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
+  if (!rateLimit(ip, 15, 60000)) return res.status(429).json({ error: 'Too many requests' });
 
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
