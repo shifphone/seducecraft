@@ -131,7 +131,7 @@ export default function App() {
       {view === 'landing' ? (
         <Landing onLegal={setLegalPage} onStart={handleStart} isLoggedIn={isLoggedIn} userName={userName} onLogin={() => setShowLogin(true)} lang={lang} onLangChange={onLangChange} />
       ) : (
-        <AppInterface
+        <AppInterface onLegal={setLegalPage}
           isLoggedIn={isLoggedIn}
           userName={userName}
           isAnonymous={isAnonymous}

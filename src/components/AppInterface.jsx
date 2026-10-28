@@ -6,7 +6,7 @@ import { getSession } from '../lib/auth';
 
 const SAMPLE_PRESETS = [];
 
-export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits }) {
+export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogin, onLogout, onShowTerms, termsAccepted, onRequireTerms, lang, onLangChange, credits, onAddCredits, onLegal }) {
   const t = T[lang] || T.en;
   const [activeMode, setActiveMode] = useState('home');
   const [photoMode, setPhotoMode] = useState('templates');
@@ -712,9 +712,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </nav>
           <div className="p-4 border-t border-border space-y-1">
             {!isAnonymous && <button onClick={onShowTerms} className="text-xs text-text-secondary hover:text-text-primary block">{t.terms}</button>}
-            <button onClick={() => window.open('/privacy', '_self')} className="text-xs text-text-secondary hover:text-text-primary block">Privacy</button>
-            <button onClick={() => window.open('/cookies', '_self')} className="text-xs text-text-secondary hover:text-text-primary block">Cookies</button>
-            <button onClick={() => window.open('/dmca', '_self')} className="text-xs text-text-secondary hover:text-text-primary block">DMCA</button>
+            <button onClick={() => onLegal?.('privacy')} className="text-xs text-text-secondary hover:text-text-primary block">Privacy</button>
+            <button onClick={() => onLegal?.('cookies')} className="text-xs text-text-secondary hover:text-text-primary block">Cookies</button>
+            <button onClick={() => onLegal?.('dmca')} className="text-xs text-text-secondary hover:text-text-primary block">DMCA</button>
           </div>
         </aside>
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
