@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Characters from './Characters';
 import { translations as T } from '../i18n';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -39,6 +39,17 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const [langOpen, setLangOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef(null);
+  const langRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
   const [characters, setCharacters] = useState([]);
   const [characterSort, setCharacterSort] = useState('newest');
   const [characterFilter, setCharacterFilter] = useState('all');
@@ -749,7 +760,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           <img src="/layer-logo.png" alt="Seducecraft" className="h-8 object-contain" />
         </div>
         <div className="flex items-center gap-4">
-          <div className="relative">
+          <div className="relative" ref={langRef}>
             <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary">🌐</button>
             {langOpen && (
               <div className="absolute left-0 top-full mt-2 bg-bg-secondary border border-border rounded-md shadow-lg z-20 min-w-[70px]">
@@ -760,7 +771,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
           {isLoggedIn && (
             <div className="flex items-center gap-3 text-sm">
-              <div className="relative">
+              <div className="relative" ref={notifRef}>
                 <button onClick={() => setNotifOpen(!notifOpen)} className="relative text-zinc-400 hover:text-white">
                   🔔
                   {notifications.filter(n => !n.read).length > 0 && (
