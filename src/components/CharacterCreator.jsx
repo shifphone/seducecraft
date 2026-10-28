@@ -169,8 +169,10 @@ export default function CharacterCreator({ onSave, onCancel, onRequireTerms, ter
         )}
 
         {(isFictionalMode || (isPhotoMode && hasPhotos)) && (
-          {processError && <p className="text-xs text-red-400">{processError}</p>}
-          <button onClick={handleSave} disabled={!name.trim() || processing} className="h-12 px-6 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white rounded-md text-sm font-medium transition-colors">{processing ? 'Generating portraits...' : 'Save character'}</button>
+          <>
+            {processError && <p className="text-xs text-red-400">{processError}</p>}
+            <button onClick={handleSave} disabled={!name.trim() || processing} className="h-12 px-6 bg-accent hover:bg-accent-hover disabled:opacity-40 text-white rounded-md text-sm font-medium transition-colors">{processing ? 'Generating portraits...' : 'Save character'}</button>
+          </>
         )}
       </div>
 
