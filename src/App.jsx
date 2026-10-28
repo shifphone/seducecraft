@@ -143,7 +143,7 @@ export default function App() {
         />
       )}
       {showAge && (
-        <AgeGate onAccept={handleAgeAccept} onClose={() => { setShowAge(false); setPendingAction(null); }} />
+        <AgeGate lang={lang} onLangChange={onLangChange} onAccept={handleAgeAccept} onClose={() => { setShowAge(false); setPendingAction(null); }} />
       )}
       {showTerms && (
         <TermsModal onAccept={handleAcceptTerms} onClose={() => setShowTerms(false)} />
