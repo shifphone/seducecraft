@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { translations as T } from '../i18n';
 
-export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, onLangChange }) {
+export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, onLangChange, onLegal }) {
   const [langOpen, setLangOpen] = useState(false);
   const t = T[lang] || T.en;
 
