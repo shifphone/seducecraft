@@ -32,30 +32,30 @@ export default async function handler(req, res) {
   }
   if (!refs.length) return res.status(400).json({ error: 'no refs' });
 
-  const prompt = `Professional portrait photo of the same person, clear face fully visible, neutral expression, even soft studio lighting, sharp focus, plain neutral gray background, head and shoulders framing, photorealistic, high quality face reference for identity consistency.`;
+  const PROMPTS = [
+    `Use the reference images to preserve the exact same adult woman, her facial structure, eye color, hair, freckles and overall identity. Create a high-quality realistic photograph that looks like it was taken with a good camera in natural light, not AI-generated. Frontal view, face straight to the camera, eyes looking directly into the lens. Neutral resting expression, lips gently closed, no smile. Head and shoulders framing with comfortable space around the head. Skin: Preserve and clearly show all natural skin texture and imperfections from the references — visible pores, freckles, subtle tonal variation, mild redness, under-eye naturalness, small blemishes. No plastic skin, no smoothing, no beauty filter, no airbrushing, no poreless look. Keep exact apparent age. Lighting: Soft natural daylight or window light, slightly uneven, realistic falloff. No studio beauty lighting. Background: Simple plain light wall or softly blurred indoor background, unobtrusive. Overall: Authentic high-quality amateur or semi-pro photo look, mild natural grain, realistic micro-contrast, sharp but not over-sharpened facial details.`,
+    `Use the reference images to preserve the exact same adult woman, her facial structure, eye color, hair, freckles and overall identity. Create a high-quality realistic photograph that looks like it was taken with a good camera in natural light, not AI-generated. Left three-quarter view: head turned approximately 40–45 degrees to the left, nose pointing left, left side of the face more visible. Neutral resting expression, lips gently closed, no smile. Head and shoulders framing with comfortable space around the head. Skin: Preserve and clearly show all natural skin texture and imperfections from the references — visible pores, freckles, subtle tonal variation, mild redness, under-eye naturalness, small blemishes. No plastic skin, no smoothing, no beauty filter, no airbrushing, no poreless look. Keep exact apparent age. Lighting: Soft natural daylight or window light, slightly uneven, realistic falloff. No studio beauty lighting. Background: Simple plain light wall or softly blurred indoor background, unobtrusive. Overall: Authentic high-quality amateur or semi-pro photo look, mild natural grain, realistic micro-contrast, sharp but not over-sharpened facial details.`,
+    `Use the reference images to preserve the exact same adult woman, her facial structure, eye color, hair, freckles and overall identity. Create a high-quality realistic photograph that looks like it was taken with a good camera in natural light, not AI-generated. Right three-quarter view: head turned approximately 40–45 degrees to the right, nose pointing right, right side of the face more visible. Neutral resting expression, lips gently closed, no smile. Head and shoulders framing with comfortable space around the head. Skin: Preserve and clearly show all natural skin texture and imperfections from the references — visible pores, freckles, subtle tonal variation, mild redness, under-eye naturalness, small blemishes. No plastic skin, no smoothing, no beauty filter, no airbrushing, no poreless look. Keep exact apparent age. Lighting: Soft natural daylight or window light, slightly uneven, realistic falloff. No studio beauty lighting. Background: Simple plain light wall or softly blurred indoor background, unobtrusive. Overall: Authentic high-quality amateur or semi-pro photo look, mild natural grain, realistic micro-contrast, sharp but not over-sharpened facial details.`,
+  ];
 
-  const body = {
-    model: 'xSD4.5',
-    prompt,
-    endUserEmail: 'portraits@seducecraft.app',
-    n: Math.min(Math.max(parseInt(n) || 5, 1), 5),
-    size: '1024x1024',
-    references: refs,
-    guidanceScale: 8,
-  };
-
-  try {
+  async function generateOne(prompt) {
+    const body = {
+      model: 'xSD4.5',
+      prompt,
+      endUserEmail: 'portraits@seducecraft.app',
+      n: 1,
+      size: '1024x1024',
+      references: refs,
+      guidanceScale: 8,
+    };
     const createRes = await fetch('https://api.xmode.ai/v1/generations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-    if (!createRes.ok) {
-      const err = await createRes.text();
-      return res.status(createRes.status).json({ error: err });
-    }
+    if (!createRes.ok) throw new Error(await createRes.text());
     const { requestId } = await createRes.json();
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 45; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const poll = await fetch(`https://api.xmode.ai/v1/generations/${requestId}`, {
         headers: { 'Authorization': `Bearer ${apiKey}` },
@@ -64,14 +64,21 @@ export default async function handler(req, res) {
       const data = await poll.json();
       if (data.status === 'succeeded') {
         const images = data.images || data.output?.images || [];
-        const urls = images.map(im => im?.url || im).filter(Boolean);
-        return res.status(200).json({ urls, requestId });
+        return images[0]?.url || images[0] || null;
       }
-      if (data.status === 'failed' || data.status === 'expired') {
-        return res.status(500).json({ error: data.error?.message || 'failed' });
-      }
+      if (data.status === 'failed' || data.status === 'expired') throw new Error(data.error?.message || 'failed');
     }
-    return res.status(504).json({ error: 'timeout' });
+    throw new Error('timeout');
+  }
+
+  try {
+    const results = await Promise.allSettled(PROMPTS.map(p => generateOne(p)));
+    const urls = results.filter(r => r.status === 'fulfilled' && r.value).map(r => r.value);
+    if (!urls.length) {
+      const err = results.find(r => r.status === 'rejected')?.reason?.message || 'all failed';
+      return res.status(500).json({ error: err });
+    }
+    return res.status(200).json({ urls });
   } catch (e) {
     return res.status(500).json({ error: String(e.message || e) });
   }
