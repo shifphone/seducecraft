@@ -58,6 +58,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [templateCategory, setTemplateCategory] = useState([]);
   const [templateSort, setTemplateSort] = useState('az');
+  const [catSearch, setCatSearch] = useState('');
+  const [catOpen, setCatOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
@@ -1246,12 +1248,33 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <button onClick={() => setTemplateSort('za')} className={`px-2 py-1 rounded text-xs ${templateSort==='za'?'bg-zinc-700 text-white':'text-zinc-500'}`}>Z–A</button>
                       </div>
                     </div>
-                    <div className="flex gap-2 mb-4 flex-wrap">
-                      {['all', ...Array.from(new Set(presets.flatMap(p => p.tags || []))).sort()].map(cat => (
-                        <button key={cat} onClick={() => { setTemplateCategory(prev => cat === 'all' ? [] : prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat]) }} className={`px-3 py-1.5 rounded-full text-xs ${ (cat === 'all' && templateCategory.length === 0) || templateCategory.includes(cat) ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400 hover:border-zinc-500'}`}>
-                          {cat === 'all' ? (lang === 'en' ? 'All' : 'Все') : cat}
+                    <div className="mb-4 relative">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setCatOpen(o => !o)} className="px-3 py-1.5 rounded-lg border border-zinc-700 text-sm text-zinc-200 hover:border-zinc-500">
+                          {lang === 'en' ? 'Categories' : 'Категории'} {templateCategory.length ? `(${templateCategory.length})` : ''} ▾
                         </button>
-                      ))}
+                        {templateCategory.length > 0 && (
+                          <button onClick={() => setTemplateCategory([])} className="text-xs text-zinc-500 hover:text-zinc-300">Clear</button>
+                        )}
+                        <div className="flex flex-wrap gap-1">
+                          {templateCategory.map(c => (
+                            <span key={c} className="text-[11px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300">{c}</span>
+                          ))}
+                        </div>
+                      </div>
+                      {catOpen && (
+                        <div className="absolute z-20 mt-2 w-72 max-h-80 overflow-hidden bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl">
+                          <input autoFocus value={catSearch} onChange={e => setCatSearch(e.target.value)} placeholder={lang === 'en' ? 'Search categories...' : 'Поиск категорий...'} className="w-full px-3 py-2 bg-zinc-800 border-b border-zinc-700 text-sm outline-none" />
+                          <div className="max-h-64 overflow-y-auto p-1">
+                            <button onClick={() => { setTemplateCategory([]); setCatOpen(false); }} className={`w-full text-left px-3 py-1.5 rounded text-sm ${templateCategory.length===0 ? 'bg-orange-500 text-white' : 'hover:bg-zinc-800 text-zinc-300'}`}>{lang === 'en' ? 'All' : 'Все'}</button>
+                            {Array.from(new Set(presets.flatMap(p => p.tags || []))).sort().filter(c => c.toLowerCase().includes(catSearch.toLowerCase())).map(cat => (
+                              <button key={cat} onClick={() => setTemplateCategory(prev => prev.includes(cat) ? prev.filter(x => x !== cat) : [...prev, cat])} className={`w-full text-left px-3 py-1.5 rounded text-sm ${templateCategory.includes(cat) ? 'bg-orange-500/30 text-orange-200' : 'hover:bg-zinc-800 text-zinc-300'}`}>
+                                {templateCategory.includes(cat) ? '✓ ' : ''}{cat}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] gap-6 mb-6">
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
