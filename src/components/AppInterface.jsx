@@ -761,11 +761,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         </div>
         <div className="flex items-center gap-4">
           <div className="relative" ref={langRef}>
-            <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary flex items-center gap-1">{lang === 'en' ? '🇺🇸' : '🇷🇺'}</button>
+            <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary flex items-center gap-1">{lang === 'en' ? <img src='https://flagcdn.com/w40/us.png' alt='' className='w-5 h-4 rounded inline' /> : <img src='https://flagcdn.com/w40/ru.png' alt='' className='w-5 h-4 rounded inline' />}</button>
             {langOpen && (
               <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-20 min-w-[120px]">
-                <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-zinc-800">🇺🇸 English</button>
-                <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-zinc-800">🇷🇺 Русский</button>
+                <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-zinc-800"><img src='https://flagcdn.com/w40/us.png' alt='' className='w-5 h-4 rounded inline mr-2' />English</button>
+                <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-zinc-800"><img src='https://flagcdn.com/w40/ru.png' alt='' className='w-5 h-4 rounded inline mr-2' />Русский</button>
               </div>
             )}
           </div>
@@ -1217,8 +1217,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Language' : 'Язык'}</div>
                     <div className="flex gap-2">
-                      <button onClick={() => onLangChange('en')} className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${lang==='en' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>🇺🇸 English</button>
-                      <button onClick={() => onLangChange('ru')} className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${lang==='ru' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>🇷🇺 Русский</button>
+                      <button onClick={() => onLangChange('en')} className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${lang==='en' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}><img src='https://flagcdn.com/w40/us.png' alt='' className='w-5 h-4 rounded inline mr-2' />English</button>
+                      <button onClick={() => onLangChange('ru')} className={`px-4 py-2 rounded-lg text-sm flex items-center gap-2 ${lang==='ru' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}><img src='https://flagcdn.com/w40/ru.png' alt='' className='w-5 h-4 rounded inline mr-2' />Русский</button>
                     </div>
                   </div>
                   <button onClick={() => { if (confirm(lang === 'en' ? 'Delete all data?' : 'Удалить все данные?')) { localStorage.clear(); window.location.reload(); } }} className="text-sm text-red-400 hover:text-red-300">{lang === 'en' ? 'Delete account data' : 'Удалить данные аккаунта'}</button>

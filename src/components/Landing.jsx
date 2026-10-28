@@ -22,8 +22,8 @@ export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, 
               </button>
               {langOpen && (
                 <div className="absolute right-0 mt-1 bg-bg-secondary border border-border rounded-md shadow-lg z-10 min-w-[80px]">
-                  <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary ${lang === 'en' ? 'text-accent' : 'text-text-secondary'}`}>🇺🇸 English</button>
-                  <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary ${lang === 'ru' ? 'text-accent' : 'text-text-secondary'}`}>🇷🇺 Русский</button>
+                  <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary ${lang === 'en' ? 'text-accent' : 'text-text-secondary'}`}><img src='https://flagcdn.com/w40/us.png' alt='' className='w-5 h-4 rounded inline mr-2' />English</button>
+                  <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className={`flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary ${lang === 'ru' ? 'text-accent' : 'text-text-secondary'}`}><img src='https://flagcdn.com/w40/ru.png' alt='' className='w-5 h-4 rounded inline mr-2' />Русский</button>
                 </div>
               )}
             </div>

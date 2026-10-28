@@ -12,8 +12,8 @@ export default function AgeGate({ onAccept }) {
           <button onClick={() => window.location.href = 'https://google.com'} className="border border-zinc-600 text-zinc-300 px-6 py-3 rounded-lg text-sm font-medium hover:border-zinc-500">I'm underage</button>
         </div>
         <div className="flex justify-center gap-4">
-          <span className="text-2xl">🇺🇸</span>
-          <span className="text-2xl">🇷🇺</span>
+          <img src="https://flagcdn.com/w40/us.png" alt="US" className="w-8 h-6 rounded" />
+          <img src="https://flagcdn.com/w40/ru.png" alt="RU" className="w-8 h-6 rounded" />
         </div>
       </div>
     </div>
