@@ -564,6 +564,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             </div>
             <div className="flex gap-2 mt-2 justify-center">
               <button onClick={() => downloadImage(previewSrc, 'image')} className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm">Download</button>
+              <button onClick={() => { setPreviewSrc(null); setActiveMode('gallery'); }} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">{lang === 'en' ? 'View in gallery' : 'В галерею'}</button>
               <button onClick={() => { setPreviewSrc(null); setEditPrompt(''); }} className="px-4 py-2 border border-zinc-700 text-zinc-400 rounded-lg text-sm">Close</button>
             </div>
           </div>
