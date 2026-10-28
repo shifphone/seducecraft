@@ -15,6 +15,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [pendingGens, setPendingGens] = useState(0);
+  const [activeGens, setActiveGens] = useState([]);
+  const [userEmail, setUserEmail] = useState(() => localStorage.getItem('seducecraft.email') || '');
   const [toast, setToast] = useState(null);
   const [presets, setPresets] = useState(SAMPLE_PRESETS);
   const [notionLoaded, setNotionLoaded] = useState(false);
@@ -121,6 +123,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return next;
     });
   };
+    const playSound = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 800;
+      gain.gain.value = 0.1;
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
+    } catch {}
+  };
+
   const addNotification = (msg) => {
     const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
     setNotifications(prev => {
@@ -281,6 +297,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     if (!needsPhoto && !selectedCharacter && !customPhoto) return;
     const p = buildPrompt();
     setPendingGens(c => c + numImages);
+    const genId = crypto.randomUUID();
+    setActiveGens(prev => [...prev, { id: genId, type: photoMode, started: Date.now() }]);
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
     let images = [];
     try {
@@ -331,6 +349,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost, `${selectedModel === 'xSD5Pro' ? 'Pro' : 'Normal'} ${imageSize}`);
       addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
+      playSound();
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     } catch (e) {
       const msg = e.message || 'Error';
@@ -341,6 +360,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       showToast(msg.includes('{') ? 'Generation failed — refunded' : msg + ' — refunded');
     }
     setPendingGens(c => Math.max(0, c - (images?.length || numImages)));
+    setActiveGens(prev => prev.slice(1));
   };
 
   const handleVideoGenerate = async () => {
@@ -454,6 +474,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     { id: 'deepfake', name: t.deepfake },
     { id: 'gallery', name: t.myGallery },
     { id: 'balance', name: lang === 'en' ? 'Balance' : 'Баланс' },
+    { id: 'active', name: lang === 'en' ? 'Active' : 'Активные' },
     { id: 'notifications', name: lang === 'en' ? 'Notifications' : 'Уведомления' },
     { id: 'profile', name: lang === 'en' ? 'Profile' : 'Профиль' },
     { id: 'help', name: lang === 'en' ? 'Help' : 'Помощь' },
@@ -1075,6 +1096,28 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
               </div>
             )}
+            {activeMode === 'active' && (
+              <div className="max-w-2xl mx-auto">
+                <h2 className="text-2xl font-semibold mb-6">{lang === 'en' ? 'Active generations' : 'Активные генерации'}</h2>
+                {activeGens.length === 0 ? (
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">{lang === 'en' ? 'No active generations' : 'Нет активных генераций'}</div>
+                ) : (
+                  <div className="space-y-3">
+                    {activeGens.map(g => (
+                      <div key={g.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium">{g.type}</span>
+                          <span className="text-xs text-zinc-500">{Math.round((Date.now() - g.started) / 1000)}s</span>
+                        </div>
+                        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <div className="h-full bg-orange-500 animate-pulse" style={{width: '60%'}} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             {activeMode === 'notifications' && (
               <div className="max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
@@ -1132,6 +1175,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Credits spent' : 'Потрачено кредитов'}</div>
                     <div className="font-medium text-orange-400">{spentCredits}</div>
                   </div>
+                </div>
+                <div className="mt-6 space-y-4">
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Email' : 'Почта'}</div>
+                    <input value={userEmail} onChange={e => { setUserEmail(e.target.value); localStorage.setItem('seducecraft.email', e.target.value); }} placeholder="email@example.com" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Language' : 'Язык'}</div>
+                    <div className="flex gap-2">
+                      <button onClick={() => onLangChange('en')} className={`px-4 py-2 rounded-lg text-sm ${lang==='en' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>EN</button>
+                      <button onClick={() => onLangChange('ru')} className={`px-4 py-2 rounded-lg text-sm ${lang==='ru' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>RU</button>
+                    </div>
+                  </div>
+                  <button onClick={() => { if (confirm(lang === 'en' ? 'Delete all data?' : 'Удалить все данные?')) { localStorage.clear(); window.location.reload(); } }} className="text-sm text-red-400 hover:text-red-300">{lang === 'en' ? 'Delete account data' : 'Удалить данные аккаунта'}</button>
                 </div>
               </div>
             )}
