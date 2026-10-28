@@ -11,15 +11,9 @@ export default function AgeGate({ onAccept }) {
           <button onClick={onAccept} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg text-sm font-medium">I'm 18 years old</button>
           <button onClick={() => window.location.href = 'https://google.com'} className="border border-zinc-600 text-zinc-300 px-6 py-3 rounded-lg text-sm font-medium hover:border-zinc-500">I'm underage</button>
         </div>
-        <div className="flex justify-center gap-2 flex-wrap">
-          <span className="text-lg">🇺🇸</span>
-          <span className="text-lg">🇷🇺</span>
-          <span className="text-lg">🇩🇪</span>
-          <span className="text-lg">🇪🇸</span>
-          <span className="text-lg">🇫🇷</span>
-          <span className="text-lg">🇧🇷</span>
-          <span className="text-lg">🇯🇵</span>
-          <span className="text-lg">🇨🇳</span>
+        <div className="flex justify-center gap-4">
+          <span className="text-2xl">🇺🇸</span>
+          <span className="text-2xl">🇷🇺</span>
         </div>
       </div>
     </div>
