@@ -644,7 +644,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <button onClick={() => setGalleryPicker(null)} className="text-zinc-500 hover:text-white">×</button>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 overflow-y-auto">
-              {gallery.filter(g => g.type !== 'video' && !g.src?.includes('.mp4')).map(g => (
+              {gallery.filter(g => g.type !== 'video' && !g.src?.includes('.mp4') && !g.src?.includes('video')).map(g => (
                 <button key={g.id} onClick={() => {
                   if (galleryPicker === 'swap') setSwapTarget(g.src);
                   else if (galleryPicker === 'video') setVideoImage(g.src);
@@ -828,7 +828,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               </>
             )}
             {activeMode === 'faceswap' && (
-              <div className="max-w-4xl mx-auto py-6">
+              <div className="max-w-6xl mx-auto py-6 px-4">
                 <h2 className="text-2xl font-semibold mb-6 text-center">{lang === 'en' ? 'Face Swap' : 'Замена лица'}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
@@ -850,7 +850,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or from characters' : 'или из персонажей'}</p>
                           <div className="flex gap-2 justify-center flex-wrap">
                             {characters.slice(0, 6).map(c => (
-                              <button key={c.id} onClick={() => setSwapSource(c.photos?.[0])} className={`w-10 h-10 rounded-full overflow-hidden border-2 ${swapSource === c.photos?.[0] ? 'border-orange-500' : 'border-zinc-700'}`}>
+                              <button key={c.id} onClick={() => setSwapSource(c.photos?.[0])} className={`w-16 h-16 rounded-full overflow-hidden border-2 ${swapSource === c.photos?.[0] ? 'border-orange-500' : 'border-zinc-700'}`}>
                                 {c.photos?.[0] && <img src={c.photos[0]} alt="" className="w-full h-full object-cover" />}
                               </button>
                             ))}
@@ -877,8 +877,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <div className="mt-3">
                           <button onClick={() => setGalleryPicker('swap')} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
                           <div className="flex gap-2 justify-center flex-wrap">
-                            {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
-                              <button key={g.id} onClick={() => setSwapTarget(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${swapTarget === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
+                            {gallery.filter(g => g.type !== 'video' && !g.src?.includes('.mp4') && !g.src?.includes('video')).slice(0, 6).map(g => (
+                              <button key={g.id} onClick={() => setSwapTarget(g.src)} className={`w-20 h-24 rounded-lg overflow-hidden border-2 ${swapTarget === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
                                 <img src={g.src} alt="" className="w-full h-full object-cover" />
                               </button>
                             ))}
@@ -1534,7 +1534,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                             <div className="mt-3">
                               <button onClick={() => setGalleryPicker('video')} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
                               <div className="flex gap-2 justify-center flex-wrap">
-                                {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
+                                {gallery.filter(g => g.type !== 'video' && !g.src?.includes('.mp4') && !g.src?.includes('video')).slice(0, 6).map(g => (
                                   <button key={g.id} onClick={() => setVideoImage(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${videoImage === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
                                     <img src={g.src} alt="" className="w-full h-full object-cover" />
                                   </button>
