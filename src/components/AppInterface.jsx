@@ -108,6 +108,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [videoModel, setVideoModel] = useState('xW3.0s');
   const [videoMode, setVideoMode] = useState('text'); // text | image | templates
   const [videoImage, setVideoImage] = useState(null);
+  const [customPhoto, setCustomPhoto] = useState(null);
   const [videoStatus, setVideoStatus] = useState(null);
   const [swapSource, setSwapSource] = useState(null);
   const [swapTarget, setSwapTarget] = useState(null);
@@ -249,7 +250,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     try {
       const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID().slice(0,8); localStorage.setItem('anonId', id); return id; })()}@seducecraft.app`;
       const body = { prompt: p, endUserEmail: email, model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
-      const photos = photoMode === 'undress' ? [undressPhoto] : (selectedCharacter?.photos || []);
+      const photos = photoMode === 'undress' ? [undressPhoto] : (customPhoto ? [customPhoto] : (selectedCharacter?.photos || []));
       const refUrls = [];
       const base64s = [];
       for (const photo of photos) {
@@ -608,15 +609,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <div className="flex gap-2">
                 {viewer.prompt && (viewer.title === 'Custom' || viewer.title?.startsWith('Custom') || viewer.type === 'video') && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
+                {!(viewer.type === 'video' || viewer.src?.includes('.mp4')) && (
+                  <>
+                    <button onClick={() => { setCustomPhoto(viewer.src); setSelectedCharacterId(null); setActiveMode('photo'); setPhotoMode('custom'); setViewer(null); }} className="px-4 py-2 bg-orange-500 text-white rounded-full text-sm">Edit</button>
+                    <button onClick={() => { setVideoImage(viewer.src); setActiveMode('video'); setVideoMode('image'); setViewer(null); }} className="px-4 py-2 bg-zinc-700 text-white rounded-full text-sm">Animate</button>
+                  </>
+                )}
                 <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
               </div>
-              {!(viewer.type === 'video' || viewer.src?.includes('.mp4')) && (
-                <div className="mt-3 flex gap-2">
-                  <input value={editPrompt} onChange={e => setEditPrompt(e.target.value)} placeholder={lang === 'en' ? 'Edit with prompt...' : 'Редактировать промптом...'} className="flex-1 h-10 bg-zinc-900 border border-zinc-700 rounded-lg px-3 text-sm" onKeyDown={e => e.key === 'Enter' && editGalleryImage()} />
-                  <button onClick={editGalleryImage} disabled={editing || !editPrompt.trim()} className="px-4 h-10 bg-orange-500 text-white rounded-lg text-sm disabled:opacity-40">{editing ? '...' : 'Edit'}</button>
-                </div>
-              )}
-              <div className="hidden">
               </div>
             </div>
           </div>
@@ -1152,6 +1152,26 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <>
                   <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr_340px] gap-8">
                     <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
+                      {customPhoto && (
+                        <div className="mb-3">
+                          <p className="text-xs uppercase tracking-wider text-zinc-500 mb-2">Photo</p>
+                          <img src={customPhoto} alt="" className="w-full aspect-[3/4] object-cover rounded-lg mb-2" />
+                          <button onClick={() => setCustomPhoto(null)} className="text-xs text-zinc-500 hover:text-zinc-300">Clear</button>
+                        </div>
+                      )}
+                      {!customPhoto && (
+                        <label className="mb-3 block">
+                          <span className="text-xs uppercase tracking-wider text-zinc-500">Or upload photo</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={e => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            const r = new FileReader();
+                            r.onload = () => { setCustomPhoto(r.result); setSelectedCharacterId(null); };
+                            r.readAsDataURL(f);
+                          }} />
+                          <div className="mt-1 h-10 border border-dashed border-zinc-700 rounded-lg flex items-center justify-center text-sm text-zinc-400 cursor-pointer hover:border-zinc-500">Upload</div>
+                        </label>
+                      )}
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-xs uppercase tracking-wider text-zinc-500">Character</p>
                         <div className="flex gap-1">
