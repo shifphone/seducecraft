@@ -1,8 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 
+function pick(...vals) {
+  for (const v of vals) if (v && String(v).trim()) return v;
+  return null;
+}
+
 function getClient() {
-  const url = process.env.seducecraft_SUPABASE_URL || process.env.seduceraft_SUPABASE_URL || process.env.NEXT_PUBLIC_seduceraft_SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.seduceraft_SUPABASE_SECRET_KEY || process.env.seducecraft_SUPABASE_SECRET_KEY || process.env.seducecraft_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.seducecraft_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  const url = pick(
+    process.env.seducecraft_SUPABASE_URL,
+    process.env.VITE_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_seduceraft_SUPABASE_URL,
+    process.env.SUPABASE_URL
+  );
+  const key = pick(
+    process.env.seducecraft_SUPABASE_ANON_KEY,
+    process.env.VITE_SUPABASE_ANON_KEY,
+    process.env.seduceraft_SUPABASE_ANON_KEY,
+    process.env.NEXT_PUBLIC_seduceraft_SUPABASE_PUBLISHABLE_KEY
+  );
   if (!url || !key) return null;
   return createClient(url, key, { auth: { persistSession: false } });
 }
