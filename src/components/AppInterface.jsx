@@ -150,8 +150,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     } catch {}
   };
 
-  const addNotification = (msg) => {
-    const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false };
+  const addNotification = (msg, itemId) => {
+    const n = { id: crypto.randomUUID(), msg, time: Date.now(), read: false, itemId };
     setNotifications(prev => {
       const next = [n, ...prev].slice(0, 50);
       localStorage.setItem('seducecraft.notifs', JSON.stringify(next));
@@ -360,7 +360,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const cost = calcPhotoCost();
       setSpentCredits(prev => { const next = prev + cost; localStorage.setItem('seducecraft.spent', String(next)); return next; });
       addTx(photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? 'Template' : 'Custom'), cost, `${selectedModel === 'xSD5Pro' ? 'Pro' : 'Normal'} ${imageSize}`);
-      addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`);
+      addNotification(lang === 'en' ? `Generation complete: ${images.length} image(s)` : `Генерация готова: ${images.length} изображений`, gens[0]?.id);
       showToast(lang === 'en' ? 'Generation complete! Added to gallery' : 'Готово! Добавлено в галерею');
       playSound();
       if (isLoggedIn) fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
@@ -1184,12 +1184,12 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">{lang === 'en' ? 'No notifications' : 'Нет уведомлений'}</div>
                   )}
                   {notifications.map(n => (
-                    <div key={n.id} className={`bg-zinc-900 border rounded-xl p-4 flex items-center justify-between ${n.read ? 'border-zinc-800' : 'border-orange-500/30'}`}>
+                    <div key={n.id} onClick={() => { if (n.itemId) { const item = gallery.find(g => g.id === n.itemId); if (item) { setViewer(item); setPreviewSrc(item.src); } } }} className={`bg-zinc-900 border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-zinc-600 ${n.read ? 'border-zinc-800' : 'border-orange-500/30'}`}>
                       <div>
                         <div className={n.read ? 'text-zinc-400' : 'text-white'}>{n.msg}</div>
                         <div className="text-xs text-zinc-600">{new Date(n.time).toLocaleString()}</div>
                       </div>
-                      <button onClick={() => { setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-zinc-600 hover:text-red-400">×</button>
+                      <button onClick={(e) => { e.stopPropagation(); setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-zinc-600 hover:text-red-400">×</button>
                     </div>
                   ))}
                 </div>
