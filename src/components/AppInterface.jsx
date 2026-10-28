@@ -558,9 +558,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreviewSrc(null)}>
           <div className="relative max-w-lg w-full" onClick={e => e.stopPropagation()}>
             <img src={previewSrc} alt="" className="max-h-[70vh] mx-auto rounded-xl" />
-            <div className="mt-3 flex gap-2">
-              <input value={editPrompt} onChange={e => setEditPrompt(e.target.value)} placeholder={lang === 'en' ? 'Edit with prompt...' : 'Редактировать промптом...'} className="flex-1 h-10 bg-zinc-900 border border-zinc-700 rounded-lg px-3 text-sm" onKeyDown={e => e.key === 'Enter' && editGalleryImage()} />
-              <button onClick={editGalleryImage} disabled={editing || !editPrompt.trim()} className="px-4 h-10 bg-orange-500 text-white rounded-lg text-sm disabled:opacity-40">{editing ? '...' : 'Edit'}</button>
+            <div className="mt-3 flex gap-2 justify-center">
+              <button onClick={() => { setActiveMode('photo'); setPhotoMode('custom'); setCustomPhoto(previewSrc); setPreviewSrc(null); }} className="px-4 py-2 border border-zinc-700 text-zinc-400 rounded-lg text-sm">Edit</button>
             </div>
             <div className="flex gap-2 mt-2 justify-center">
               <button onClick={() => downloadImage(previewSrc, 'image')} className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm">Download</button>
@@ -1185,7 +1184,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-500">{lang === 'en' ? 'No notifications' : 'Нет уведомлений'}</div>
                   )}
                   {notifications.map(n => (
-                    <div key={n.id} onClick={() => { if (n.itemId) { const item = gallery.find(g => g.id === n.itemId); if (item) { setViewer(item); setPreviewSrc(item.src); } } }} className={`bg-zinc-900 border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-zinc-600 ${n.read ? 'border-zinc-800' : 'border-orange-500/30'}`}>
+                    <div key={n.id} onClick={() => { if (n.itemId) { const item = gallery.find(g => g.id === n.itemId); if (item) setPreviewSrc(item.src); } else setActiveMode('gallery'); }} className={`bg-zinc-900 border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-zinc-600 ${n.read ? 'border-zinc-800' : 'border-orange-500/30'}`}>
                       <div>
                         <div className={n.read ? 'text-zinc-400' : 'text-white'}>{n.msg}</div>
                         <div className="text-xs text-zinc-600">{new Date(n.time).toLocaleString()}</div>
