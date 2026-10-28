@@ -44,7 +44,7 @@ export default async function handler(req, res) {
       prompt,
       endUserEmail: 'portraits@seducecraft.app',
       n: 1,
-      size: '1024x1024',
+      size: '2048x2048',
       references: refs,
       guidanceScale: 8,
     };
