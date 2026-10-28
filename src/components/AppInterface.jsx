@@ -53,7 +53,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallerySort, setGallerySort] = useState('newest');
   const [galleryFilter, setGalleryFilter] = useState('all');
   const [gallerySearch, setGallerySearch] = useState('');
-  const [galleryDate, setGalleryDate] = useState('');
+  const [galleryRange, setGalleryRange] = useState('all');
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
   const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
@@ -394,9 +394,10 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (galleryFilter === 'swap') return g.title === 'Face Swap';
       if (galleryFilter === 'template') return g.title && !['Undress','Face Swap','Custom','Video','Image to Video'].includes(g.title) && !g.title.startsWith('Custom');
       if (galleryFilter === 'fav') return g.fav;
-      if (galleryDate) {
-        const d = new Date(g.createdAt).toISOString().slice(0, 10);
-        if (d !== galleryDate) return false;
+      if (galleryRange !== 'all') {
+        const now = Date.now();
+        const ms = galleryRange === 'hour' ? 3600000 : galleryRange === 'day' ? 86400000 : galleryRange === 'week' ? 604800000 : 2592000000;
+        if (now - g.createdAt > ms) return false;
       }
       return true;
     })
@@ -797,7 +798,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                         <option value="template">{lang === 'en' ? 'Templates' : 'Шаблоны'}</option>
                         <option value="fav">{lang === 'en' ? 'Favorites' : 'Избранное'}</option>
                       </select>
-                      <input type="date" value={galleryDate} onChange={e => setGalleryDate(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm text-zinc-400" />
+                      <select value={galleryRange} onChange={e => setGalleryRange(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
+                        <option value="all">{lang === 'en' ? 'Any time' : 'Всё время'}</option>
+                        <option value="hour">{lang === 'en' ? 'Last hour' : 'Последний час'}</option>
+                        <option value="day">{lang === 'en' ? 'Last 24h' : 'Сутки'}</option>
+                        <option value="week">{lang === 'en' ? 'Last week' : 'Неделя'}</option>
+                        <option value="month">{lang === 'en' ? 'Last month' : 'Месяц'}</option>
+                      </select>
                       <select value={gallerySort} onChange={e => setGallerySort(e.target.value)} className="h-9 bg-bg-secondary border border-border rounded-md px-2 text-sm">
                         <option value="newest">{lang === 'en' ? 'Newest' : 'Сначала новые'}</option>
                         <option value="oldest">{lang === 'en' ? 'Oldest' : 'Сначала старые'}</option>
