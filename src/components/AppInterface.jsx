@@ -761,11 +761,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         </div>
         <div className="flex items-center gap-4">
           <div className="relative" ref={langRef}>
-            <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary">🌐</button>
+            <button onClick={() => setLangOpen(!langOpen)} className="text-text-secondary hover:text-text-primary flex items-center gap-1">{lang === 'en' ? '🇺🇸' : '🇷🇺'}</button>
             {langOpen && (
-              <div className="absolute left-0 top-full mt-2 bg-bg-secondary border border-border rounded-md shadow-lg z-20 min-w-[70px]">
-                <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary">EN</button>
-                <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="block w-full text-left px-3 py-2 text-sm hover:bg-bg-tertiary">RU</button>
+              <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-20 min-w-[120px]">
+                <button onClick={() => { onLangChange('en'); setLangOpen(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-zinc-800">🇺🇸 English</button>
+                <button onClick={() => { onLangChange('ru'); setLangOpen(false); }} className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm hover:bg-zinc-800">🇷🇺 Русский</button>
               </div>
             )}
           </div>
