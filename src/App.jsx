@@ -4,6 +4,9 @@ import AppInterface from './components/AppInterface';
 import TermsModal from './components/TermsModal';
 import AgeGate from './components/AgeGate';
 import LoginModal from './components/LoginModal';
+import Privacy from './components/Privacy';
+import CookiePolicy from './components/CookiePolicy';
+import DMCA from './components/DMCA';
 
 export default function App() {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
@@ -18,6 +21,7 @@ export default function App() {
   const [pendingAction, setPendingAction] = useState(null);
   const [lang, setLang] = useState('en');
   const [credits, setCredits] = useState(10);
+  const [legalPage, setLegalPage] = useState(null);
 
   useEffect(() => {
     try {
@@ -118,10 +122,14 @@ export default function App() {
     try { localStorage.setItem('seducecraft.credits', String(next)); } catch {}
   };
 
+    if (legalPage === 'privacy') return <Privacy onBack={() => setLegalPage(null)} />;
+  if (legalPage === 'cookies') return <CookiePolicy onBack={() => setLegalPage(null)} />;
+  if (legalPage === 'dmca') return <DMCA onBack={() => setLegalPage(null)} />;
+
   return (
     <>
       {view === 'landing' ? (
-        <Landing onStart={handleStart} isLoggedIn={isLoggedIn} userName={userName} onLogin={() => setShowLogin(true)} lang={lang} onLangChange={onLangChange} />
+        <Landing onLegal={setLegalPage} onStart={handleStart} isLoggedIn={isLoggedIn} userName={userName} onLogin={() => setShowLogin(true)} lang={lang} onLangChange={onLangChange} />
       ) : (
         <AppInterface
           isLoggedIn={isLoggedIn}

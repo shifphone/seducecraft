@@ -82,7 +82,11 @@ export default function Landing({ onStart, isLoggedIn, userName, onLogin, lang, 
       <footer className="border-t border-border py-6">
         <div className="max-w-6xl mx-auto px-6 flex justify-between text-sm text-text-secondary">
           <span>{t.brand}</span>
-          <span>{t.adultStudio}</span>
+          <div className="flex gap-4">
+            <button onClick={() => onLegal?.('privacy')} className="hover:text-text-primary">Privacy</button>
+            <button onClick={() => onLegal?.('cookies')} className="hover:text-text-primary">Cookies</button>
+            <button onClick={() => onLegal?.('dmca')} className="hover:text-text-primary">DMCA</button>
+          </div>
         </div>
       </footer>
     </div>
