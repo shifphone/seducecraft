@@ -53,18 +53,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [gallerySearch, setGallerySearch] = useState('');
   const [selectedGallery, setSelectedGallery] = useState(new Set());
   const [transactions, setTransactions] = useState(() => JSON.parse(localStorage.getItem('seducecraft.txs') || '[]'));
-  const [dailyClaimed, setDailyClaimed] = useState(() => localStorage.getItem('seducecraft.daily') === new Date().toDateString());
   const [referralCode, setReferralCode] = useState(() => localStorage.getItem('seducecraft.ref') || '');
 
-  const claimDaily = () => {
-    if (dailyClaimed) return;
-    const bonus = 5;
-    onAddCredits(bonus);
-    setDailyClaimed(true);
-    localStorage.setItem('seducecraft.daily', new Date().toDateString());
-    showToast(lang === 'en' ? `+${bonus} daily bonus!` : `+${bonus} ежедневный бонус!`);
-    addNotification(lang === 'en' ? `Daily bonus: +${bonus}` : `Ежедневный бонус: +${bonus}`);
-  };
   const [undressPhoto, setUndressPhoto] = useState(null);
   const [templateCategory, setTemplateCategory] = useState([]);
   const [templateSort, setTemplateSort] = useState('az');
@@ -610,9 +600,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
               <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">
                 {balance !== null ? balance : credits} {t.credits}
               </button>
-              {!dailyClaimed && (
-                <button onClick={claimDaily} className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-full hover:bg-orange-500/30">+5</button>
-              )}
             </div>
           )}
           {!isLoggedIn && <button onClick={onLogin} className="text-sm text-text-secondary hover:text-text-primary">{t.login}</button>}
