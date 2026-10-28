@@ -38,6 +38,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [notionLoaded]);
 
   const [langOpen, setLangOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [characters, setCharacters] = useState([]);
   const [characterSort, setCharacterSort] = useState('newest');
   const [characterFilter, setCharacterFilter] = useState('all');
@@ -474,7 +475,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     { id: 'deepfake', name: t.deepfake },
     { id: 'gallery', name: t.myGallery },
     { id: 'balance', name: lang === 'en' ? 'Balance' : 'Баланс' },
-    { id: 'active', name: lang === 'en' ? 'Active' : 'Активные' },
     { id: 'notifications', name: lang === 'en' ? 'Notifications' : 'Уведомления' },
     { id: 'profile', name: lang === 'en' ? 'Profile' : 'Профиль' },
     { id: 'help', name: lang === 'en' ? 'Help' : 'Помощь' },
@@ -760,6 +760,32 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
           {isLoggedIn && (
             <div className="flex items-center gap-3 text-sm">
+              <div className="relative">
+                <button onClick={() => setNotifOpen(!notifOpen)} className="relative text-zinc-400 hover:text-white">
+                  🔔
+                  {notifications.filter(n => !n.read).length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 text-white text-[10px] rounded-full flex items-center justify-center">{notifications.filter(n => !n.read).length}</span>
+                  )}
+                </button>
+                {notifOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-zinc-950 border border-zinc-800 rounded-xl shadow-xl z-30 max-h-80 overflow-hidden">
+                    <div className="flex justify-between items-center p-3 border-b border-zinc-800">
+                      <span className="text-sm font-medium">{lang === 'en' ? 'Notifications' : 'Уведомления'}</span>
+                      <button onClick={() => { setNotifications(prev => { const next = prev.map(n => ({...n, read: true})); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-xs text-zinc-500 hover:text-white">{lang === 'en' ? 'Read all' : 'Прочитать'}</button>
+                    </div>
+                    <div className="overflow-y-auto max-h-60">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-sm text-zinc-500 text-center">{lang === 'en' ? 'No notifications' : 'Нет уведомлений'}</div>
+                      ) : notifications.slice(0, 10).map(n => (
+                        <div key={n.id} className={`p-3 border-b border-zinc-800 flex justify-between ${n.read ? '' : 'bg-orange-500/5'}`}>
+                          <div className="text-sm">{n.msg}</div>
+                          <button onClick={() => setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; })} className="text-zinc-600 hover:text-red-400 ml-2">×</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <button onClick={() => setActiveMode('profile')} className="hover:text-orange-400 transition-colors">{userName}</button>
               <span className="text-zinc-600">·</span>
               <button onClick={() => setActiveMode('balance')} className="text-orange-400 hover:text-orange-300 transition-colors">
