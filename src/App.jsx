@@ -7,6 +7,7 @@ import LoginModal from './components/LoginModal';
 import Privacy from './components/Privacy';
 import CookiePolicy from './components/CookiePolicy';
 import DMCA from './components/DMCA';
+import Terms from './components/Terms';
 
 export default function App() {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
@@ -158,6 +159,7 @@ export default function App() {
             {legalPage === 'privacy' && <Privacy onBack={() => setLegalPage(null)} />}
             {legalPage === 'cookies' && <CookiePolicy onBack={() => setLegalPage(null)} />}
             {legalPage === 'dmca' && <DMCA onBack={() => setLegalPage(null)} />}
+            {legalPage === 'terms' && <Terms onBack={() => setLegalPage(null)} />}
           </div>
         </div>
       )}
