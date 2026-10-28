@@ -3,6 +3,7 @@ import CharacterCreator from './CharacterCreator';
 
 export default function Characters({ onRequireTerms, termsAccepted, characters = [], onSave }) {
   const [creating, setCreating] = useState(false);
+  const [preview, setPreview] = useState(null);
   const [sort, setSort] = useState('newest');
   const [filter, setFilter] = useState('all');
   const [sortOpen, setSortOpen] = useState(false);
@@ -96,7 +97,7 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
           {sorted.map((c) => (
             <div key={c.id} className="rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800/80 relative group hover:border-orange-500/40 hover:shadow-lg hover:shadow-black/40 transition-all">
               {c.photos?.[0] ? (
-                <img src={c.photos[0]} alt="" className="aspect-[16/10] w-full object-cover" />
+                <img src={c.photos[0]} alt="" onClick={() => setPreview(c)} className="aspect-[16/10] w-full object-cover cursor-pointer" />
               ) : (
                 <div className="aspect-[16/10] bg-zinc-800 flex items-center justify-center text-zinc-500 text-xs">No photo</div>
               )}
@@ -124,6 +125,20 @@ export default function Characters({ onRequireTerms, termsAccepted, characters =
           + Create character
         </button>
       </div>
+
+      {preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setPreview(null)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 max-w-3xl w-full" onClick={e => e.stopPropagation()}>
+            <div className="font-medium mb-3 text-center">{preview.name}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {(preview.photos || []).map((src, i) => (
+                <img key={i} src={src} alt="" className="w-full aspect-[3/4] object-cover rounded-lg" />
+              ))}
+            </div>
+            <button onClick={() => setPreview(null)} className="mt-4 w-full py-2 rounded-lg border border-zinc-700 text-sm text-zinc-400">Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
