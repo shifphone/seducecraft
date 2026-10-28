@@ -13,6 +13,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [swapMode, setSwapMode] = useState('upload');
   const [deepMode, setDeepMode] = useState('upload');
   const [prompt, setPrompt] = useState('');
+  const [showPresets, setShowPresets] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [pendingGens, setPendingGens] = useState(0);
   const [activeGens, setActiveGens] = useState([]);
@@ -1432,6 +1433,27 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </div>
                     </div>
                     <div>
+                      <button onClick={() => setShowPresets(!showPresets)} className="mb-3 text-sm text-orange-400 hover:text-orange-300">{showPresets ? '− Hide presets' : '+ Presets'}</button>
+                      {showPresets && (
+                        <div className="mb-4 grid grid-cols-4 gap-2">
+                          {[
+                            {name:'Nude',prompt:'naked, nude, bare skin, no clothes'},
+                            {name:'Bikini',prompt:'wearing a bikini, beach style'},
+                            {name:'Lingerie',prompt:'wearing elegant lace lingerie, bra and panties'},
+                            {name:'Shibari',prompt:'wearing red shibari rope bondage'},
+                            {name:'BDSM',prompt:'wearing black leather BDSM harness'},
+                            {name:'Cowgirl',prompt:'cowgirl position, riding, on top'},
+                            {name:'Missionary',prompt:'missionary position, lying on back'},
+                            {name:'Doggy',prompt:'doggy style position, on all fours'},
+                            {name:'Ahegao',prompt:'ahegao face, tongue out, eyes rolled back'},
+                            {name:'Shower',prompt:'in the shower, wet hair, water droplets'},
+                            {name:'Maid',prompt:'wearing a maid outfit, french maid'},
+                            {name:'Latex',prompt:'wearing tight black latex outfit'},
+                          ].map(pr => (
+                            <button key={pr.name} onClick={() => setPrompt(pr.prompt)} className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs hover:border-orange-500/50 text-zinc-300">{pr.name}</button>
+                          ))}
+                        </div>
+                      )}
                       <div className="relative">
                         <textarea
                           value={prompt}
