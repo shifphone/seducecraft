@@ -109,6 +109,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [videoMode, setVideoMode] = useState('text'); // text | image | templates
   const [videoImage, setVideoImage] = useState(null);
   const [customPhoto, setCustomPhoto] = useState(null);
+  const [galleryPicker, setGalleryPicker] = useState(null);
   const [videoStatus, setVideoStatus] = useState(null);
   const [swapSource, setSwapSource] = useState(null);
   const [swapTarget, setSwapTarget] = useState(null);
@@ -242,7 +243,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const handleGenerate = async () => {
     const needsPhoto = photoMode === 'undress' || (activeMode === 'faceswap' && swapMode === 'upload') || (activeMode === 'deepfake' && deepMode === 'upload');
     if (needsPhoto && !undressPhoto) return;
-    if (!needsPhoto && !selectedCharacter) return;
+    if (!needsPhoto && !selectedCharacter && !customPhoto) return;
     const p = buildPrompt();
     setPendingGens(c => c + numImages);
     showToast(lang === 'en' ? 'Sent to generation…' : 'Отправлено на генерацию…');
@@ -369,7 +370,20 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     setPendingGens(c => Math.max(0, c - 1));
   };
 
-  const downloadImage = (src, name) => { const a = document.createElement('a'); a.href = src; a.download = (name || 'seducecraft') + '.jpg'; a.click(); };
+  const downloadImage = async (src, name) => {
+    try {
+      const r = await fetch(src);
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (name || 'seducecraft') + (src.includes('.mp4') ? '.mp4' : '.jpg');
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(src, '_blank');
+    }
+  };
   const sortedGallery = [...gallery]
     .filter(g => {
       if (gallerySearch && !(g.title?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.characterName?.toLowerCase().includes(gallerySearch.toLowerCase()) || g.prompt?.toLowerCase().includes(gallerySearch.toLowerCase()))) return false;
@@ -451,7 +465,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
 
   const canGenerate = () => {
     if (photoMode === 'undress' || (activeMode === 'faceswap' && swapMode === 'upload') || (activeMode === 'deepfake' && deepMode === 'upload')) return !!undressPhoto;
-    return !!selectedCharacter;
+    return !!selectedCharacter || !!customPhoto;
   };
 
   return (
@@ -621,7 +635,25 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           </div>
         </div>
       )}
-      <header className="border-b border-border h-16 flex items-center justify-between px-6">
+      
+      {galleryPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setGalleryPicker(null)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-medium">Select from gallery</h3>
+              <button onClick={() => setGalleryPicker(null)} className="text-zinc-500 hover:text-white">×</button>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 overflow-y-auto">
+              {gallery.filter(g => g.type !== 'video' && !g.src?.includes('.mp4')).map(g => (
+                <button key={g.id} onClick={() => { galleryPicker(g.src); setGalleryPicker(null); }} className="aspect-[3/4] rounded-lg overflow-hidden border border-zinc-800 hover:border-orange-500">
+                  <img src={g.src} alt="" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+<header className="border-b border-border h-16 flex items-center justify-between px-6">
         <div className="flex items-center gap-3">
           <img src="/layer-logo-icon.png" alt="" className="h-11 w-11 object-contain" />
           <img src="/layer-logo.png" alt="Seducecraft" className="h-8 object-contain" />
@@ -837,7 +869,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       </label>
                       {gallery.filter(g => g.type !== 'video').length > 0 && (
                         <div className="mt-3">
-                          <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</p>
+                          <button onClick={() => setGalleryPicker(src => setSwapTarget(src))} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
                           <div className="flex gap-2 justify-center flex-wrap">
                             {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
                               <button key={g.id} onClick={() => setSwapTarget(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${swapTarget === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
@@ -1494,7 +1526,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           </label>
                           {gallery.filter(g => g.type !== 'video').length > 0 && (
                             <div className="mt-3">
-                              <p className="text-xs text-zinc-500 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</p>
+                              <button onClick={() => setGalleryPicker(src => setVideoImage(src))} className="text-xs text-orange-400 hover:text-orange-300 mb-2">{lang === 'en' ? 'or from gallery' : 'или из галереи'}</button>
                               <div className="flex gap-2 justify-center flex-wrap">
                                 {gallery.filter(g => g.type !== 'video').slice(0, 6).map(g => (
                                   <button key={g.id} onClick={() => setVideoImage(g.src)} className={`w-10 h-14 rounded overflow-hidden border-2 ${videoImage === g.src ? 'border-orange-500' : 'border-zinc-700'}`}>
