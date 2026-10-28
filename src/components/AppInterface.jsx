@@ -617,7 +617,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 )}
                 <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
               </div>
-              </div>
             </div>
           </div>
         </div>
