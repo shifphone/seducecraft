@@ -1,8 +1,8 @@
 export default function CookiePolicy({ onBack }) {
   return (
-    <div className="min-h-screen bg-bg-primary text-text-primary p-6">
+    <div className="p-6">
       <div className="max-w-3xl mx-auto">
-        <button onClick={onBack} className="text-sm text-text-secondary hover:text-text-primary mb-6">← Back</button>
+        
         <h1 className="text-3xl font-semibold mb-6">Cookie Policy</h1>
         <div className="space-y-4 text-sm text-text-secondary leading-relaxed">
           <p>Last updated: October 2026</p>

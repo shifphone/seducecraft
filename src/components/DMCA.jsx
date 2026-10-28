@@ -1,8 +1,8 @@
 export default function DMCA({ onBack }) {
   return (
-    <div className="min-h-screen bg-bg-primary text-text-primary p-6">
+    <div className="p-6">
       <div className="max-w-3xl mx-auto">
-        <button onClick={onBack} className="text-sm text-text-secondary hover:text-text-primary mb-6">← Back</button>
+        
         <h1 className="text-3xl font-semibold mb-6">DMCA / Content Removal</h1>
         <div className="space-y-4 text-sm text-text-secondary leading-relaxed">
           <p>If you believe content on Seducecraft infringes your rights, send a notice to dmca@seducecraft.app with:</p>
