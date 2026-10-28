@@ -236,9 +236,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const buildPrompt = () => {
     if (photoMode === 'undress') {
       const styles = {
-        nude: 'Replace clothes with bare skin.',
-        lingerie: 'Replace clothes with elegant lingerie (bra and panties).',
-        bikini: 'Replace clothes with a bikini.',
+        nude: 'Remove all clothing and replace with bare skin. Keep the exact same crop and framing — do not zoom in, do not crop tighter, do not change the camera distance.',
+        lingerie: 'Replace clothes with elegant lingerie (bra and panties). Keep the exact same crop and framing.',
+        bikini: 'Replace clothes with a bikini. Keep the exact same crop and framing.',
       };
       return `Inpaint edit: keep this exact photograph unchanged. Same framing, same crop, same camera distance, same pose, same face, same body proportions, same background, same lighting. The only modification is changing the clothing. ${styles[undressStyle] || styles.nude} Do not regenerate, do not reframe, do not change anything else.`;
     }
