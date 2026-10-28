@@ -136,7 +136,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [isLoggedIn]);
 
   useEffect(() => {
-    if (activeMode === 'faceswap') setSelectedModel('xSD5Pro');
+    if (activeMode === 'faceswap' || photoMode === 'undress') setSelectedModel('xSD5Pro');
   }, [activeMode]);
 
   useEffect(() => {
@@ -1188,12 +1188,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                     <div className="text-xs text-zinc-500 mb-3">~{calcPhotoCost()} token{calcPhotoCost() > 1 ? 's' : ''}</div>
                     <div className="flex justify-center gap-3 mb-4">
-                      <select value={selectedModel} onChange={e => { setSelectedModel(e.target.value); setImageSize(e.target.value === 'xSD5Pro' ? '1K' : '1920x1920'); }} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                        <option value="xSD4.5">Normal</option>
-                        <option value="xSD5Pro">Pro</option>
-                      </select>
+                      <span className="text-sm text-orange-400 font-medium">Pro</span>
                       <select value={imageSize} onChange={e => setImageSize(e.target.value)} className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm">
-                        {(selectedModel === 'xSD5Pro' ? ['1K','1.5K','2K'] : ['1920x1920','2048x2048']).map(s => (
+                        {['1K','1.5K','2K'].map(s => (
                           <option key={s} value={s}>{s}</option>
                         ))}
                       </select>
