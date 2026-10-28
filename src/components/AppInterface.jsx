@@ -1178,10 +1178,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 </div>
                 <div className="mt-6 space-y-4">
                   <div>
-                    <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Email' : 'Почта'}</div>
-                    <input value={userEmail} onChange={e => { setUserEmail(e.target.value); localStorage.setItem('seducecraft.email', e.target.value); }} placeholder="email@example.com" className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm" />
-                  </div>
-                  <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Language' : 'Язык'}</div>
                     <div className="flex gap-2">
                       <button onClick={() => onLangChange('en')} className={`px-4 py-2 rounded-lg text-sm ${lang==='en' ? 'bg-orange-500 text-white' : 'border border-zinc-700'}`}>EN</button>
