@@ -49,7 +49,9 @@ export default async function handler(req, res) {
       title: item.title || null,
       prompt: item.prompt || null,
       character_name: item.characterName || null,
-      src: item.src
+      src: item.src,
+      model: item.model || null,
+      size: item.size || null
     };
     const { data, error } = await supabase.from('anon_gallery').insert(row).select().single();
     if (error) return res.status(500).json({ error: error.message, details: error });
@@ -65,6 +67,8 @@ export default async function handler(req, res) {
       prompt: d.prompt,
       characterName: d.character_name,
       src: d.src,
+      model: d.model,
+      size: d.size,
       createdAt: new Date(d.created_at).getTime()
     }));
     return res.status(200).json(mapped);
