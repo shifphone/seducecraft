@@ -1437,18 +1437,22 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       {showPresets && (
                         <div className="mb-4 grid grid-cols-4 gap-2">
                           {[
-                            {name:'Nude',prompt:'naked, nude, bare skin, no clothes'},
-                            {name:'Bikini',prompt:'wearing a bikini, beach style'},
-                            {name:'Lingerie',prompt:'wearing elegant lace lingerie, bra and panties'},
-                            {name:'Shibari',prompt:'wearing red shibari rope bondage'},
-                            {name:'BDSM',prompt:'wearing black leather BDSM harness'},
-                            {name:'Cowgirl',prompt:'cowgirl position, riding, on top'},
-                            {name:'Missionary',prompt:'missionary position, lying on back'},
-                            {name:'Doggy',prompt:'doggy style position, on all fours'},
-                            {name:'Ahegao',prompt:'ahegao face, tongue out, eyes rolled back'},
-                            {name:'Shower',prompt:'in the shower, wet hair, water droplets'},
-                            {name:'Maid',prompt:'wearing a maid outfit, french maid'},
-                            {name:'Latex',prompt:'wearing tight black latex outfit'},
+                            {name:'Nude',prompt:'completely naked, nude body, bare skin, no clothing, natural skin texture, realistic'},
+                            {name:'Bikini',prompt:'wearing a small bikini, triangle top, string bottoms, beach body, sun-kissed skin'},
+                            {name:'Lingerie',prompt:'wearing elegant black lace lingerie, push-up bra, matching panties, sensual pose'},
+                            {name:'Shibari',prompt:'intricate red rope shibari bondage, ropes wrapping around body, artistic knotwork, exposed skin'},
+                            {name:'BDSM',prompt:'wearing black leather harness, straps across body, metal rings, dominant aesthetic'},
+                            {name:'Latex',prompt:'wearing tight shiny black latex catsuit, glossy reflections, form-fitting'},
+                            {name:'Maid',prompt:'wearing classic french maid outfit, short black dress, white apron, frilly headpiece'},
+                            {name:'Cowgirl',prompt:'cowgirl sex position, woman on top, straddling, riding motion, intimate'},
+                            {name:'Missionary',prompt:'missionary position, lying on back, legs spread, intimate close-up'},
+                            {name:'Doggy',prompt:'doggy style position, on all fours, arched back, rear view'},
+                            {name:'Ahegao',prompt:'ahegao expression, tongue sticking out, eyes rolled up, flushed cheeks, pleasure face'},
+                            {name:'Shower',prompt:'standing in shower, water running down body, wet hair, steam, droplets on skin'},
+                            {name:'Spread',prompt:'lying on back, legs spread wide, explicit pose, looking at camera'},
+                            {name:'Blowjob',prompt:'oral sex, on knees, looking up at camera, intimate close-up'},
+                            {name:'Titjob',prompt:'breast sex, pressing breasts together, looking at camera'},
+                            {name:'Corset',prompt:'wearing a tight corset, laced up, cleavage, elegant'},
                           ].map(pr => (
                             <button key={pr.name} onClick={() => setPrompt(pr.prompt)} className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs hover:border-orange-500/50 text-zinc-300">{pr.name}</button>
                           ))}

@@ -13,7 +13,7 @@ function rateLimit(key, limit = 10, windowMs = 60000) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
-  if (!rateLimit(ip, 15, 60000)) return res.status(429).json({ error: 'Too many requests' });
+  // rate limit disabled
 
   const apiKey = process.env.XMODE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
