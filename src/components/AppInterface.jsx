@@ -14,6 +14,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [deepMode, setDeepMode] = useState('upload');
   const [prompt, setPrompt] = useState('');
   const [showPresets, setShowPresets] = useState(false);
+  const [presetCat, setPresetCat] = useState('clothing');
   const [generating, setGenerating] = useState(false);
   const [pendingGens, setPendingGens] = useState(0);
   const [activeGens, setActiveGens] = useState([]);
@@ -1435,28 +1436,40 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     <div>
                       <button onClick={() => setShowPresets(!showPresets)} className="mb-3 text-sm text-orange-400 hover:text-orange-300">{showPresets ? '− Hide presets' : '+ Presets'}</button>
                       {showPresets && (
-                        <div className="mb-4 grid grid-cols-4 gap-2">
-                          {[
-                            {name:'Nude',prompt:'completely naked, nude body, bare skin, no clothing, natural skin texture, realistic'},
-                            {name:'Bikini',prompt:'wearing a small bikini, triangle top, string bottoms, beach body, sun-kissed skin'},
-                            {name:'Lingerie',prompt:'wearing elegant black lace lingerie, push-up bra, matching panties, sensual pose'},
-                            {name:'Shibari',prompt:'intricate red rope shibari bondage, ropes wrapping around body, artistic knotwork, exposed skin'},
-                            {name:'BDSM',prompt:'wearing black leather harness, straps across body, metal rings, dominant aesthetic'},
-                            {name:'Latex',prompt:'wearing tight shiny black latex catsuit, glossy reflections, form-fitting'},
-                            {name:'Maid',prompt:'wearing classic french maid outfit, short black dress, white apron, frilly headpiece'},
-                            {name:'Cowgirl',prompt:'cowgirl sex position, woman on top, straddling, riding motion, intimate'},
-                            {name:'Missionary',prompt:'missionary position, lying on back, legs spread, intimate close-up'},
-                            {name:'Doggy',prompt:'doggy style position, on all fours, arched back, rear view'},
-                            {name:'Ahegao',prompt:'ahegao expression, tongue sticking out, eyes rolled up, flushed cheeks, pleasure face'},
-                            {name:'Shower',prompt:'standing in shower, water running down body, wet hair, steam, droplets on skin'},
-                            {name:'Spread',prompt:'lying on back, legs spread wide, explicit pose, looking at camera'},
-                            {name:'Blowjob',prompt:'oral sex, on knees, looking up at camera, intimate close-up'},
-                            {name:'Titjob',prompt:'breast sex, pressing breasts together, looking at camera'},
-                            {name:'Corset',prompt:'wearing a tight corset, laced up, cleavage, elegant'},
-                          ].map(pr => (
-                            <button key={pr.name} onClick={() => setPrompt(pr.prompt)} className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs hover:border-orange-500/50 text-zinc-300">{pr.name}</button>
-                          ))}
-                        </div>
+                        <div className="mb-4">
+                          <div className="flex gap-2 mb-3">
+                            {[{id:'clothing',label:'Clothing'},{id:'pose',label:'Pose'},{id:'scene',label:'Scene'}].map(c => (
+                              <button key={c.id} onClick={() => setPresetCat(c.id)} className={`px-3 py-1 rounded-full text-xs ${presetCat===c.id ? 'bg-orange-500 text-white' : 'border border-zinc-700 text-zinc-400'}`}>{c.label}</button>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {(presetCat === 'clothing' ? [
+                              {name:'Nude',prompt:'Remove all clothing. She is completely naked, nude, bare skin visible. Natural skin texture with pores. No clothes, no underwear. Realistic photography.'},
+                              {name:'Bikini',prompt:'She is wearing a small string bikini. Triangle bikini top, thin straps, matching bikini bottoms. Beach body, sun-kissed skin. Realistic photo.'},
+                              {name:'Lingerie',prompt:'She is wearing elegant black lace lingerie. Push-up bra with lace details, matching lace panties. Sensual pose, looking at camera. Realistic photography.'},
+                              {name:'Shibari',prompt:'She is wearing intricate red rope shibari bondage. Ropes wrapping around her torso, under and around breasts, artistic knotwork. Exposed skin between ropes. Realistic photo.'},
+                              {name:'BDSM',prompt:'She is wearing a black leather BDSM harness. Leather straps across chest, around waist, metal O-rings. Dominant aesthetic, exposed skin. Realistic photography.'},
+                              {name:'Latex',prompt:'She is wearing a tight shiny black latex outfit. Glossy reflections, form-fitting catsuit or dress. Shiny material, realistic photo.'},
+                              {name:'Maid',prompt:'She is wearing a classic french maid outfit. Short black dress with white apron, frilly white headpiece, black stockings. Realistic photography.'},
+                              {name:'Corset',prompt:'She is wearing a tight corset, laced up front, pushing up breasts, cleavage visible. Elegant, historical style. Realistic photo.'},
+                            ] : presetCat === 'pose' ? [
+                              {name:'Cowgirl',prompt:'Cowgirl sex position. She is on top, straddling, riding. Her body facing the camera, hands on chest or thighs. Intimate, explicit. Realistic photography.'},
+                              {name:'Missionary',prompt:'Missionary sex position. She is lying on her back, legs spread, partner on top. Close-up intimate view. Realistic photography.'},
+                              {name:'Doggy',prompt:'Doggy style sex position. She is on all fours, arched back, rear view. Looking back at camera. Explicit, realistic photography.'},
+                              {name:'Spread',prompt:'She is lying on her back, legs spread wide apart, knees bent. Explicit pose, looking at camera. Realistic photography.'},
+                              {name:'Blowjob',prompt:'Oral sex, blowjob. She is on her knees, looking up at camera, mouth open. Close-up intimate view. Realistic photography.'},
+                              {name:'Titjob',prompt:'Breast sex, titjob. She is pressing her breasts together around a penis, looking at camera. Realistic photography.'},
+                              {name:'Ahegao',prompt:'Ahegao expression. Tongue sticking out, eyes rolled up showing whites, flushed cheeks, drooling slightly. Pleasure face. Realistic photography.'},
+                              {name:'Selfie',prompt:'She is taking a selfie, holding phone, looking at camera. Casual pose, bedroom or bathroom mirror. Realistic photography.'},
+                            ] : [
+                              {name:'Shower',prompt:'She is standing in the shower. Water running down her body, wet hair, steam in background, water droplets on skin. Realistic photography.'},
+                              {name:'Bedroom',prompt:'She is lying on a bed, bedroom setting. Soft lighting, pillows, sheets. Intimate atmosphere. Realistic photography.'},
+                              {name:'Mirror',prompt:'Mirror selfie. She is standing in front of a mirror, taking a photo of her reflection. Full body visible. Realistic photography.'},
+                              {name:'Beach',prompt:'She is at the beach. Sand, ocean in background, sunny day. Bikini or nude. Realistic photography.'},
+                            ]).map(pr => (
+                              <button key={pr.name} onClick={() => setPrompt(pr.prompt)} className="px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-xs hover:border-orange-500/50 text-zinc-300">{pr.name}</button>
+                            ))}
+                          </div></div>
                       )}
                       <div className="relative">
                         <textarea
