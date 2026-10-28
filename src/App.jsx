@@ -122,10 +122,6 @@ export default function App() {
     try { localStorage.setItem('seducecraft.credits', String(next)); } catch {}
   };
 
-    if (legalPage === 'privacy') return <Privacy onBack={() => setLegalPage(null)} />;
-  if (legalPage === 'cookies') return <CookiePolicy onBack={() => setLegalPage(null)} />;
-  if (legalPage === 'dmca') return <DMCA onBack={() => setLegalPage(null)} />;
-
   return (
     <>
       {view === 'landing' ? (
@@ -154,6 +150,16 @@ export default function App() {
       )}
       {showLogin && (
         <LoginModal onLogin={handleLogin} onClose={() => { setShowLogin(false); setPendingAction(null); }} lang={lang} />
+      )}
+
+      {legalPage && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4" onClick={() => setLegalPage(null)}>
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {legalPage === 'privacy' && <Privacy onBack={() => setLegalPage(null)} />}
+            {legalPage === 'cookies' && <CookiePolicy onBack={() => setLegalPage(null)} />}
+            {legalPage === 'dmca' && <DMCA onBack={() => setLegalPage(null)} />}
+          </div>
+        </div>
       )}
     </>
   );
