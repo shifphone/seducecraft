@@ -1,4 +1,4 @@
-export default function AgeGate({ onAccept, lang, onLangChange }) {
+export default function AgeGate({ onAccept, lang, onLangChange, onLegal }) {
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-8 text-center shadow-2xl">
@@ -6,8 +6,8 @@ export default function AgeGate({ onAccept, lang, onLangChange }) {
         <h2 className="text-xl font-semibold mt-6 mb-3">{lang === 'ru' ? 'Этот сайт только для взрослых' : 'This site is for adults only'}</h2>
         <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
           {lang === 'ru' 
-            ? 'Входя на сайт, вы подтверждаете, что вам 18 лет или больше. Используя сайт, вы соглашаетесь с Условиями использования и Политикой конфиденциальности.'
-            : 'By entering this website, you confirm that you are 18 years old or over. By using the site, you agree to our Terms of Service and Privacy Policy.'}
+            ? <>Входя на сайт, вы подтверждаете, что вам 18 лет или больше. Используя сайт, вы соглашаетесь с <button onClick={() => onLegal?.('terms')} className="text-orange-400 hover:underline">Условиями использования</button> и <button onClick={() => onLegal?.('privacy')} className="text-orange-400 hover:underline">Политикой конфиденциальности</button>.</>
+            : <>By entering this website, you confirm that you are 18 years old or over. By using the site, you agree to our <button onClick={() => onLegal?.('terms')} className="text-orange-400 hover:underline">Terms of Service</button> and <button onClick={() => onLegal?.('privacy')} className="text-orange-400 hover:underline">Privacy Policy</button>.</>}
         </p>
         <div className="flex gap-3 justify-center mb-6">
           <button onClick={onAccept} className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg text-sm font-medium">{lang === 'ru' ? 'Мне 18 лет' : "I'm 18 years old"}</button>
