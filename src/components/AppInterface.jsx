@@ -142,7 +142,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   }, [isLoggedIn]);
 
     const editGalleryImage = async () => {
-    if (!editPrompt.trim() || !previewSrc || editing) return;
+    const src = viewer?.src || previewSrc;
+    if (!editPrompt.trim() || !src || editing) return;
     setEditing(true);
     try {
       const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || 'x'}@seducecraft.app`;
@@ -152,14 +153,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         model: 'xSD4.5',
         n: 1,
         size: '2048x2048',
-        references: [previewSrc],
+        references: [src],
       };
       const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || 'edit failed');
       const item = { id: crypto.randomUUID(), title: 'Edit', prompt: editPrompt.trim(), characterName: 'Edit', src: data.url, createdAt: Date.now(), model: 'xSD4.5', size: '2048x2048' };
       setGallery(prev => [item, ...prev]);
-      setPreviewSrc(data.url);
+      if (viewer) setViewer({ ...viewer, src: data.url }); else setPreviewSrc(data.url);
       setEditPrompt('');
       showToast(lang === 'en' ? 'Edited! Added to gallery' : 'Отредактировано!');
     } catch (e) {
@@ -608,6 +609,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                 {viewer.prompt && (viewer.title === 'Custom' || viewer.title?.startsWith('Custom') || viewer.type === 'video') && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
                 <button onClick={() => { setViewer(null); setShowPrompt(false); }} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">Close</button>
+              </div>
+              {!(viewer.type === 'video' || viewer.src?.includes('.mp4')) && (
+                <div className="mt-3 flex gap-2">
+                  <input value={editPrompt} onChange={e => setEditPrompt(e.target.value)} placeholder={lang === 'en' ? 'Edit with prompt...' : 'Редактировать промптом...'} className="flex-1 h-10 bg-zinc-900 border border-zinc-700 rounded-lg px-3 text-sm" onKeyDown={e => e.key === 'Enter' && editGalleryImage()} />
+                  <button onClick={editGalleryImage} disabled={editing || !editPrompt.trim()} className="px-4 h-10 bg-orange-500 text-white rounded-lg text-sm disabled:opacity-40">{editing ? '...' : 'Edit'}</button>
+                </div>
+              )}
+              <div className="hidden">
               </div>
             </div>
           </div>
