@@ -43,6 +43,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [selectedCharacterId, setSelectedCharacterId] = useState(null);
   const [previewCharacter, setPreviewCharacter] = useState(null);
   const [previewSrc, setPreviewSrc] = useState(null);
+  const [editPrompt, setEditPrompt] = useState('');
+  const [editing, setEditing] = useState(false);
   const [lastClickedChar, setLastClickedChar] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
@@ -138,6 +140,33 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       fetch('/api/balance').then(r => r.json()).then(d => setBalance(d.balance)).catch(() => {});
     }
   }, [isLoggedIn]);
+
+    const editGalleryImage = async () => {
+    if (!editPrompt.trim() || !previewSrc || editing) return;
+    setEditing(true);
+    try {
+      const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || 'x'}@seducecraft.app`;
+      const body = {
+        prompt: editPrompt.trim(),
+        endUserEmail: email,
+        model: 'xSD4.5',
+        n: 1,
+        size: '2048x2048',
+        references: [previewSrc],
+      };
+      const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || 'edit failed');
+      const item = { id: crypto.randomUUID(), title: 'Edit', prompt: editPrompt.trim(), characterName: 'Edit', src: data.url, createdAt: Date.now(), model: 'xSD4.5', size: '2048x2048' };
+      setGallery(prev => [item, ...prev]);
+      setPreviewSrc(data.url);
+      setEditPrompt('');
+      showToast(lang === 'en' ? 'Edited! Added to gallery' : 'Отредактировано!');
+    } catch (e) {
+      showToast(e.message || 'Edit failed');
+    }
+    setEditing(false);
+  };
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
   const saveCharacters = async (list) => {
@@ -434,11 +463,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       )}
       {previewSrc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setPreviewSrc(null)}>
-          <div className="relative max-w-lg" onClick={e => e.stopPropagation()}>
-            <img src={previewSrc} alt="" className="max-h-[80vh] rounded-xl" />
-            <div className="flex gap-2 mt-3 justify-center">
-              <button onClick={() => downloadImage(previewSrc, 'undress')} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">Download</button>
-              <button onClick={() => setPreviewSrc(null)} className="px-4 py-2 border border-zinc-700 text-zinc-400 rounded-lg text-sm">Close</button>
+          <div className="relative max-w-lg w-full" onClick={e => e.stopPropagation()}>
+            <img src={previewSrc} alt="" className="max-h-[70vh] mx-auto rounded-xl" />
+            <div className="mt-3 flex gap-2">
+              <input value={editPrompt} onChange={e => setEditPrompt(e.target.value)} placeholder={lang === 'en' ? 'Edit with prompt...' : 'Редактировать промптом...'} className="flex-1 h-10 bg-zinc-900 border border-zinc-700 rounded-lg px-3 text-sm" onKeyDown={e => e.key === 'Enter' && editGalleryImage()} />
+              <button onClick={editGalleryImage} disabled={editing || !editPrompt.trim()} className="px-4 h-10 bg-orange-500 text-white rounded-lg text-sm disabled:opacity-40">{editing ? '...' : 'Edit'}</button>
+            </div>
+            <div className="flex gap-2 mt-2 justify-center">
+              <button onClick={() => downloadImage(previewSrc, 'image')} className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-sm">Download</button>
+              <button onClick={() => { setPreviewSrc(null); setEditPrompt(''); }} className="px-4 py-2 border border-zinc-700 text-zinc-400 rounded-lg text-sm">Close</button>
             </div>
           </div>
         </div>
