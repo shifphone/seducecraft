@@ -627,6 +627,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
             <div className="mt-4 flex items-center justify-between text-sm">
               <div><div className="font-medium">{viewer.title}</div><div className="text-text-secondary text-xs">{viewer.characterName}</div></div>
               <div className="flex gap-2">
+                {viewer.model && <span className="text-xs text-zinc-500">{viewer.model === 'xSD5Pro' ? 'Pro' : 'Normal'}{viewer.size ? ` · ${viewer.size}` : ''}</span>}
                 {viewer.prompt && (viewer.title === 'Custom' || viewer.title?.startsWith('Custom') || viewer.type === 'video') && <button onClick={() => setShowPrompt(!showPrompt)} className="px-4 py-2 border border-border rounded-full text-sm hover:border-accent">{showPrompt ? 'Hide' : 'i'}</button>}
                 <button onClick={() => downloadImage(viewer.src, viewer.title)} className="btn-glow px-4 py-2 text-white text-sm">{lang === 'en' ? 'Download' : 'Скачать'}</button>
                 {!(viewer.type === 'video' || viewer.src?.includes('.mp4')) && (
