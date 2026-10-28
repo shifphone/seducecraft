@@ -1186,8 +1186,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   {notifications.map(n => (
                     <div key={n.id} onClick={() => { if (n.itemId) { const item = gallery.find(g => g.id === n.itemId); if (item) setPreviewSrc(item.src); } else setActiveMode('gallery'); }} className={`bg-zinc-900 border rounded-xl p-4 flex items-center justify-between cursor-pointer hover:border-zinc-600 ${n.read ? 'border-zinc-800' : 'border-orange-500/30'}`}>
                       <div>
-                        <div className={n.read ? 'text-zinc-400' : 'text-white'}>{n.msg}</div>
-                        <div className="text-xs text-zinc-600">{new Date(n.time).toLocaleString()}</div>
+                        <div className={`font-medium ${n.read ? 'text-zinc-300' : 'text-white'}`}>{n.msg}</div>
+                        <div className="text-xs text-zinc-600">{new Date(n.time).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'}) + ' ' + new Date(n.time).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'})}</div>
                       </div>
                       <button onClick={(e) => { e.stopPropagation(); setNotifications(prev => { const next = prev.filter(x => x.id !== n.id); localStorage.setItem('seducecraft.notifs', JSON.stringify(next)); return next; }); }} className="text-zinc-600 hover:text-red-400">×</button>
                     </div>
