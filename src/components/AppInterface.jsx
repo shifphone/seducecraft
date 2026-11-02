@@ -239,17 +239,30 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     for (const c of list) {
       if (!c.saved) {
         try {
-          // Upload photos first, get URLs
+          // Upload photos first, get permanent URLs
           const photoUrls = [];
           for (const photo of (c.photos || [])) {
-            if (photo.startsWith('http')) {
-              photoUrls.push(photo);
-            } else if (photo.startsWith('data:')) {
+            if (photo.startsWith('data:')) {
               const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64: photo }) });
               if (upRes.ok) {
                 const upData = await upRes.json();
                 if (upData.url) photoUrls.push(upData.url);
               }
+            } else if (photo.startsWith('http') && !photo.includes('supabase')) {
+              // Download temp URL and re-upload to Supabase
+              try {
+                const imgRes = await fetch(photo);
+                const blob = await imgRes.blob();
+                const reader = new FileReader();
+                const base64 = await new Promise(r => { reader.onload = () => r(reader.result); reader.readAsDataURL(blob); });
+                const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64 }) });
+                if (upRes.ok) {
+                  const upData = await upRes.json();
+                  if (upData.url) photoUrls.push(upData.url);
+                }
+              } catch { photoUrls.push(photo); }
+            } else {
+              photoUrls.push(photo);
             }
           }
           // Save character with URLs only
