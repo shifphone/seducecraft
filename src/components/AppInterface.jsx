@@ -90,8 +90,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const PHOTO_COST = 1;
   const ANATOMY_REFS = {
     doggy: [
-      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630979551-wncrf48wn3.jpg',
-      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630980383-vd3g7ils9u.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793631727288-3jfib24n3n4.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793631728334-u5ypal8bb9n.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793631728978-9boi6nldtxn.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793631729352-emoa93g58zp.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793631729981-kh7or3j8199.jpg',
     ],
     blowjob: [
       'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630981228-kp0j4y2eym.jpg',
