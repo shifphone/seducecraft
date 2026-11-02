@@ -27,3 +27,4 @@ export default async function handler(req, res) {
   const data = await r.json();
   return res.status(r.ok ? 200 : 500).json(data);
 }
+// trigger
