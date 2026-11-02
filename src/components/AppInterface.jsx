@@ -342,10 +342,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
     try {
       const email = isLoggedIn && userName?.includes('@') ? userName : `anon-${localStorage.getItem('anonId') || (() => { const id = crypto.randomUUID().slice(0,8); localStorage.setItem('anonId', id); return id; })()}@seducecraft.app`;
       const body = { prompt: p, endUserEmail: email, model: selectedModel, n: numImages, size: imageSize, sequential: sequential ? 'auto' : undefined };
+      const checkPrompt = p || '';
+      const isExplicit = /penis|cock|dick|vagina|pussy|anus|sex|fuck|blowjob|doggy|missionary|cowgirl|naked|nude/i.test(checkPrompt);
       const photos = photoMode === 'undress' ? [undressPhoto] : (customPhoto ? [customPhoto] : (selectedCharacter?.photos || []));
+      const allPhotos = isExplicit ? [...photos.filter(Boolean), ...ANATOMY_REFS.slice(0, 2)] : photos;
       const refUrls = [];
       const base64s = [];
-      for (const photo of photos) {
+      for (const photo of allPhotos) {
         if (photo && photo.startsWith('http')) refUrls.push(photo);
         else if (photo && photo.startsWith('data:')) {
           // Upload base64 first to avoid payload limit
