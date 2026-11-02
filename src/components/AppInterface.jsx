@@ -378,7 +378,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       // For templates: add template image as second reference for pose/clothing
       if (photoMode === 'templates' && selectedTemplate?.src) {
         refUrls.push(window.location.origin + selectedTemplate.src);
-        body.prompt = `IMPORTANT: The face must come ONLY from image_1. Do not use the face from image_2. Replace the face completely with image_1. Use image_2 only for pose, body position, clothing, and background. ${p}`;
+        // Face swap mode for templates - just replace face, keep everything else
+        body.prompt = `Take the face from image_1 and place it onto the person in image_2. Match the face identity exactly from image_1. Keep the pose, body, clothing, lighting, background and everything else from image_2 completely unchanged. Seamless face replacement only.`;
       }
       if (base64s.length) body.referenceBase64 = base64s;
       if (isExplicit && refUrls.length > 1) body.prompt += ' image_1 is the person, image_2 is the penis reference.';
