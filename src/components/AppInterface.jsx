@@ -88,6 +88,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));
   const [notifications, setNotifications] = useState(() => JSON.parse(localStorage.getItem('seducecraft.notifs') || '[]'));
   const PHOTO_COST = 1;
+  const ANATOMY_REFS = [
+    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629659784-37vssunjihj.jpg',
+    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629661013-muqe4b30fzo.jpg',
+    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629662896-m7cx11ud21e.jpg',
+    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629663421-741dr6ah2e.jpg',
+    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629666632-3azl9ujygb6.jpg',
+  ];
   const VIDEO_COST = 5;
 
   const calcPhotoCost = () => {
@@ -317,6 +324,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return `Inpaint edit: keep this exact photograph unchanged. Same framing, same crop, same camera distance, same pose, same face, same body proportions, same background, same lighting. The only modification is changing the clothing. ${styles[undressStyle] || styles.nude} Do not regenerate, do not reframe, do not change anything else.`;
     }
     let p = (photoMode === 'templates' && selectedTemplate?.prompt) || prompt || 'photo';
+    if (isExplicit && refUrls.length > 1) p += ' image_1 is the person, image_2 is the penis reference.';
     p = p.trim();
     return p;
   };
