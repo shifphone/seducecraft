@@ -358,7 +358,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const checkPrompt = p || '';
       const isExplicit = /penis|cock|dick|vagina|pussy|anus|sex|fuck|blowjob|doggy|missionary|cowgirl|naked|nude/i.test(checkPrompt);
       const charPhotos = selectedCharacter?.photos || [];
-      const photos = photoMode === 'undress' ? [undressPhoto] : (customPhoto ? [customPhoto] : charPhotos.slice(0, 3));
+      const photos = photoMode === 'undress' ? [undressPhoto] : (customPhoto ? [customPhoto] : charPhotos.slice(0, 5));
       const poseKey = /doggy|doggystyle/i.test(checkPrompt) ? 'doggy' : /blowjob|oral|suck/i.test(checkPrompt) ? 'blowjob' : /missionary|cowgirl/i.test(checkPrompt) ? 'missionary' : 'default';
       const anatomyRefs = photoMode === 'templates' ? [] : (ANATOMY_REFS[poseKey] || ANATOMY_REFS.default);
       const allPhotos = isExplicit && photoMode !== 'templates' ? [...photos.filter(Boolean), ...anatomyRefs] : photos;
