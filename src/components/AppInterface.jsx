@@ -380,7 +380,8 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (photoMode === 'templates' && selectedTemplate?.src) {
         refUrls.push(window.location.origin + selectedTemplate.src);
         // Face swap mode for templates - just replace face, keep everything else
-        body.prompt = `Copy the exact pose, body position, genitals, and scene from image_2. Replace only the face with image_1. ${p}`;
+        const templateIdx = refUrls.length;
+        body.prompt = `Copy the exact pose, body position, genitals, and scene from image_${templateIdx}. Replace only the face with image_1. ${p}`;
       }
       if (base64s.length) body.referenceBase64 = base64s;
       if (isExplicit && refUrls.length > 1) body.prompt += ' image_1 is the person, image_2 is the penis reference.';
