@@ -125,7 +125,7 @@ export default async function handler(req, res) {
     references: Array.isArray(refUrl) ? refUrl : [refUrl],
   };
   if (model !== 'xSD5Pro') {
-    body.guidanceScale = req.body.prompt?.includes('image_1') ? 12 : (req.body.guidanceScale || 10);
+    body.guidanceScale = req.body.prompt?.includes('image_1') ? 10 : (req.body.guidanceScale || 10);
   }
   if (req.body.sequential && model !== 'xSD5Pro') {
     body.sequential = req.body.sequential;
