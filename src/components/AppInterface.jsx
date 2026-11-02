@@ -324,7 +324,6 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       return `Inpaint edit: keep this exact photograph unchanged. Same framing, same crop, same camera distance, same pose, same face, same body proportions, same background, same lighting. The only modification is changing the clothing. ${styles[undressStyle] || styles.nude} Do not regenerate, do not reframe, do not change anything else.`;
     }
     let p = (photoMode === 'templates' && selectedTemplate?.prompt) || prompt || 'photo';
-    if (isExplicit && refUrls.length > 1) p += ' image_1 is the person, image_2 is the penis reference.';
     p = p.trim();
     return p;
   };
@@ -366,6 +365,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         body.prompt = `IMPORTANT: The face must come ONLY from image_1. Do not use the face from image_2. Replace the face completely with image_1. Use image_2 only for pose, body position, clothing, and background. ${p}`;
       }
       if (base64s.length) body.referenceBase64 = base64s;
+      if (isExplicit && refUrls.length > 1) body.prompt += ' image_1 is the person, image_2 is the penis reference.';
       if (refUrls.length) body.references = refUrls;
       const res = await fetch('/api/generate', {
         method: 'POST',
