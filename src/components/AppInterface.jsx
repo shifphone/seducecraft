@@ -88,13 +88,24 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [spentCredits, setSpentCredits] = useState(() => parseInt(localStorage.getItem('seducecraft.spent') || '0'));
   const [notifications, setNotifications] = useState(() => JSON.parse(localStorage.getItem('seducecraft.notifs') || '[]'));
   const PHOTO_COST = 1;
-  const ANATOMY_REFS = [
-    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629659784-37vssunjihj.jpg',
-    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629661013-muqe4b30fzo.jpg',
-    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629662896-m7cx11ud21e.jpg',
-    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629663421-741dr6ah2e.jpg',
-    'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629666632-3azl9ujygb6.jpg',
-  ];
+  const ANATOMY_REFS = {
+    doggy: [
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630979551-wncrf48wn3.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630980383-vd3g7ils9u.jpg',
+    ],
+    blowjob: [
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630981228-kp0j4y2eym.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630981913-k5d21aircw.jpg',
+    ],
+    missionary: [
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630982334-0ljwx96avail.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793630983073-g30654mtxwb.jpg',
+    ],
+    default: [
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629659784-37vssunjihj.jpg',
+      'https://khcvakevowjvytksukww.supabase.co/storage/v1/object/public/references/ref-1793629661013-muqe4b30fzo.jpg',
+    ],
+  };
   const VIDEO_COST = 5;
 
   const calcPhotoCost = () => {
@@ -344,7 +355,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const checkPrompt = p || '';
       const isExplicit = /penis|cock|dick|vagina|pussy|anus|sex|fuck|blowjob|doggy|missionary|cowgirl|naked|nude/i.test(checkPrompt);
       const photos = photoMode === 'undress' ? [undressPhoto] : (customPhoto ? [customPhoto] : (selectedCharacter?.photos || []));
-      const allPhotos = isExplicit ? [...photos.filter(Boolean), ...ANATOMY_REFS.slice(0, 2)] : photos;
+      const poseKey = /doggy|doggystyle/i.test(checkPrompt) ? 'doggy' : /blowjob|oral|suck/i.test(checkPrompt) ? 'blowjob' : /missionary|cowgirl/i.test(checkPrompt) ? 'missionary' : 'default';
+      const anatomyRefs = ANATOMY_REFS[poseKey] || ANATOMY_REFS.default;
+      const allPhotos = isExplicit ? [...photos.filter(Boolean), ...anatomyRefs] : photos;
       const refUrls = [];
       const base64s = [];
       for (const photo of allPhotos) {
