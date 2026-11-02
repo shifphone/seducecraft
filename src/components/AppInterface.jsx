@@ -379,7 +379,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (photoMode === 'templates' && selectedTemplate?.src) {
         refUrls.push(window.location.origin + selectedTemplate.src);
         // Face swap mode for templates - just replace face, keep everything else
-        body.prompt = `Replace face with image_1. Keep everything else from image_2. ${p}`;
+        body.prompt = `image_1 is the person's face reference. image_2 is the pose and scene reference. Generate a new image using the face from image_1 and the pose, body position, clothing, background from image_2. ${p}`;
       }
       if (base64s.length) body.referenceBase64 = base64s;
       if (isExplicit && refUrls.length > 1) body.prompt += ' image_1 is the person, image_2 is the penis reference.';
