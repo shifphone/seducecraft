@@ -1,4 +1,16 @@
 export default async function handler(req, res) {
+  if (req.method === 'POST' && req.body?.action === 'create') {
+    const token = process.env.NOTION_API_KEY;
+    const dbId = process.env.NOTION_DATABASE_ID || '1b4a358ee82e47eb89051b2dbb1fd4d4';
+    const { title, prompt, tags } = req.body;
+    if (!token || !title || !prompt) return res.status(400).json({ error: 'Missing data' });
+    const headers = { 'Authorization': `Bearer ${token}`, 'Notion-Version': '2022-06-28', 'Content-Type': 'application/json' };
+    const body = { parent: { database_id: dbId }, properties: { 'Название': { title: [{ text: { content: title } }] }, 'Промпт': { rich_text: [{ text: { content: prompt } }] } } };
+    if (tags?.length) body.properties['Тэги'] = { multi_select: tags.map(t => ({ name: t })) };
+    const r = await fetch('https://api.notion.com/v1/pages', { method: 'POST', headers, body: JSON.stringify(body) });
+    return res.status(r.ok ? 200 : 500).json(await r.json());
+  }
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
