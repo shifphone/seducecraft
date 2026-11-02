@@ -379,7 +379,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (photoMode === 'templates' && selectedTemplate?.src) {
         refUrls.push(window.location.origin + selectedTemplate.src);
         // Face swap mode for templates - just replace face, keep everything else
-        body.prompt = `Take the face from image_1 and place it onto the person in image_2. Match the face identity exactly from image_1. Keep the pose, body, clothing, lighting, background and everything else from image_2 completely unchanged. Seamless face replacement only.`;
+        body.prompt = `Take the face from image_1 and place it onto the person in image_2. Match the face identity exactly from image_1. Keep the pose, body, clothing, lighting, background from image_2 unchanged. Scene: ${p}`;
       }
       if (base64s.length) body.referenceBase64 = base64s;
       if (isExplicit && refUrls.length > 1) body.prompt += ' image_1 is the person, image_2 is the penis reference.';
