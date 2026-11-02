@@ -1697,7 +1697,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                       ))}
                     </div>
                     {selectedTemplate && (
-                      <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 h-fit sticky top-4">
+                      <div className="p-5 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-4 h-fit fixed left-4 top-20 z-50 w-64">
                         <div className="text-center">
                           <div className="text-xs text-zinc-500 mb-1">Selected</div>
                           <div className="font-medium">{selectedTemplate.title[lang] || selectedTemplate.title.en}</div>
