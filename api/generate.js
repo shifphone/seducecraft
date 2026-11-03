@@ -132,7 +132,7 @@ export default async function handler(req, res) {
 
   const finalPrompt = model === 'xSD5Pro' 
     ? prompt 
-    : `Use the reference image(s) only for facial identity consistency. Fully follow the following prompt for pose, body, clothing, actions, and scene: ${prompt}`;
+    : `Copy ONLY the face from the character reference photos. Do NOT copy body shape, tattoos, braces, or other features from the template. From the template reference, copy ONLY: breast shape/size, genital anatomy (vagina, penis), and penetration position if present. Follow the prompt for everything else: ${prompt}`;
 
   const body = {
     model: model || 'xSD4.5',
