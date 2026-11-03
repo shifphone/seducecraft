@@ -196,18 +196,16 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key' };
   
   const content = [
-    { type: 'text', text: `Analyze this generated image carefully and report ONLY the following points in a short structured format:
+    { type: 'text', text: `Look at the generated image. Answer ONLY these questions with Yes or No:
 
-1. Genital anatomy: If male genitalia are visible, does the penis look like a finger, thumb, or hand (smooth, digit-like, lacking a clear glans/head, coronal ridge, or proper shaft)? Yes/No. If yes, briefly describe why.
-2. Limb anatomy: Are there any clear errors in hands (extra/missing/fused fingers) or legs/feet? Yes/No.
-3. Face consistency: Does the face appear to be a natural replacement matching a character face (not the original template face)? Yes/No.
-4. Important: The presence of a penis on a body that has feminine features (breasts, etc.) is NORMAL in sexual scenes and should NOT be flagged as an error.
+1. Is there a penis that looks like fingers, a hand, or a thumb? (smooth, no clear head/glans, digit-like)
+2. Are there extra fingers or severely deformed hands?
+3. Is the face clearly different from the template face?
 
-Respond exactly like this:
-GenitalIssue: Yes/No
-LimbIssue: Yes/No
-FaceOK: Yes/No
-Notes: [коротко, если нужно]` },
+Answer format:
+1: Yes/No
+2: Yes/No
+3: Yes/No` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
@@ -222,8 +220,8 @@ Notes: [коротко, если нужно]` },
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
     // Strict on genitals, loose on minor finger issues
-    const hasGenitalIssue = /finger|thumb|digit-like|digit like|smooth.*penis|lacking.*glans|no glans|like a finger|not a penis|not penis|hand.*penis|penis.*hand/i.test(text) && !/not resembling|not like|clear glans|realistic|anatomically correct/i.test(text);
-    const hasLimbIssue = /extra finger|missing finger|extra limb|severely|badly fused/i.test(text);
+    const hasGenitalIssue = /1:\s*yes/i.test(text);
+    const hasLimbIssue = /2:\s*yes/i.test(text);
     const faceOK = /face.*(match|ok|correct|replacement)/i.test(text) && !/face.*(not|wrong|mismatch|different)/i.test(text);
     const notes = text.slice(0, 200);
     return {
