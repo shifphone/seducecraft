@@ -220,7 +220,7 @@ Answer format:
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
     // Strict on genitals, loose on minor finger issues
-    const hasGenitalIssue = /^1:\s*yes/im.test(text);
+    const hasGenitalIssue = /^1:\s*yes/im.test(text) && /finger|hand|thumb|digit/i.test(text);
     const hasLimbIssue = /^2:\s*yes/im.test(text);
     const faceOK = /face.*(match|ok|correct|replacement)/i.test(text) && !/face.*(not|wrong|mismatch|different)/i.test(text);
     const notes = text.slice(0, 200);
