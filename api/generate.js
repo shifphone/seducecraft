@@ -219,6 +219,7 @@ Answer format:
     });
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
+    console.log('[QC] Full response:', text);
     // Strict on genitals, loose on minor finger issues
     const hasGenitalIssue = /^1:\s*yes/im.test(text) && /finger|hand|thumb|digit/i.test(text);
     const hasLimbIssue = /^2:\s*yes/im.test(text);
