@@ -215,6 +215,10 @@ FIRST describe what you see, THEN judge:
 - Severely distorted face (melted features, asymmetric eyes, extra eyes)
 - Visible glitches: heavy artifacts, tearing, garbled texture patches
 - Impossible body geometry
+- JOINT CHECK: elbows must bend forward, knees must bend backward. If a limb bends the wrong way, flag it.
+- LEG CHECK: legs must connect to hips naturally. Feet must point in anatomically possible directions.
+- ARM CHECK: arms must connect to shoulders. Hands must attach to wrists naturally.
+- If any limb looks twisted, broken, or in an impossible position, flag it.
 
 2. FACE MATCH
 Compare the face in Image 1 with faces in Images 2-4:
