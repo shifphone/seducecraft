@@ -447,12 +447,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       if (photoMode === 'templates' && images.length > 0) {
         const charPhotos = selectedCharacter?.photos?.slice(0, 3) || [];
         const templateUrl = selectedTemplate?.src ? window.location.origin + selectedTemplate.src : null;
+        console.log('[QC] Starting check for', images.length, 'images');
         images.forEach((img, idx) => {
           const imgUrl = img.url || img;
-          const imgNum = idx + 1;
-          console.log('[QC] === Checking Image', imgNum, '===');
-          fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl, charPhotos, templateUrl }) })
-            .then(r => r.json()).then(c => { console.log('[QC] === Result Image', imgNum, '===', c); if (!c.ok) showToast('Image ' + imgNum + ': ' + (c.issues?.join(', ') || 'issues')); }).catch(e => console.error('[QC]', e));
+          const num = idx + 1;
+          console.log('[QC] Sending image', num, 'for check');
+          fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl, charPhotos, templateUrl, imgNum: num }) })
+            .then(r => r.json()).then(c => { console.log('[QC] RESULT #' + num + ':', c.ok ? 'OK' : 'FAIL', '| score:', c.score, '| face:', c.face_score, '| anatomy:', c.anatomy_ok, '| issues:', c.issues); if (!c.ok) showToast('#' + num + ': ' + (c.issues?.slice(0,1).join('') || 'issues')); }).catch(e => console.error('[QC] Error #' + num, e));
         });
       }
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
