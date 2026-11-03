@@ -132,7 +132,7 @@ export default async function handler(req, res) {
 
   const finalPrompt = model === 'xSD5Pro' 
     ? prompt 
-    : `FACE: Copy face identity from character photos only. BODY: Follow the text prompt for pose, clothing, setting. ANATOMY: If genitals visible, generate realistic anatomy - penis must have distinct glans (head), shaft, and natural skin, NOT look like a finger or thumb. Copy breast and genital shapes from template reference if present. AVOID: copying tattoos, braces, body shape from template. ${prompt}`;
+    : `Use character photos for face identity only. Follow the prompt for pose, body, clothing, and scene. If genitals are visible, make them realistic with proper anatomy. ${prompt}`;
 
   const body = {
     model: model || 'xSD4.5',
@@ -200,11 +200,11 @@ CHECK THESE ISSUES:
 
 1. GENITALS - CRITICAL CHECK
 Look carefully at any penis visible:
-- REAL PENIS: rounded head (glans), distinct from shaft, natural skin folds, urethral opening
+- REAL PENIS: rounded head (glans), distinct from shaft, natural skin folds
 - FAKE/FINGER: smooth, no head, looks like a thumb or finger, no glans
-- If the "penis" could be mistaken for a finger, FLAG IT immediately
-- Check position: should be at groin, between legs, not floating or attached wrong
-- Vagina: should have natural folds, not look melted or like a hole
+- If the "penis" could be mistaken for a finger, FLAG IT
+- Penis on female body is NORMAL in sex scenes - do NOT flag this
+- Vagina: should have natural folds, not look melted
 
 2. HANDS AND FINGERS
 - Count fingers on each hand (should be 5)
