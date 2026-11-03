@@ -205,7 +205,7 @@ TASK: Inspect Image 1 for the three categories below.
 
 1. SERIOUS DEFECTS
 Look for clear, obvious generation failures:
-- Extra or missing limbs, hands, fingers, or feet
+- Extra or missing limbs, hands, fingers, or feet\n- Malformed hands: fused fingers, wrong number of fingers, distorted hand shape, fingers merging into palm
 - Body parts fused together, melted, or attached in impossible places
 - Severely distorted face (melted features, asymmetric eyes, extra eyes)
 - Visible glitches: heavy artifacts, tearing, garbled texture patches
