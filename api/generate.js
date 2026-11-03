@@ -194,7 +194,22 @@ export async function checkQuality(imageUrl, faceUrl) {
   if (!key) return { ok: true, error: 'no key' };
   
   const content = [
-    { type: 'text', text: 'Check this image ONLY for severe defects. Reply JSON: {"ok": true/false, "score": 1-10, "issues": []}. ONLY flag: extra limbs, missing body parts, severely distorted face, obvious glitches. Do NOT flag normal anatomy variations or style choices.' },
+    { type: 'text', text: `You are a quality inspector for AI-generated images. Check the FIRST image (generated result).
+
+The other images are references:
+- Images 2-4: character face photos (different angles)
+- Last image: template pose reference
+
+CHECK:
+1. SERIOUS DEFECTS: extra limbs, missing parts, distorted face, glitches, fused body parts
+2. FACE MATCH: does the face in result match the character photos (images 2-4)? Or did it stay as template face?
+3. ANATOMY: if penis should be present, is it a penis (not hand/arm/leg)? Genitals anatomically correct?
+
+DO NOT FLAG: normal variations, style, lighting, minor imperfections.
+
+Reply JSON only: {"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false}
+
+ok=true only if score>=6 AND face_match=true AND anatomy_ok=true` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
