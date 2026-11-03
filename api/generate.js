@@ -208,7 +208,7 @@ FIRST describe what you see, THEN judge:
 - Count arms: how many arms do you see? (should be 2)
 - Count legs: how many legs do you see? (should be 2)
 - Count hands: how many hands? (should be 2)
-- Look at each hand: does it have 5 fingers? Are fingers normal shape?
+- Look at EACH hand carefully: count fingers (should be 5), check if fingers are normal shape, not elongated, fused, or distorted. Pay special attention to hands touching body parts.
 - Extra or missing limbs, hands, fingers, or feet
 - Malformed hands: fused fingers, wrong number of fingers, distorted hand shape, fingers merging into palm
 - Body parts fused together, melted, or attached in impossible places
