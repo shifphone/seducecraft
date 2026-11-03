@@ -196,7 +196,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [swapSource, setSwapSource] = useState(null);
   const [swapTarget, setSwapTarget] = useState(null);
 
-  const getUserId = () => localStorage.getItem('seducecraft.anonCode') || 'guest';
+  const getUserId = () => {
+    let code = localStorage.getItem('seducecraft.anonCode');
+    if (!code) {
+      code = sessionStorage.getItem('seducecraft.anonCode') || localStorage.getItem('seducecraft.name');
+      if (code && code !== 'Anonymous') localStorage.setItem('seducecraft.anonCode', code);
+    }
+    return code || 'guest';
+  };
 
   useEffect(() => {
     (async () => {
