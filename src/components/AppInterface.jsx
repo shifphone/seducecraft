@@ -64,6 +64,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [lastClickedChar, setLastClickedChar] = useState(null);
   const [charModal, setCharModal] = useState(false);
   const [gallery, setGallery] = useState([]);
+  const [qcResults, setQcResults] = useState({});
   const [viewer, setViewer] = useState(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [gallerySort, setGallerySort] = useState('newest');
@@ -453,7 +454,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           const num = idx + 1;
           console.log('[QC] Sending image', num, 'for check');
           fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl, charPhotos, templateUrl, imgNum: num }) })
-            .then(r => r.json()).then(c => { console.log('[QC] #' + num + ':', c.ok ? 'OK' : 'FAIL', '| score:', c.score, '| face:', c.face_score, '| anatomy:', c.anatomy_ok, '| issues:', c.issues, '| url:', imgUrl.slice(-30)); if (!c.ok) showToast('#' + num + ': ' + (c.issues?.slice(0,1).join('') || 'issues')); }).catch(e => console.error('[QC] Error #' + num, e));
+            .then(r => r.json()).then(c => { console.log('[QC] #' + num + ':', c.ok ? 'OK' : 'FAIL', '| score:', c.score, '| face:', c.face_score, '| anatomy:', c.anatomy_ok, '| issues:', c.issues, '| url:', imgUrl.slice(-30)); setQcResults(prev => ({...prev, [imgUrl]: c})); if (!c.ok) showToast('#' + num + ': ' + (c.issues?.slice(0,1).join('') || 'issues')); }).catch(e => console.error('[QC] Error #' + num, e));
         });
       }
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
@@ -1058,7 +1059,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           ) : (
                             <img src={g.src} alt="" className="aspect-[3/4] w-full object-cover" />
                           )}
+                          {qcResults[g.src] && !qcResults[g.src].ok && <div className="absolute top-0 right-0 w-8 h-8 bg-red-600" style={{clipPath:'polygon(100% 0, 0 0, 100% 100%)'}} />}
                           <div className="p-3 text-sm"><div className="font-medium">{g.title}</div><div className="text-xs text-text-secondary">{g.characterName}</div>{g.model && <div className="text-[10px] text-zinc-500">{g.model === 'xSD5Pro' ? 'Pro' : 'Normal'} · {g.size}</div>}</div>
+                          {qcResults[g.src] && !qcResults[g.src].ok && <div className="px-3 pb-2 text-[10px] text-red-400">{qcResults[g.src].issues?.slice(0,1).join('')}</div>}
                         </button>
                         <button onClick={() => setConfirmDelete(new Set([g.id]))} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 w-6 h-6 bg-red-600 text-white text-xs rounded flex items-center justify-center">×</button>
                         <button onClick={() => saveGallery(prev => prev.map(x => x.id === g.id ? {...x, fav: !x.fav} : x))} className={`absolute top-2 right-10 opacity-0 group-hover:opacity-100 w-6 h-6 text-xs rounded flex items-center justify-center ${g.fav ? 'bg-orange-500 text-white' : 'bg-zinc-700 text-zinc-300'}`}>★</button>
