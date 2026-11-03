@@ -11,6 +11,10 @@ function rateLimit(key, limit = 10, windowMs = 60000) {
 }
 
 export default async function handler(req, res) {
+  if (req.query?.check === '1') {
+    const result = await checkQuality(req.body?.imageUrl);
+    return res.status(200).json(result);
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
   // rate limit disabled
