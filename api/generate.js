@@ -215,7 +215,7 @@ Answer format:
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'anthropic/claude-3.5-sonnet', messages: [{ role: 'user', content }] })
+      body: JSON.stringify({ model: 'meta-llama/llama-3.2-90b-vision-instruct', messages: [{ role: 'user', content }] })
     });
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
