@@ -12,7 +12,7 @@ function rateLimit(key, limit = 10, windowMs = 60000) {
 
 export default async function handler(req, res) {
   if (req.query?.check === '1') {
-    const result = await checkQuality(req.body?.imageUrl);
+    const result = await checkQuality(req.body?.imageUrl, req.body?.charPhotos, req.body?.templateUrl);
     return res.status(200).json(result);
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -189,7 +189,7 @@ export default async function handler(req, res) {
 }
 
 
-export async function checkQuality(imageUrl, faceUrl) {
+export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   const key = process.env.OPENROUTER_KEY;
   if (!key) return { ok: true, error: 'no key' };
   
@@ -212,6 +212,8 @@ Reply JSON only: {"ok": true/false, "score": 1-10, "issues": [], "face_match": t
 ok=true only if score>=6 AND face_match=true AND anatomy_ok=true` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
+  if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
+  if (templateUrl) content.push({ type: 'image_url', image_url: { url: templateUrl } });
   
   try {
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
