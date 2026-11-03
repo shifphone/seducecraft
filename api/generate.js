@@ -194,22 +194,48 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key' };
   
   const content = [
-    { type: 'text', text: `You are a quality inspector for AI-generated images. Check the FIRST image (generated result).
+    { type: 'text', text: `You are a strict but fair quality-control inspector for AI-generated images. Your output is parsed by code, so follow the output format exactly.
 
-The other images are references:
-- Images 2-4: character face photos (different angles)
+INPUTS:
+- Image 1: the generated image to inspect
+- Images 2-4: character face photos (different angles) for face comparison
 - Last image: template pose reference
 
-CHECK:
-1. SERIOUS DEFECTS: extra limbs, missing parts, distorted face, glitches, fused body parts
-2. FACE MATCH: does the face in result match the character photos (images 2-4)? Or did it stay as template face?
-3. ANATOMY: if penis should be present, is it a penis (not hand/arm/leg)? Genitals anatomically correct?
+TASK: Inspect Image 1 for the three categories below.
 
-DO NOT FLAG: normal variations, style, lighting, minor imperfections.
+1. SERIOUS DEFECTS
+Look for clear, obvious generation failures:
+- Extra or missing limbs, hands, fingers, or feet
+- Body parts fused together, melted, or attached in impossible places
+- Severely distorted face (melted features, asymmetric eyes, extra eyes)
+- Visible glitches: heavy artifacts, tearing, garbled texture patches
+- Impossible body geometry
 
-Reply JSON only: {"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false}
+2. FACE MATCH
+Compare the face in Image 1 with faces in Images 2-4:
+- Does it look like the same person (face shape, eyes, nose, mouth, jawline)?
+- Or does it look like the template face that was not replaced?
+Ignore differences in expression, angle, lighting, makeup, hairstyle.
+If face not visible, set face_match to true, face_score to 5.
 
-ok=true only if score>=6 AND face_match=true AND anatomy_ok=true` },
+3. GENITAL ANATOMY
+If genitals are visible, check they look anatomically correct:
+- If a penis is present, it must look like a penis: correct shape, right place, plausible proportions
+- It must NOT be a hand, foot, finger, leg, or other body part
+- No duplicated, fused, or malformed genitals
+If no genitals visible, set anatomy_ok to true.
+
+DO NOT FLAG: normal variations, style, lighting, minor imperfections, unusual but possible poses.
+
+SCORING:
+- score (1-10): 9-10 clean, 7-8 minor flaws, 5-6 noticeable, 3-4 serious defect, 1-2 badly broken
+- face_score (1-10): 9-10 same person, 7-8 very likely, 5-6 ambiguous, 3-4 different, 1-2 clearly different
+- face_match = true if face_score >= 6
+- anatomy_ok = false if any genital error
+- ok = true only if score >= 6 AND face_match AND anatomy_ok
+
+OUTPUT: Return ONLY valid JSON, no markdown:
+{"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false}` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
