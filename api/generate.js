@@ -236,6 +236,7 @@ Answer format:
       arms: 2, legs: 2, hands: 2
     };
   } catch (e) {
+    console.log('[QC] Error:', e.message);
     return { ok: true, error: e.message };
   }
 }
