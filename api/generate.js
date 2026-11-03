@@ -39,6 +39,13 @@ export default async function handler(req, res) {
     if (error) return res.status(500).json({ error: error.message });
     return res.status(200).json(data);
   }
+  if (action === 'updateCharacter') {
+    const { id, photos: newPhotos } = req.body;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { error } = await supabase.from('anon_characters').update({ photos: newPhotos }).eq('id', id).eq('user_id', userId);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
+  }
   if (action === 'loadCharacters') {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase.from('anon_characters').select('*').eq('user_id', userId).order('created_at', { ascending: false });

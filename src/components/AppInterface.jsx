@@ -263,6 +263,34 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 8000); };
+  const resaveAllPhotos = async () => {
+    showToast('Resaving photos...');
+    const userId = getUserId();
+    for (const c of characters) {
+      const newPhotos = [];
+      for (const photo of (c.photos || [])) {
+        if (photo.includes('supabase')) { newPhotos.push(photo); continue; }
+        try {
+          const imgRes = await fetch(photo);
+          const blob = await imgRes.blob();
+          const reader = new FileReader();
+          const base64 = await new Promise(r => { reader.onload = () => r(reader.result); reader.readAsDataURL(blob); });
+          const upRes = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base64 }) });
+          if (upRes.ok) {
+            const upData = await upRes.json();
+            if (upData.url) newPhotos.push(upData.url);
+          }
+        } catch { newPhotos.push(photo); }
+      }
+      if (newPhotos.length) {
+        await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'updateCharacter', userId, id: c.id, photos: newPhotos }) });
+        c.photos = newPhotos;
+      }
+    }
+    setCharacters([...characters]);
+    showToast('Photos resaved!');
+  };
+
   const saveCharacters = async (list) => {
     setCharacters(list);
     const userId = getUserId();
@@ -1268,6 +1296,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Login code' : 'Код входа'}</div>
                     <div className="font-mono text-orange-400">{localStorage.getItem('seducecraft.anonCode') || '—'}</div>
+                  <button onClick={resaveAllPhotos} className="mt-2 px-3 py-1 bg-orange-500 text-white rounded text-xs">Resave photos</button>
                   </div>
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Characters' : 'Персонажей'}</div>
