@@ -224,11 +224,19 @@ Ignore differences in expression, angle, lighting, makeup, hairstyle.
 If face not visible, set face_match to true, face_score to 5.
 
 3. GENITAL ANATOMY
-If genitals are visible, check they look anatomically correct:
-- If a penis is present, it must look like a penis: correct shape, right place, plausible proportions
-- It must NOT be a hand, foot, finger, leg, or other body part
-- No duplicated, fused, or malformed genitals
+If genitals are visible, check carefully:
+- PENIS CHECK: Does it have a distinct glans (head), shaft, and natural skin texture? Or does it look like a finger, thumb, or hand? A penis should NOT look like a digit.
+- POSITION: Is it attached in the correct anatomical location (between legs, at groin)?
+- SHAPE: Natural cylindrical shape, not flat like a finger or hand
+- If you see something that could be either a finger OR a penis, look for: glans/head, urethral opening, natural skin folds. If missing, it's likely a finger.
 If no genitals visible, set anatomy_ok to true.
+
+4. TEMPLATE COMPARISON
+Compare the pose in Image 1 with the last image (template):
+- Is the body position similar? (standing, sitting, lying, bent over)
+- Are the limbs in similar positions?
+- Did the generation copy the pose or create something different?
+Add "pose_match": true/false to output.
 
 DO NOT FLAG: normal variations, style, lighting, minor imperfections, unusual but possible poses.
 
@@ -240,7 +248,7 @@ SCORING:
 - ok = true only if score >= 6 AND face_match AND anatomy_ok
 
 OUTPUT: Return ONLY valid JSON, no markdown:
-{"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false, "arms": 0, "legs": 0, "hands": 0}` },
+{"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false, "pose_match": true/false, "arms": 0, "legs": 0, "hands": 0}` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
