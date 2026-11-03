@@ -132,7 +132,7 @@ export default async function handler(req, res) {
 
   const finalPrompt = model === 'xSD5Pro' 
     ? prompt 
-    : `Use character photos for face identity only. Follow the prompt for pose, body, clothing, and scene. If genitals are visible, make them realistic with proper anatomy. ${prompt}`;
+    : `Use image_1 strictly for the face and facial identity only. Use image_2 exclusively for the pose, body position, clothing, environment, lighting, and camera angle. Do not copy any tattoos, dental braces, scars, body shape, body proportions, skin tone extremes, or other non-facial identity markers from image_2. The body should have natural proportions consistent with the face from image_1. ${prompt} The person has realistic male genitalia: a human penis with a clearly defined rounded glans (head), distinct coronal ridge, cylindrical shaft, and visible scrotum. Anatomically correct penis that is clearly distinct from fingers or hands, not resembling a finger, thumb, or hand in any way.`;
 
   const body = {
     model: model || 'xSD4.5',
@@ -194,45 +194,18 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key' };
   
   const content = [
-    { type: 'text', text: `You are a STRICT quality inspector for AI-generated adult images. Be harsh. Flag anything that looks wrong.
+    { type: 'text', text: `Analyze this generated image carefully and report ONLY the following points in a short structured format:
 
-CHECK THESE ISSUES:
+1. Genital anatomy: If male genitalia are visible, does the penis look like a finger, thumb, or hand (smooth, digit-like, lacking a clear glans/head, coronal ridge, or proper shaft)? Yes/No. If yes, briefly describe why.
+2. Limb anatomy: Are there any clear errors in hands (extra/missing/fused fingers) or legs/feet? Yes/No.
+3. Face consistency: Does the face appear to be a natural replacement matching a character face (not the original template face)? Yes/No.
+4. Important: The presence of a penis on a body that has feminine features (breasts, etc.) is NORMAL in sexual scenes and should NOT be flagged as an error.
 
-1. GENITALS - CRITICAL CHECK
-Look carefully at any penis visible:
-- REAL PENIS: rounded head (glans), distinct from shaft, natural skin folds
-- FAKE/FINGER: smooth, no head, looks like a thumb or finger, no glans
-- If the "penis" could be mistaken for a finger, FLAG IT
-- Penis on female body is NORMAL in sex scenes - do NOT flag this
-- Vagina: should have natural folds, not look melted
-
-2. HANDS AND FINGERS
-- Count fingers on each hand (should be 5)
-- Fingers should be separate, not fused together
-- Hands should connect to wrists naturally
-- If fingers look like sausages or merge into palm, FLAG IT
-
-3. BODY PROPORTIONS
-- Thighs should not be gigantic compared to body
-- Legs should connect to hips naturally
-- Arms should connect to shoulders
-- If body looks distorted or proportions are wrong, FLAG IT
-
-4. FACE
-- Compare with character photos
-- Should look like same person
-- No melted features, extra eyes
-
-SCORING - BE STRICT:
-- score 1-4: serious defects (wrong genitals, extra limbs, melted)
-- score 5-6: noticeable problems
-- score 7-8: minor issues only
-- score 9-10: clean, no issues
-- anatomy_ok = false if ANY genital problem
-- ok = true ONLY if score >= 7 AND no serious defects
-
-OUTPUT JSON only:
-{"ok": true/false, "score": 1-10, "issues": ["list problems"], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false, "pose_match": true/false, "arms": 0, "legs": 0, "hands": 0}` },
+Respond exactly like this:
+GenitalIssue: Yes/No
+LimbIssue: Yes/No
+FaceOK: Yes/No
+Notes: [коротко, если нужно]` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
