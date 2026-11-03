@@ -84,7 +84,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [catSearch, setCatSearch] = useState('');
   const [catOpen, setCatOpen] = useState(false);
   useEffect(() => {
-    const close = (e) => { if (!e.target.closest('.cat-dropdown')) setCatOpen(false); };
+    const close = (e) => { if (!e.target.closest('.cat-dropdown') && !e.target.closest('.cat-btn')) setCatOpen(false); };
     document.addEventListener('click', close);
     return () => document.removeEventListener('click', close);
   }, []);
@@ -1677,7 +1677,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                     </div>
                     <div className="mb-4 relative">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => setCatOpen(o => !o)} className="px-3 py-1.5 rounded-lg border border-zinc-700 text-sm text-zinc-200 hover:border-zinc-500">
+                        <button onClick={() => setCatOpen(o => !o)} className="cat-btn px-3 py-1.5 rounded-lg border border-zinc-700 text-sm text-zinc-200 hover:border-zinc-500">
                           {lang === 'en' ? 'Categories' : 'Категории'} {templateCategory.length ? `(${templateCategory.length})` : ''} ▾
                         </button>
                         {templateCategory.length > 0 && (
