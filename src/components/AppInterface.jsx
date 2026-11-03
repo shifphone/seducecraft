@@ -83,6 +83,11 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   const [templateSort, setTemplateSort] = useState('az');
   const [catSearch, setCatSearch] = useState('');
   const [catOpen, setCatOpen] = useState(false);
+  useEffect(() => {
+    const close = (e) => { if (!e.target.closest('.cat-dropdown')) setCatOpen(false); };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, []);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [balance, setBalance] = useState(null);
@@ -1684,7 +1689,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                           ))}
                         </div>
                       </div>
-                      {catOpen && (
+                      {catOpen && ( <div className="cat-dropdown">
                         <div className="absolute z-20 mt-2 w-72 max-h-80 overflow-hidden bg-zinc-900 border border-zinc-700 rounded-xl shadow-xl">
                           <input autoFocus value={catSearch} onChange={e => setCatSearch(e.target.value)} placeholder={lang === 'en' ? 'Search categories...' : 'Поиск категорий...'} className="w-full px-3 py-2 bg-zinc-800 border-b border-zinc-700 text-sm outline-none" />
                           <div className="max-h-64 overflow-y-auto p-1">
@@ -1696,7 +1701,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                             ))}
                           </div>
                         </div>
-                      )}
+                      </div>)}
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] gap-6 mb-6">
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4">
