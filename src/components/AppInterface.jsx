@@ -292,8 +292,13 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
   };
 
   const saveCharacters = async (list) => {
-    setCharacters(list);
     const userId = getUserId();
+    // Delete removed characters
+    const removed = characters.filter(c => c.saved && !list.find(l => l.id === c.id));
+    for (const c of removed) {
+      await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteCharacter', userId, id: c.id }) });
+    }
+    setCharacters(list);
     for (const c of list) {
       if (!c.saved) {
         try {
