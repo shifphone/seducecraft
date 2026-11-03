@@ -194,7 +194,7 @@ export async function checkQuality(imageUrl, faceUrl) {
   if (!key) return { ok: true, error: 'no key' };
   
   const content = [
-    { type: 'text', text: 'Check this image for quality issues. Reply JSON: {"ok": true/false, "score": 1-10, "issues": []}. Check face, body anatomy, artifacts.' },
+    { type: 'text', text: 'Check this image ONLY for severe defects. Reply JSON: {"ok": true/false, "score": 1-10, "issues": []}. ONLY flag: extra limbs, missing body parts, severely distorted face, obvious glitches. Do NOT flag normal anatomy variations or style choices.' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
