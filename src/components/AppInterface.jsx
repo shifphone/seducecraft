@@ -210,12 +210,14 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       const userId = getUserId();
       if (!isLoggedIn) return;
       try {
+        console.log('[DEBUG] Loading chars for userId:', userId);
         const [charRes, galRes] = await Promise.all([
           fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadCharacters', userId }) }),
           fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'loadGallery', userId }) })
         ]);
         const charData = await charRes.json();
         const galData = await galRes.json();
+        console.log('[DEBUG] Chars response:', charData);
         if (charRes.ok && Array.isArray(charData)) setCharacters(charData.map(c => ({ ...c, photos: c.photos || [], saved: true })));
         if (galRes.ok && Array.isArray(galData)) setGallery(galData);
       } catch {}
