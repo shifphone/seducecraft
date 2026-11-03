@@ -1296,7 +1296,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Login code' : 'Код входа'}</div>
                     <div className="font-mono text-orange-400">{localStorage.getItem('seducecraft.anonCode') || '—'}</div>
-                  <button onClick={resaveAllPhotos} className="mt-2 px-3 py-1 bg-orange-500 text-white rounded text-xs">Resave photos</button>
+                  
                   </div>
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">{lang === 'en' ? 'Characters' : 'Персонажей'}</div>
