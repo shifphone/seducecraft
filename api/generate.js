@@ -130,9 +130,11 @@ export default async function handler(req, res) {
   if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
   const refUrl = refUrls;
 
+  const charCount = base64List.filter(b => b?.startsWith('data:')).length;
+  const templateIdx = charCount + 1;
   const finalPrompt = model === 'xSD5Pro' 
     ? prompt 
-    : `Use image_1 strictly for the face and facial identity only. Copy from image_2: the exact pose, body position, clothing, environment, lighting, camera angle, AND any visible genitalia, sex acts, or intimate body contact. Reproduce the sexual elements from image_2 as accurately as possible — the shape, position, and action of any genitals or sexual interaction. Do not copy tattoos, dental braces, scars, or body proportions from image_2. ${prompt}`;
+    : `Use images 1-${charCount} strictly for face identity only. Copy from image_${templateIdx}: the exact pose, body position, clothing, environment, lighting, camera angle, AND any visible genitalia, sex acts, or intimate body contact. Reproduce the sexual elements from image_${templateIdx} as accurately as possible. Do not copy tattoos, dental braces, scars, or body proportions from image_${templateIdx}. ${prompt}`;
 
   const body = {
     model: model || 'xSD4.5',
