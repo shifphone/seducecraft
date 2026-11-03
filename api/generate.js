@@ -205,6 +205,7 @@ TASK: Inspect Image 1 for the three categories below.
 
 1. SERIOUS DEFECTS
 Look for clear, obvious generation failures:
+- COUNT limbs: humans have 2 arms and 2 legs. Flag if you see 3+ arms or 3+ legs
 - Extra or missing limbs, hands, fingers, or feet
 - Malformed hands: fused fingers, wrong number of fingers, distorted hand shape, fingers merging into palm
 - Body parts fused together, melted, or attached in impossible places
