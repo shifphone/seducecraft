@@ -194,65 +194,43 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key' };
   
   const content = [
-    { type: 'text', text: `You are a strict but fair quality-control inspector for AI-generated images. Your output is parsed by code, so follow the output format exactly.
+    { type: 'text', text: `You are a STRICT quality inspector for AI-generated adult images. Be harsh. Flag anything that looks wrong.
 
-INPUTS:
-- Image 1: the generated image to inspect
-- Images 2+: character face photos (the person who should appear in the result)
-- Last image: template pose reference
+CHECK THESE ISSUES:
 
-TASK: Inspect Image 1 for the three categories below.
+1. GENITALS - MOST IMPORTANT
+- If you see a penis: does it look like a real penis with a head (glans) and shaft? Or does it look like a finger, thumb, or hand? 
+- A penis should have: rounded head, visible shaft, natural skin texture
+- If it looks like a digit (finger/thumb), FLAG IT
+- If genitals look melted, fused, or in wrong position, FLAG IT
 
-1. SERIOUS DEFECTS
-FIRST describe what you see, THEN judge:
-- Count arms: how many arms do you see? (should be 2)
-- Count legs: how many legs do you see? (should be 2)
-- Count hands: how many hands? (should be 2)
-- Look at EACH hand carefully: count fingers (should be 5), check if fingers are normal shape, not elongated, fused, or distorted. Pay special attention to hands touching body parts.
-- Extra or missing limbs, hands, fingers, or feet
-- Malformed hands: fused fingers, wrong number of fingers, distorted hand shape, fingers merging into palm
-- Body parts fused together, melted, or attached in impossible places
-- Severely distorted face (melted features, asymmetric eyes, extra eyes)
-- Visible glitches: heavy artifacts, tearing, garbled texture patches
-- Impossible body geometry
-- JOINT CHECK: elbows must bend forward, knees must bend backward. If a limb bends the wrong way, flag it.
-- LEG CHECK: legs must connect to hips naturally. Feet must point in anatomically possible directions.
-- ARM CHECK: arms must connect to shoulders. Hands must attach to wrists naturally.
-- If any limb looks twisted, broken, or in an impossible position, flag it.
+2. HANDS AND FINGERS
+- Count fingers on each hand (should be 5)
+- Fingers should be separate, not fused together
+- Hands should connect to wrists naturally
+- If fingers look like sausages or merge into palm, FLAG IT
 
-2. FACE MATCH
-Compare the face in Image 1 with faces in Images 2-4:
-- Does it look like the same person (face shape, eyes, nose, mouth, jawline)?
-- Or does it look like the template face that was not replaced?
-Ignore differences in expression, angle, lighting, makeup, hairstyle.
-If face not visible, set face_match to true, face_score to 5.
+3. BODY PROPORTIONS
+- Thighs should not be gigantic compared to body
+- Legs should connect to hips naturally
+- Arms should connect to shoulders
+- If body looks distorted or proportions are wrong, FLAG IT
 
-3. GENITAL ANATOMY
-If genitals are visible, check carefully:
-- PENIS CHECK: Does it have a distinct glans (head), shaft, and natural skin texture? Or does it look like a finger, thumb, or hand? A penis should NOT look like a digit.
-- POSITION: Is it attached in the correct anatomical location (between legs, at groin)?
-- SHAPE: Natural cylindrical shape, not flat like a finger or hand
-- If you see something that could be either a finger OR a penis, look for: glans/head, urethral opening, natural skin folds. If missing, it's likely a finger.
-If no genitals visible, set anatomy_ok to true.
+4. FACE
+- Compare with character photos
+- Should look like same person
+- No melted features, extra eyes
 
-4. TEMPLATE COMPARISON
-Compare the pose in Image 1 with the last image (template):
-- Is the body position similar? (standing, sitting, lying, bent over)
-- Are the limbs in similar positions?
-- Did the generation copy the pose or create something different?
-Add "pose_match": true/false to output.
+SCORING - BE STRICT:
+- score 1-4: serious defects (wrong genitals, extra limbs, melted)
+- score 5-6: noticeable problems
+- score 7-8: minor issues only
+- score 9-10: clean, no issues
+- anatomy_ok = false if ANY genital problem
+- ok = true ONLY if score >= 7 AND no serious defects
 
-DO NOT FLAG: normal variations, style, lighting, minor imperfections, unusual but possible poses.
-
-SCORING:
-- score (1-10): 9-10 clean, 7-8 minor flaws, 5-6 noticeable, 3-4 serious defect, 1-2 badly broken
-- face_score (1-10): 9-10 same person, 7-8 very likely, 5-6 ambiguous, 3-4 different, 1-2 clearly different
-- face_match = true if face_score >= 6
-- anatomy_ok = false if any genital error
-- ok = true only if score >= 6 AND face_match AND anatomy_ok
-
-OUTPUT: Return ONLY valid JSON, no markdown:
-{"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false, "pose_match": true/false, "arms": 0, "legs": 0, "hands": 0}` },
+OUTPUT JSON only:
+{"ok": true/false, "score": 1-10, "issues": ["list problems"], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false, "pose_match": true/false, "arms": 0, "legs": 0, "hands": 0}` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
