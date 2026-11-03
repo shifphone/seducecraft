@@ -402,6 +402,26 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
         throw new Error((errMsg + rid).slice(0, 500));
       }
       images = data.images || (data.url ? [{url: data.url}] : []);
+      // Quality check for templates
+      if (photoMode === 'templates' && images.length > 0) {
+        const imgUrl = images[0].url || images[0];
+        const faceUrl = selectedCharacter?.photos?.[0];
+        console.log('[QC] Checking quality:', imgUrl?.slice(0, 50));
+        try {
+          const checkRes = await fetch('/api/check-quality', { 
+            method: 'POST', 
+            headers: {'Content-Type':'application/json'}, 
+            body: JSON.stringify({ imageUrl: imgUrl, faceUrl }) 
+          });
+          const check = await checkRes.json();
+          console.log('[QC] Result:', check);
+          if (!check.ok) {
+            showToast('Quality: ' + (check.issues?.join(', ') || 'issues found') + ' (score: ' + (check.score || '?') + ')');
+          } else {
+            showToast('Quality OK (score: ' + (check.score || '?') + ')');
+          }
+        } catch (e) { console.error('[QC] Error:', e); }
+      }
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
       saveGallery(prev => [...gens, ...prev]);
       const cost = calcPhotoCost();
