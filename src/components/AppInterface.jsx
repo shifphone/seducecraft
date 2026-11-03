@@ -445,12 +445,15 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       }
       images = data.images || (data.url ? [{url: data.url}] : []);
       if (photoMode === 'templates' && images.length > 0) {
-        const imgUrl = images[0].url || images[0];
         const charPhotos = selectedCharacter?.photos?.slice(0, 3) || [];
         const templateUrl = selectedTemplate?.src ? window.location.origin + selectedTemplate.src : null;
-        const imgNum = images.indexOf(images[0])+1; console.log('[QC] === Checking Image', imgNum, '===');
-        fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl, charPhotos, templateUrl }) })
-          .then(r => r.json()).then(c => { console.log('[QC] === Result Image', imgNum, '===', c); showToast(c.ok ? 'Quality OK' : 'Issues: ' + (c.issues?.join(',') || 'found')); }).catch(e => console.error('[QC]', e));
+        images.forEach((img, idx) => {
+          const imgUrl = img.url || img;
+          const imgNum = idx + 1;
+          console.log('[QC] === Checking Image', imgNum, '===');
+          fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl, charPhotos, templateUrl }) })
+            .then(r => r.json()).then(c => { console.log('[QC] === Result Image', imgNum, '===', c); if (!c.ok) showToast('Image ' + imgNum + ': ' + (c.issues?.join(', ') || 'issues')); }).catch(e => console.error('[QC]', e));
+        });
       }
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
       saveGallery(prev => [...gens, ...prev]);

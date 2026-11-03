@@ -198,7 +198,7 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
 
 INPUTS:
 - Image 1: the generated image to inspect
-- Images 2-4: character face photos (different angles) for face comparison
+- Images 2+: character face photos (the person who should appear in the result)
 - Last image: template pose reference
 
 TASK: Inspect Image 1 for the three categories below.
