@@ -169,3 +169,27 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: e.message });
   }
 }
+
+
+export async function checkQuality(imageUrl, faceUrl) {
+  const key = process.env.OPENROUTER_KEY;
+  if (!key) return { ok: true, error: 'no key' };
+  
+  const content = [
+    { type: 'text', text: 'Check this image for quality issues. Reply JSON: {"ok": true/false, "score": 1-10, "issues": []}. Check face, body anatomy, artifacts.' },
+    { type: 'image_url', image_url: { url: imageUrl } }
+  ];
+  
+  try {
+    const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'qwen/qwen3.5-122b-a10b', messages: [{ role: 'user', content }] })
+    });
+    const data = await r.json();
+    const text = data.choices?.[0]?.message?.content || '{}';
+    return JSON.parse(text.replace(/```json|```/g, '').trim());
+  } catch (e) {
+    return { ok: true, error: e.message };
+  }
+}
