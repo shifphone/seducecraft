@@ -446,9 +446,9 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
       images = data.images || (data.url ? [{url: data.url}] : []);
       if (photoMode === 'templates' && images.length > 0) {
         const imgUrl = images[0].url || images[0];
-        console.log('[QC] Checking:', imgUrl?.slice(0,40));
+        console.log('[QC] Checking image:', images.indexOf(images[0])+1, imgUrl?.slice(-20));
         fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl }) })
-          .then(r => r.json()).then(c => { console.log('[QC]', c); showToast(c.ok ? 'Quality OK' : 'Issues: ' + (c.issues?.join(',') || 'found')); }).catch(e => console.error('[QC]', e));
+          .then(r => r.json()).then(c => { console.log('[QC] Image', images.indexOf(images[0])+1, c); showToast(c.ok ? 'Quality OK' : 'Issues: ' + (c.issues?.join(',') || 'found')); }).catch(e => console.error('[QC]', e));
       }
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
       saveGallery(prev => [...gens, ...prev]);
