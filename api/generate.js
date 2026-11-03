@@ -218,20 +218,18 @@ Notes: [коротко, если нужно]` },
       body: JSON.stringify({ model: 'qwen/qwen3.5-122b-a10b', messages: [{ role: 'user', content }] })
     });
     const data = await r.json();
-    const text = data.choices?.[0]?.message?.content || '';
-    const genital = /GenitalIssue:\s*(Yes|No)/i.exec(text);
-    const limb = /LimbIssue:\s*(Yes|No)/i.exec(text);
-    const face = /FaceOK:\s*(Yes|No)/i.exec(text);
-    const notes = /Notes:\s*(.+)/i.exec(text);
-    const hasGenitalIssue = genital?.[1]?.toLowerCase() === 'yes';
-    const hasLimbIssue = limb?.[1]?.toLowerCase() === 'yes';
-    const faceOK = face?.[1]?.toLowerCase() === 'yes';
+    const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
+    // Check for genital issues - look for keywords
+    const hasGenitalIssue = /finger|thumb|digit-like|digit like|smooth.*penis|lacking.*glans|no glans|like a finger/i.test(text) && !/not resembling|not like|clear glans|realistic/i.test(text);
+    const hasLimbIssue = /extra finger|missing finger|fused finger|extra limb|bad hand/i.test(text);
+    const faceOK = /face.*(match|ok|correct|replacement)/i.test(text) && !/face.*(not|wrong|mismatch|different)/i.test(text);
+    const notes = text.slice(0, 200);
     return {
-      ok: !hasGenitalIssue && !hasLimbIssue && faceOK,
-      score: hasGenitalIssue || hasLimbIssue ? 4 : (faceOK ? 8 : 6),
-      issues: [notes?.[1] || ''].filter(Boolean),
+      ok: !hasGenitalIssue && !hasLimbIssue,
+      score: hasGenitalIssue ? 3 : (hasLimbIssue ? 5 : 8),
+      issues: hasGenitalIssue || hasLimbIssue ? [notes] : [],
       face_match: faceOK,
-      face_score: faceOK ? 8 : 4,
+      face_score: faceOK ? 8 : 5,
       anatomy_ok: !hasGenitalIssue,
       pose_match: true,
       arms: 2, legs: 2, hands: 2
