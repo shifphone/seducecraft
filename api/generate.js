@@ -130,9 +130,11 @@ export default async function handler(req, res) {
   if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
   const refUrl = refUrls;
 
+  const hasSexScene = /sex|penetrat|cock|dick|penis|fuck|oral|blow|anal|vaginal/i.test(prompt);
+  const genitalHint = hasSexScene ? `If male genitalia visible: realistic human penis with defined glans (rounded head with coronal ridge), textured shaft with visible veins and natural skin folds, not smooth or rubber-like, not resembling a finger or thumb. Natural skin texture with pores and subtle color variation.` : '';
   const finalPrompt = model === 'xSD5Pro' 
     ? prompt 
-    : `Use image_1 strictly for the face and facial identity only. Use image_2 exclusively for the pose, body position, clothing, environment, lighting, and camera angle. Do not copy any tattoos, dental braces, scars, body shape, body proportions, skin tone extremes, or other non-facial identity markers from image_2. The body should have natural proportions consistent with the face from image_1. ${prompt} The person has realistic male genitalia: a human penis with a clearly defined rounded glans (head), distinct coronal ridge, cylindrical shaft, and visible scrotum. Anatomically correct penis that is clearly distinct from fingers or hands, not resembling a finger, thumb, or hand in any way.`;
+    : `Use image_1 strictly for the face and facial identity only. Use image_2 exclusively for the pose, body position, clothing, environment, lighting, and camera angle. Do not copy any tattoos, dental braces, scars, body shape, body proportions, or other non-facial identity markers from image_2. The body should have natural proportions consistent with the face from image_1. ${prompt} ${genitalHint}`;
 
   const body = {
     model: model || 'xSD4.5',
