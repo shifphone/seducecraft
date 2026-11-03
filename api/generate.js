@@ -221,9 +221,9 @@ Notes: [коротко, если нужно]` },
     });
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
-    // Check for genital issues - look for keywords
-    const hasGenitalIssue = /finger|thumb|digit-like|digit like|smooth.*penis|lacking.*glans|no glans|like a finger/i.test(text) && !/not resembling|not like|clear glans|realistic/i.test(text);
-    const hasLimbIssue = /extra finger|missing finger|fused finger|extra limb|bad hand/i.test(text);
+    // Strict on genitals, loose on minor finger issues
+    const hasGenitalIssue = /finger|thumb|digit-like|digit like|smooth.*penis|lacking.*glans|no glans|like a finger|not a penis|not penis|hand.*penis|penis.*hand/i.test(text) && !/not resembling|not like|clear glans|realistic|anatomically correct/i.test(text);
+    const hasLimbIssue = /extra finger|missing finger|extra limb|severely|badly fused/i.test(text);
     const faceOK = /face.*(match|ok|correct|replacement)/i.test(text) && !/face.*(not|wrong|mismatch|different)/i.test(text);
     const notes = text.slice(0, 200);
     return {
