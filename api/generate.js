@@ -240,7 +240,7 @@ SCORING:
 - ok = true only if score >= 6 AND face_match AND anatomy_ok
 
 OUTPUT: Return ONLY valid JSON, no markdown:
-{"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false}` },
+{"ok": true/false, "score": 1-10, "issues": [], "face_match": true/false, "face_score": 1-10, "anatomy_ok": true/false, "arms": 0, "legs": 0, "hands": 0}` },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
