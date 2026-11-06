@@ -210,9 +210,10 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
     const debug = { status: r.status, error: data.error, text: text.slice(0, 150) };
-    const desc = text.match(/description:\s*(.+?)\s*\|/)?.[1] || text.slice(0, 100);
-    const hasIssue = /issue:\s*yes/i.test(text) || (/yes/i.test(text) && /finger|hand|digit/i.test(text));
-    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [desc] : [], debug: desc, raw: text.slice(0, 200) };
+    const desc = text.match(/description:\s*(.+?)(?:\s*\||$)/i)?.[1]?.trim() || text.slice(0, 120);
+    const issueMatch = text.match(/issue:\s*(yes|no)/i);
+    const hasIssue = issueMatch?.[1]?.toLowerCase() === 'yes' && /finger|hand|digit|deform/i.test(text);
+    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [desc] : [], debug: desc };
   } catch (e) {
     return { ok: true, error: e.message, debug: 'catch:' + e.message };
   }
