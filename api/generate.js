@@ -219,9 +219,8 @@ Answer format:
       body: JSON.stringify({ model: 'meta-llama/llama-3.2-90b-vision-instruct', messages: [{ role: 'user', content }] })
     });
     const data = await r.json();
-    console.log('[QC] Status:', r.status, 'Data:', JSON.stringify(data).slice(0, 500));
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
-    console.log('[QC] Full response:', text);
+    const debugInfo = { status: r.status, hasChoices: !!data.choices, error: data.error, text: text.slice(0, 200) };
     // Strict on genitals, loose on minor finger issues
     const hasGenitalIssue = /^1:\s*yes/im.test(text) && /finger|hand|thumb|digit/i.test(text);
     const hasLimbIssue = /^2:\s*yes/im.test(text);
