@@ -135,9 +135,8 @@ export default async function handler(req, res) {
   const finalPrompt = model === 'xSD5Pro' 
     ? prompt
     : `Use images 1-${charCount} strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
-Use image_${templateIdx} as the reference for the exact pose, body position, clothing, environment, lighting, camera angle, and all sexual elements. Copy the visible genitalia, sex acts, and intimate body contact from image_${templateIdx} as accurately as possible.
+Use image_${templateIdx} as the reference for the exact pose, body position, clothing, environment, lighting, camera angle, and all sexual elements. Copy everything visible in image_${templateIdx} as accurately as possible, including all genitalia and intimate body contact.
 Do not copy from image_${templateIdx}: tattoos, dental braces, scars, birthmarks, body proportions, or skin tone.
-If a penis is visible in the scene, render it as a realistic single smooth penis shaft with a defined rounded glans (head), natural veins, and a distinct coronal ridge. No fingers, no segments, no joints, no multiple tips, no nail.
 ${prompt}
 Amateur smartphone photography, medium-to-low image quality, casual unpolished snapshot, moderate softness, subtle digital noise, visible fine grain, slight JPEG compression artifacts, imperfect focus, uneven natural ambient lighting, slightly inaccurate white balance, imperfect exposure, realistic unretouched textures, ordinary consumer-camera rendering, natural everyday colors, slightly awkward framing, no professional studio lighting, no cinematic color grading, no beauty retouching, no glossy editorial finish, no artificial HDR, no excessive sharpness, no CGI appearance.`;
 
