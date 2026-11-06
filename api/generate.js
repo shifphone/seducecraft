@@ -197,20 +197,8 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: 'You are checking an AI-generated image for quality issues. You will see: 1) the generated image, 2) character reference photos (face should match these), 3) the template photo.
-Reply ONLY in this exact format. Do not write anything else. Do not explain. Do not add extra lines:
-DESCRIPTION: [1 sentence what you see]
-ISSUE: Yes or No
-DETAILS: [exact problem if Yes, or none]
-Mark ISSUE: Yes if you see ANY of these:
-- Genitals: If a penis is visible, it looks like a finger, thumb, hand, or digits. Concrete signs: no distinct glans (head), no coronal ridge, smooth cylinder shape, nail-like or pointed tip, skin texture continuous with the thigh or body, more than one tip, segmented like fingers, or looks like a hand attached to the crotch.
-- Extra limbs: more than 2 arms or more than 2 legs.
-- Broken or deformed limbs: knee bent backwards, foot twisted or rotated wrong way, elbow twisted, arm or leg disconnected from the torso, extra joints, limb in anatomically impossible position.
-- Hands or feet: extra fingers, missing fingers, fused fingers, extra toes, missing toes, or hands that look like they are merging with the genitals.
-- Face does not match character reference photos: the face still looks like the person from the template photo, or key features (eye shape, nose, jaw, hairline) clearly do not match the character references.
-- Body parts merged incorrectly, missing, or duplicated (e.g. two torsos, missing limbs, fused body parts).
-Be strict about anatomy. A leg that bends at the wrong place, a foot that looks twisted, or a penis that looks like a finger is always an ISSUE.
-Examine the genital area first. Then check each limb separately (left arm, right arm, left leg, right leg). Then compare the face to the character references.', text: 'GENERATED IMAGE:' },
+    { type: 'text', text: 'You are checking an AI-generated image for quality issues. You will see: 1) the generated image, 2) character reference photos (face should match these), 3) the template photo.\nReply ONLY in this exact format. Do not write anything else. Do not explain. Do not add extra lines:\nDESCRIPTION: [1 sentence what you see]\nISSUE: Yes or No\nDETAILS: [exact problem if Yes, or none]\nMark ISSUE: Yes if you see ANY of these:\n- Genitals: If a penis is visible, it looks like a finger, thumb, hand, or digits. Concrete signs: no distinct glans (head), no coronal ridge, smooth cylinder shape, nail-like or pointed tip, skin texture continuous with the thigh or body, more than one tip, segmented like fingers, or looks like a hand attached to the crotch.\n- Extra limbs: more than 2 arms or more than 2 legs.\n- Broken or deformed limbs: knee bent backwards, foot twisted or rotated wrong way, elbow twisted, arm or leg disconnected from the torso, extra joints, limb in anatomically impossible position.\n- Hands or feet: extra fingers, missing fingers, fused fingers, extra toes, missing toes, or hands that look like they are merging with the genitals.\n- Face does not match character reference photos: the face still looks like the person from the template photo, or key features (eye shape, nose, jaw, hairline) clearly do not match the character references.\n- Body parts merged incorrectly, missing, or duplicated (e.g. two torsos, missing limbs, fused body parts).\nBe strict about anatomy. A leg that bends at the wrong place, a foot that looks twisted, or a penis that looks like a finger is always an ISSUE.\nExamine the genital area first. Then check each limb separately (left arm, right arm, left leg, right leg). Then compare the face to the character references.' },
+    { type: 'text', text: 'GENERATED IMAGE:' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
