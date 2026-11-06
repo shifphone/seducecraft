@@ -197,7 +197,7 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: 'Is there a penis that looks like fingers or a hand? Answer Yes or No only.' },
+    { type: 'text', text: 'Look at this image carefully. 1) Describe what you see in 1 sentence. 2) Is the penis anatomically correct, or does it look like fingers/hand/digits? Answer format: DESCRIPTION: [what you see] | ISSUE: Yes/No' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
@@ -210,8 +210,9 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
     const debug = { status: r.status, error: data.error, text: text.slice(0, 150) };
-    const hasIssue = /yes/i.test(text) && /finger|hand|digit/i.test(text);
-    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [text] : [], debug: JSON.stringify(debug) };
+    const desc = text.match(/description:\s*(.+?)\s*\|/)?.[1] || text.slice(0, 100);
+    const hasIssue = /issue:\s*yes/i.test(text) || (/yes/i.test(text) && /finger|hand|digit/i.test(text));
+    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [desc] : [], debug: desc, raw: text.slice(0, 200) };
   } catch (e) {
     return { ok: true, error: e.message, debug: 'catch:' + e.message };
   }
