@@ -197,9 +197,19 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: 'Analyze this image. Reply ONLY in this exact format:\nDESCRIPTION: [1 sentence what you see]\nISSUE: Yes or No\nDETAILS: [if ISSUE is Yes, list the exact problem. If No, write none]\n\nMark ISSUE: Yes only if you clearly see one of these:\n- penis shaped like fingers or hand\n- more than 2 arms or 2 legs\n- limb in anatomically impossible position\n- face looks unnaturally blended, plastic, or unchanged from a template (bad face swap)\nDo not mark Yes for normal sexual poses or minor imperfections.' },
+    { type: 'text', text: 'You are checking an AI-generated image. You will see: 1) the generated image, 2) the character reference photos (what the face SHOULD look like), 3) the template photo (the original pose/scene).\n\nReply ONLY in this exact format:\nDESCRIPTION: [1 sentence what you see in the generated image]\nISSUE: Yes or No\nDETAILS: [if ISSUE is Yes, list the exact problem. If No, write none]\n\nMark ISSUE: Yes only if you clearly see one of these:\n- penis shaped like fingers or hand\n- more than 2 arms or 2 legs, or a limb in an anatomically impossible position\n- the face in the generated image does NOT match the character reference photos (face swap failed, template face remains)\nDo not mark Yes for normal sexual poses or minor imperfections.' },
+    { type: 'text', text: 'GENERATED IMAGE:' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
+  
+  if (Array.isArray(charPhotos) && charPhotos.length) {
+    content.push({ type: 'text', text: 'CHARACTER REFERENCE PHOTOS (face should match these):' });
+    for (const u of charPhotos.slice(0, 3)) content.push({ type: 'image_url', image_url: { url: u } });
+  }
+  if (templateUrl) {
+    content.push({ type: 'text', text: 'TEMPLATE PHOTO (original pose, face should be replaced):' });
+    content.push({ type: 'image_url', image_url: { url: templateUrl } });
+  }
   
   try {
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
