@@ -191,6 +191,7 @@ export default async function handler(req, res) {
 }
 
 
+// v2
 export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   const key = process.env.OPENROUTER_KEY;
   console.log('[QC] Key exists:', !!key, 'imageUrl:', !!imageUrl);
