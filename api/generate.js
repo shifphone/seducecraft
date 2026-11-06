@@ -235,10 +235,10 @@ Answer format:
       face_score: faceOK ? 8 : 5,
       anatomy_ok: !hasGenitalIssue,
       pose_match: true,
-      arms: 2, legs: 2, hands: 2
+      arms: 2, legs: 2, hands: 2,
+      debug: text.slice(0, 300) || 'empty response'
     };
   } catch (e) {
-    console.log('[QC] Error:', e.message);
-    return { ok: true, error: e.message };
+    return { ok: true, error: e.message, debug: 'catch: ' + e.message };
   }
 }
