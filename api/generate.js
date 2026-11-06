@@ -197,7 +197,7 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: 'Analyze this image. Reply ONLY in this exact format:\nDESCRIPTION: [1 sentence what you see]\nISSUE: Yes or No\nDETAILS: [if ISSUE is Yes, list the exact problem: finger-penis, extra limb, impossible pose. If No, write none]\n\nOnly mark ISSUE: Yes if you clearly see: penis shaped like fingers/hand, more than 2 arms or 2 legs, or a limb in an anatomically impossible position. Do not mark Yes for normal sexual poses.' },
+    { type: 'text', text: 'Analyze this image. Reply ONLY in this exact format:\nDESCRIPTION: [1 sentence what you see]\nISSUE: Yes or No\nDETAILS: [if ISSUE is Yes, list the exact problem. If No, write none]\n\nMark ISSUE: Yes only if you clearly see one of these:\n- penis shaped like fingers or hand\n- more than 2 arms or 2 legs\n- limb in anatomically impossible position\n- face looks unnaturally blended, plastic, or unchanged from a template (bad face swap)\nDo not mark Yes for normal sexual poses or minor imperfections.' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
