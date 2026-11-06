@@ -133,7 +133,11 @@ export default async function handler(req, res) {
   const charCount = base64List.filter(b => b?.startsWith('data:')).length;
   const templateIdx = charCount + 1;
   const finalPrompt = model === 'xSD5Pro' 
-    ? prompt 
+    ? `Use images 1-${charCount} strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
+Use image_${templateIdx} as the reference for the exact pose, body position, limb placement, clothing, environment, lighting, camera angle, framing, and all sexual elements. Copy the visible genitalia, breasts, vagina, penis, sex acts, and intimate body contact from image_${templateIdx} as accurately as possible, including shape, size, position, and appearance.
+Do not copy from image_${templateIdx}: tattoos, dental braces, scars, birthmarks, body proportions, body shape, or skin tone. The body proportions should be natural and consistent with the face.
+${prompt}
+Amateur smartphone photography, medium-to-low image quality, casual unpolished snapshot, moderate softness, subtle digital noise, visible fine grain, slight JPEG compression artifacts, imperfect focus, uneven natural ambient lighting, slightly inaccurate white balance, imperfect exposure, realistic unretouched textures, ordinary consumer-camera rendering, natural everyday colors, slightly awkward framing, no professional studio lighting, no cinematic color grading, no beauty retouching, no glossy editorial finish, no artificial HDR, no excessive sharpness, no CGI appearance.`
     : `Use images 1-${charCount} strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
 Use image_${templateIdx} as the reference for the exact pose, body position, limb placement, clothing, environment, lighting, camera angle, framing, AND all sexual elements. Copy the visible genitalia, breasts, vagina, penis, sex acts, and intimate body contact from image_${templateIdx} as accurately as possible. Reproduce the shape, size, position, and appearance of the sexual parts and the sex act from the template photo.
 If male genitalia are visible in image_${templateIdx}, render them as a realistic human penis with a clearly defined rounded glans (head), distinct coronal ridge, cylindrical shaft, and scrotum. Do not turn the penis into fingers, thumbs, or hands.
