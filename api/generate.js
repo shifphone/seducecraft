@@ -130,14 +130,15 @@ export default async function handler(req, res) {
   if (!refUrls.length) return res.status(400).json({ error: 'No reference' });
   const refUrl = refUrls;
 
-  const charCount = base64List.filter(b => b?.startsWith('data:')).length;
+  const charCount = base64List.length - 1;
   const templateIdx = charCount + 1;
-  const finalPrompt = model === 'xSD5Pro' 
-    ? prompt
-    : `Use images 1-${charCount} strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
-Use image_${templateIdx} as the reference for the exact pose, body position, clothing, environment, lighting, camera angle, and all sexual elements. Copy everything visible in image_${templateIdx} as accurately as possible, including all genitalia and intimate body contact.
-Do not copy from image_${templateIdx}: tattoos, dental braces, scars, birthmarks, body proportions, or skin tone.
-${prompt}
+  const cleanPrompt = prompt.replace(/image_\d+/gi, 'the template').replace(/images?\s*\d+(-\d+)?/gi, 'the template');
+const finalPrompt = model === 'xSD5Pro' 
+    ? cleanPrompt
+    : `Use the first ${charCount} images strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
+Use the last image as the reference for the exact pose, body position, clothing, environment, lighting, camera angle, and all sexual elements. Copy everything visible in the last image as accurately as possible, including all genitalia and intimate body contact.
+Do not copy from the last image: tattoos, dental braces, scars, birthmarks, body proportions, or skin tone.
+${cleanPrompt}
 Amateur smartphone photography, medium-to-low image quality, casual unpolished snapshot, moderate softness, subtle digital noise, visible fine grain, slight JPEG compression artifacts, imperfect focus, uneven natural ambient lighting, slightly inaccurate white balance, imperfect exposure, realistic unretouched textures, ordinary consumer-camera rendering, natural everyday colors, slightly awkward framing, no professional studio lighting, no cinematic color grading, no beauty retouching, no glossy editorial finish, no artificial HDR, no excessive sharpness, no CGI appearance.`;
 
   const body = {
