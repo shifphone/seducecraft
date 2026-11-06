@@ -133,10 +133,7 @@ export default async function handler(req, res) {
   const charCount = base64List.filter(b => b?.startsWith('data:')).length;
   const templateIdx = charCount + 1;
   const finalPrompt = model === 'xSD5Pro' 
-    ? `Use images 1-${charCount} strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
-Use image_${templateIdx} as the reference for the exact pose, body position, clothing, environment, lighting, camera angle, and all sexual elements. Copy the visible genitalia, sex acts, and intimate body contact from image_${templateIdx} as accurately as possible.
-Do not copy from image_${templateIdx}: tattoos, dental braces, scars, birthmarks, body proportions, or skin tone.
-${prompt}`
+    ? prompt
     : `Use images 1-${charCount} strictly for face identity only. Do not copy body, skin tone, tattoos, or any non-facial features from these images.
 Use image_${templateIdx} as the reference for the exact pose, body position, clothing, environment, lighting, camera angle, and all sexual elements. Copy the visible genitalia, sex acts, and intimate body contact from image_${templateIdx} as accurately as possible.
 Do not copy from image_${templateIdx}: tattoos, dental braces, scars, birthmarks, body proportions, or skin tone.
