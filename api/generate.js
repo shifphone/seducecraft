@@ -194,51 +194,25 @@ export default async function handler(req, res) {
 // v2
 export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   const key = process.env.OPENROUTER_KEY;
-  console.log('[QC] Key exists:', !!key, 'imageUrl:', !!imageUrl);
-  if (!key) return { ok: true, error: 'no key' };
+  if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: `Look at the generated image. Answer ONLY these questions with Yes or No:
-
-1. Is there a penis that looks like fingers, a hand, or a thumb? (smooth, no clear head/glans, digit-like)
-2. Are there extra fingers or severely deformed hands?
-3. Is the face clearly different from the template face?
-
-Answer format:
-1: Yes/No
-2: Yes/No
-3: Yes/No` },
+    { type: 'text', text: 'Is there a penis that looks like fingers or a hand? Answer Yes or No only.' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
-  if (charPhotos?.length) charPhotos.forEach(url => content.push({ type: 'image_url', image_url: { url } }));
-  if (templateUrl) content.push({ type: 'image_url', image_url: { url: templateUrl } });
   
   try {
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'meta-llama/llama-3.2-90b-vision-instruct', messages: [{ role: 'user', content }] })
     });
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
-    const debugInfo = { status: r.status, hasChoices: !!data.choices, error: data.error, text: text.slice(0, 200) };
-    // Strict on genitals, loose on minor finger issues
-    const hasGenitalIssue = /^1:\s*yes/im.test(text) && /finger|hand|thumb|digit/i.test(text);
-    const hasLimbIssue = /^2:\s*yes/im.test(text);
-    const faceOK = /face.*(match|ok|correct|replacement)/i.test(text) && !/face.*(not|wrong|mismatch|different)/i.test(text);
-    const notes = text.slice(0, 200);
-    return {
-      ok: !hasGenitalIssue && !hasLimbIssue,
-      score: hasGenitalIssue ? 3 : (hasLimbIssue ? 5 : 8),
-      issues: hasGenitalIssue || hasLimbIssue ? [notes] : [],
-      face_match: faceOK,
-      face_score: faceOK ? 8 : 5,
-      anatomy_ok: !hasGenitalIssue,
-      pose_match: true,
-      arms: 2, legs: 2, hands: 2,
-      debug: text.slice(0, 300) || 'empty response'
-    };
+    const debug = { status: r.status, error: data.error, text: text.slice(0, 150) };
+    const hasIssue = /yes/i.test(text) && /finger|hand|digit/i.test(text);
+    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [text] : [], debug: JSON.stringify(debug) };
   } catch (e) {
-    return { ok: true, error: e.message, debug: 'catch: ' + e.message };
+    return { ok: true, error: e.message, debug: 'catch:' + e.message };
   }
 }
