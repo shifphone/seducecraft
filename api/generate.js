@@ -219,6 +219,7 @@ Answer format:
       body: JSON.stringify({ model: 'meta-llama/llama-3.2-90b-vision-instruct', messages: [{ role: 'user', content }] })
     });
     const data = await r.json();
+    console.log('[QC] Status:', r.status, 'Data:', JSON.stringify(data).slice(0, 500));
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
     console.log('[QC] Full response:', text);
     // Strict on genitals, loose on minor finger issues
