@@ -459,7 +459,7 @@ export default function AppInterface({ isLoggedIn, isAnonymous, userName, onLogi
           const num = idx + 1;
           console.log('[QC] Sending image', num, 'for check');
           fetch('/api/generate?check=1', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ imageUrl: imgUrl, charPhotos, templateUrl, imgNum: num }) })
-            .then(r => r.json()).then(c => { console.log('[QC] #' + num + ':', c.ok ? 'OK' : 'FAIL', '| score:', c.score, '| face:', c.face_score, '| anatomy:', c.anatomy_ok, '| issues:', c.issues, '| url:', imgUrl.slice(-30)); setQcResults(prev => ({...prev, [imgUrl]: c})); if (!c.ok) showToast('#' + num + ': ' + (c.issues?.slice(0,1).join('') || 'issues')); }).catch(e => console.error('[QC] Error #' + num, e));
+            .then(r => r.json()).then(c => { console.log('[QC] #' + num + ':', c.ok ? 'OK' : 'FAIL', '| score:', c.score, '| debug:', c.debug, '| issues:', c.issues, '| url:', imgUrl.slice(-30)); setQcResults(prev => ({...prev, [imgUrl]: c})); if (!c.ok) showToast('#' + num + ': ' + (c.issues?.slice(0,1).join('') || 'issues')); }).catch(e => console.error('[QC] Error #' + num, e));
         });
       }
       const gens = images.map((img, i) => ({ id: crypto.randomUUID(), title: photoMode === 'undress' ? 'Undress' : (photoMode === 'templates' ? (selectedTemplate?.title?.[lang] || 'Template') : 'Custom') + (images.length>1 ? ` #${i+1}` : ''), prompt: p, characterName: selectedCharacter?.name || 'Photo', src: img.url || img, createdAt: Date.now(), model: selectedModel, size: imageSize }));
