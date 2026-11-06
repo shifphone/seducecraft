@@ -197,7 +197,7 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: 'Look at this image carefully. 1) Describe what you see in 1 sentence. 2) Is the penis anatomically correct, or does it look like fingers/hand/digits? Answer format: DESCRIPTION: [what you see] | ISSUE: Yes/No' },
+    { type: 'text', text: 'Look at this image carefully. 1) Describe what you see in 1 sentence. 2) Check for these issues: penis looks like fingers/hand/digits, extra arms or legs (more than 2), arms or legs in unnatural/impossible positions. Answer format: DESCRIPTION: [what you see] | ISSUE: Yes/No | DETAILS: [what is wrong, or none]' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
@@ -212,7 +212,7 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
     const debug = { status: r.status, error: data.error, text: text.slice(0, 150) };
     const desc = text.match(/description:\s*(.+?)(?:\s*\||$)/i)?.[1]?.trim() || text.slice(0, 120);
     const issueMatch = text.match(/issue:\s*(yes|no)/i);
-    const hasIssue = issueMatch?.[1]?.toLowerCase() === 'yes' && /finger|hand|digit|deform/i.test(text);
+    const hasIssue = issueMatch?.[1]?.toLowerCase() === 'yes';
     return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [desc] : [], debug: desc };
   } catch (e) {
     return { ok: true, error: e.message, debug: 'catch:' + e.message };
