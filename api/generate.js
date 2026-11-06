@@ -197,7 +197,7 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
   if (!key) return { ok: true, error: 'no key', debug: 'no_key' };
   
   const content = [
-    { type: 'text', text: 'Look at this image carefully. 1) Describe what you see in 1 sentence. 2) Check for these issues: penis looks like fingers/hand/digits, extra arms or legs (more than 2), arms or legs in unnatural/impossible positions. Answer format: DESCRIPTION: [what you see] | ISSUE: Yes/No | DETAILS: [what is wrong, or none]' },
+    { type: 'text', text: 'Analyze this image. Reply ONLY in this exact format:\nDESCRIPTION: [1 sentence what you see]\nISSUE: Yes or No\nDETAILS: [if ISSUE is Yes, list the exact problem: finger-penis, extra limb, impossible pose. If No, write none]\n\nOnly mark ISSUE: Yes if you clearly see: penis shaped like fingers/hand, more than 2 arms or 2 legs, or a limb in an anatomically impossible position. Do not mark Yes for normal sexual poses.' },
     { type: 'image_url', image_url: { url: imageUrl } }
   ];
   
@@ -210,10 +210,11 @@ export async function checkQuality(imageUrl, charPhotos, templateUrl) {
     const data = await r.json();
     const text = (data.choices?.[0]?.message?.content || '').toLowerCase();
     const debug = { status: r.status, error: data.error, text: text.slice(0, 150) };
-    const desc = text.match(/description:\s*(.+?)(?:\s*\||$)/i)?.[1]?.trim() || text.slice(0, 120);
+    const desc = text.match(/description:\s*(.+?)(?=\n|ISSUE|$)/i)?.[1]?.trim() || text.slice(0, 120);
+    const details = text.match(/details:\s*(.+?)(?=\n|$)/i)?.[1]?.trim() || '';
     const issueMatch = text.match(/issue:\s*(yes|no)/i);
-    const hasIssue = issueMatch?.[1]?.toLowerCase() === 'yes';
-    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [desc] : [], debug: desc };
+    const hasIssue = issueMatch?.[1]?.toLowerCase() === 'yes' && details && details.toLowerCase() !== 'none';
+    return { ok: !hasIssue, score: hasIssue ? 3 : 8, issues: hasIssue ? [details] : [], debug: desc + (details ? ' | ' + details : '') };
   } catch (e) {
     return { ok: true, error: e.message, debug: 'catch:' + e.message };
   }
