@@ -194,7 +194,23 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
         const url = img?.url || img?.previewUrl;
         // Wait until image is actually available
         if (url && (data.status === "succeeded" || img?.available === true)) {
-          return res.status(200).json({ url, requestId: workflowId, images: [img], cost: 1 });
+          // Download from Civitai and re-upload to Supabase to avoid CORS
+          try {
+            const imgRes = await fetch(url);
+            if (!imgRes.ok) throw new Error('Failed to download image');
+            const buf = Buffer.from(await imgRes.arrayBuffer());
+            const supabase = createClient(supabaseUrl, supabaseKey);
+            const fileName = `civitai-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+            const { data: up, error: upErr } = await supabase.storage.from('references').upload(fileName, buf, { contentType: 'image/jpeg', upsert: true });
+            if (upErr) throw upErr;
+            const { data: pub } = supabase.storage.from('references').getPublicUrl(fileName);
+            const finalUrl = pub.publicUrl;
+            return res.status(200).json({ url: finalUrl, requestId: workflowId, images: [{ url: finalUrl }], cost: 1 });
+          } catch (dlErr) {
+            console.error('Image proxy failed', dlErr);
+            // fallback to original URL
+            return res.status(200).json({ url, requestId: workflowId, images: [img], cost: 1 });
+          }
         }
         if (data.status === "failed" || data.steps?.[0]?.output?.errors?.length) {
           return res.status(500).json({ error: "Civitai generation failed", full: data });
