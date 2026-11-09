@@ -190,12 +190,12 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
         });
         if (!pollRes.ok) continue;
         const data = await pollRes.json();
-        if (data.status === "succeeded") {
-          const img = data.steps?.[0]?.output?.images?.[0];
-          const url = img?.url;
+        const img = data.steps?.[0]?.output?.images?.[0];
+        const url = img?.url || img?.previewUrl;
+        if (url && (data.status === "succeeded" || img?.available !== false || data.status === "processing")) {
           return res.status(200).json({ url, requestId: workflowId, images: [img], cost: 1 });
         }
-        if (data.status === "failed") {
+        if (data.status === "failed" || data.steps?.[0]?.output?.errors?.length) {
           return res.status(500).json({ error: "Civitai generation failed", full: data });
         }
       }
