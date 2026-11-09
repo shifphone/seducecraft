@@ -152,14 +152,13 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
           engine: "sdcpp",
           ecosystem: "qwen",
           model: "20b",
-          operation: "editImage",
+          operation: "createImage",
           prompt: finalPrompt,
           negativePrompt: "clothed, underwear, bra, panties, censored, mosaic, blur, professional photography, studio lighting, glossy, HDR, oversharpened, plastic skin, bad anatomy, deformed, extra limbs",
           imageSize: "square_hd",
           steps: 20,
           cfgScale: 3.5,
           quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4),
-          images: refUrls.slice(0, 4),
           loras: {
             "urn:air:qwen:lora:civitai:2058077@2328988": 0.85
           }
