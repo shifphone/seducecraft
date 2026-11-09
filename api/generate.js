@@ -157,8 +157,11 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
           negativePrompt: "clothed, underwear, bra, panties, censored, mosaic, blur, professional photography, studio lighting, glossy, HDR, oversharpened, plastic skin, bad anatomy, deformed, extra limbs",
           imageSize: "square_hd",
           steps: 20,
-          cfgScale: 4,
-          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4)
+          cfgScale: 3.5,
+          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4),
+          loras: {
+            "urn:air:qwen:lora:civitai:2058077@2328988": 0.85
+          }
         }
       }]
     };
