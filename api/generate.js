@@ -149,14 +149,13 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
       steps: [{
         "$type": "imageGen",
         input: {
-          engine: "flux2",
-          model: "klein",
+          engine: "sdcpp",
+          ecosystem: "qwen",
+          model: "20b",
           operation: "createImage",
-          modelVersion: "4b",
           prompt: finalPrompt,
           negativePrompt: "clothed, underwear, bra, panties, censored, mosaic, blur, professional photography, studio lighting, glossy, HDR, oversharpened, plastic skin, bad anatomy, deformed, extra limbs",
-          width: 1024,
-          height: 1024,
+          imageSize: "square_hd",
           steps: 20,
           cfgScale: 4,
           quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4)
