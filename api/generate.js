@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   // rate limit disabled
 
   const apiKey = process.env.XMODE_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
+  const civitaiKey = process.env.CIVITAI_API_KEY;
 
   const supabaseUrl = process.env.seducecraft_SUPABASE_URL || process.env.NEXT_PUBLIC_seducecraft_SUPABASE_URL || process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const supabaseKey = process.env.seducecraft_SUPABASE_SECRET_KEY || process.env.seducecraft_SUPABASE_SERVICE_ROLE_KEY || process.env.seducecraft_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_seducecraft_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_seducecraft_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -140,6 +140,72 @@ Use the last image as the reference for the exact pose, body position, clothing,
 Do not copy from the last image: tattoos, dental braces, scars, birthmarks, body proportions, or skin tone.
 ${cleanPrompt}
 Amateur smartphone photography, medium-to-low image quality, casual unpolished snapshot, moderate softness, subtle digital noise, visible fine grain, slight JPEG compression artifacts, imperfect focus, uneven natural ambient lighting, slightly inaccurate white balance, imperfect exposure, realistic unretouched textures, ordinary consumer-camera rendering, natural everyday colors, slightly awkward framing, no professional studio lighting, no cinematic color grading, no beauty retouching, no glossy editorial finish, no artificial HDR, no excessive sharpness, no CGI appearance.`;
+
+  // Civitai NSFW path
+  if (model === 'civitai-nsfw' || model === 'civitai') {
+    if (!civitaiKey) return res.status(500).json({ error: 'CIVITAI_API_KEY not configured' });
+    const loras = {
+      "urn:air:flux1:lora:civitai:674027@780667": 0.8,
+      "urn:air:flux1:lora:civitai:1219805@1414074": 1.0,
+      "urn:air:flux1:lora:civitai:796605@890793": 0.85
+    };
+    const workflow = {
+      steps: [{
+        "$type": "imageGen",
+        input: {
+          engine: "flux2",
+          model: "klein",
+          operation: "createImage",
+          modelVersion: "4b",
+          prompt: finalPrompt,
+          negativePrompt: "clothed, underwear, bra, panties, censored, mosaic, blur, professional photography, studio lighting, glossy, HDR, oversharpened, plastic skin, bad anatomy, deformed, extra limbs",
+          width: 1024,
+          height: 1024,
+          steps: 25,
+          cfgScale: 5,
+          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4),
+          loras
+        }
+      }]
+    };
+    try {
+      const createRes = await fetch("https://orchestration.civitai.com/v2/consumer/workflows?wait=0", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${civitaiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(workflow)
+      });
+      if (!createRes.ok) {
+        const err = await createRes.text();
+        return res.status(createRes.status).json({ error: err });
+      }
+      const { id: workflowId } = await createRes.json();
+      for (let i = 0; i < 60; i++) {
+        await new Promise(r => setTimeout(r, 3000));
+        const pollRes = await fetch(`https://orchestration.civitai.com/v2/consumer/workflows/${workflowId}`, {
+          headers: { "Authorization": `Bearer ${civitaiKey}` }
+        });
+        if (!pollRes.ok) continue;
+        const data = await pollRes.json();
+        if (data.status === "succeeded") {
+          const img = data.steps?.[0]?.output?.images?.[0];
+          const url = img?.url;
+          return res.status(200).json({ url, requestId: workflowId, images: [img], cost: 1 });
+        }
+        if (data.status === "failed") {
+          return res.status(500).json({ error: "Civitai generation failed", full: data });
+        }
+      }
+      return res.status(504).json({ error: "Timeout" });
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // Default xMode path
+  if (!apiKey) return res.status(500).json({ error: 'XMODE_API_KEY not configured' });
 
   const body = {
     model: model || 'xSD4.5',
