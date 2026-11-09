@@ -160,7 +160,8 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
           cfgScale: 3.5,
           quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4),
           loras: {
-            "urn:air:qwen:lora:civitai:2058077@2328988": 0.85
+            "urn:air:qwen:lora:civitai:2058077@2328988": 0.6,
+            "urn:air:qwen:lora:civitai:2004155@3061098": 0.7
           }
         }
       }]
