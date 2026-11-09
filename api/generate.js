@@ -192,8 +192,9 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
         // Wait until image is actually available
         if (url) {
           try {
-            const imgRes = await fetch(url, { headers: { "Authorization": `Bearer ${civitaiKey}` } });
-            if (!imgRes.ok) throw new Error('download failed ' + imgRes.status);
+            console.log('Downloading from', url.slice(0, 80));
+            const imgRes = await fetch(url);
+            if (!imgRes.ok) throw new Error('download failed ' + imgRes.status + ' ' + await imgRes.text().catch(()=>''));
             const buf = Buffer.from(await imgRes.arrayBuffer());
             const supabase = createClient(supabaseUrl, supabaseKey);
             const fileName = `gen-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
@@ -203,7 +204,8 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
             return res.status(200).json({ url: pub.publicUrl, requestId: workflowId, images: [{ url: pub.publicUrl }], cost: 1 });
           } catch (dlErr) {
             console.error('Proxy failed', dlErr.message);
-            return res.status(500).json({ error: 'Failed to proxy image', detail: dlErr.message });
+            // Return original URL as last resort (may have CORS issues but at least something)
+            return res.status(200).json({ url, requestId: workflowId, images: [{ url }], cost: 1, warning: 'proxy failed: ' + dlErr.message });
           }
         }
         if (data.status === "failed" || data.steps?.[0]?.output?.errors?.length) {
