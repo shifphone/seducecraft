@@ -120,7 +120,8 @@ export default async function handler(req, res) {
         const { data } = supabase.storage.from('references').getPublicUrl(fileName);
         refUrls.push(data.publicUrl);
       } catch (e) {
-        return res.status(500).json({ error: e.message });
+        console.error('Civitai error:', e);
+        return res.status(500).json({ error: e.message, stack: e.stack?.slice(0, 500) });
       }
     }
   }
@@ -142,7 +143,7 @@ ${cleanPrompt}
 Amateur smartphone photography, medium-to-low image quality, casual unpolished snapshot, moderate softness, subtle digital noise, visible fine grain, slight JPEG compression artifacts, imperfect focus, uneven natural ambient lighting, slightly inaccurate white balance, imperfect exposure, realistic unretouched textures, ordinary consumer-camera rendering, natural everyday colors, slightly awkward framing, no professional studio lighting, no cinematic color grading, no beauty retouching, no glossy editorial finish, no artificial HDR, no excessive sharpness, no CGI appearance.`;
 
   // Civitai NSFW path
-  if (true)  // force Civitai only temporarily {
+  if (true) { // force Civitai only temporarily
     if (!civitaiKey) return res.status(500).json({ error: 'CIVITAI_API_KEY not configured' });
     const loras = {
       "urn:air:flux1:lora:civitai:674027@780667": 0.8,
