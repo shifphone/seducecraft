@@ -191,22 +191,19 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
         const url = img?.url || img?.previewUrl;
         // Wait until image is actually available
         if (url) {
-          // Download from Civitai and re-upload to Supabase to avoid CORS
           try {
-            const imgRes = await fetch(url);
-            if (!imgRes.ok) throw new Error('Failed to download image');
+            const imgRes = await fetch(url, { headers: { "Authorization": `Bearer ${civitaiKey}` } });
+            if (!imgRes.ok) throw new Error('download failed ' + imgRes.status);
             const buf = Buffer.from(await imgRes.arrayBuffer());
             const supabase = createClient(supabaseUrl, supabaseKey);
-            const fileName = `civitai-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
-            const { data: up, error: upErr } = await supabase.storage.from('references').upload(fileName, buf, { contentType: 'image/jpeg', upsert: true });
+            const fileName = `gen-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`;
+            const { error: upErr } = await supabase.storage.from('references').upload(fileName, buf, { contentType: 'image/jpeg', upsert: true });
             if (upErr) throw upErr;
             const { data: pub } = supabase.storage.from('references').getPublicUrl(fileName);
-            const finalUrl = pub.publicUrl;
-            return res.status(200).json({ url: finalUrl, requestId: workflowId, images: [{ url: finalUrl }], cost: 1 });
+            return res.status(200).json({ url: pub.publicUrl, requestId: workflowId, images: [{ url: pub.publicUrl }], cost: 1 });
           } catch (dlErr) {
-            console.error('Image proxy failed', dlErr);
-            // fallback to original URL
-            return res.status(200).json({ url, requestId: workflowId, images: [img], cost: 1 });
+            console.error('Proxy failed', dlErr.message);
+            return res.status(500).json({ error: 'Failed to proxy image', detail: dlErr.message });
           }
         }
         if (data.status === "failed" || data.steps?.[0]?.output?.errors?.length) {
