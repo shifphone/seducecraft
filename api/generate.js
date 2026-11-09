@@ -145,11 +145,6 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
   // Civitai NSFW path
   if (true) { // force Civitai only temporarily
     if (!civitaiKey) return res.status(500).json({ error: 'CIVITAI_API_KEY not configured' });
-    const loras = {
-      "urn:air:flux1:lora:civitai:674027@780667": 0.8,
-      "urn:air:flux1:lora:civitai:1219805@1414074": 1.0,
-      "urn:air:flux1:lora:civitai:796605@890793": 0.85
-    };
     const workflow = {
       steps: [{
         "$type": "imageGen",
@@ -162,10 +157,9 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
           negativePrompt: "clothed, underwear, bra, panties, censored, mosaic, blur, professional photography, studio lighting, glossy, HDR, oversharpened, plastic skin, bad anatomy, deformed, extra limbs",
           width: 1024,
           height: 1024,
-          steps: 25,
-          cfgScale: 5,
-          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4),
-          loras
+          steps: 20,
+          cfgScale: 4,
+          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4)
         }
       }]
     };
@@ -193,7 +187,7 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
         const img = data.steps?.[0]?.output?.images?.[0];
         const url = img?.url || img?.previewUrl;
         // Wait until image is actually available
-        if (url && (data.status === "succeeded" || img?.available === true)) {
+        if (url) {
           // Download from Civitai and re-upload to Supabase to avoid CORS
           try {
             const imgRes = await fetch(url);
