@@ -149,16 +149,20 @@ Amateur smartphone photography, medium-to-low image quality, casual unpolished s
       steps: [{
         "$type": "imageGen",
         input: {
-          engine: "qwen",
-          model: "2.0",
+          engine: "sdcpp",
+          ecosystem: "qwen",
+          model: "20b",
           operation: "createImage",
           prompt: finalPrompt,
           negativePrompt: "clothed, underwear, bra, panties, censored, mosaic, blur, professional photography, studio lighting, glossy, HDR, oversharpened, plastic skin, bad anatomy, deformed, extra limbs",
-          width: 1024,
-          height: 1024,
+          imageSize: "square_hd",
           steps: 20,
           cfgScale: 3.5,
-          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4)
+          quantity: Math.min(Math.max(parseInt(n) || 1, 1), 4),
+          loras: {
+            "urn:air:qwen:lora:civitai:2058077@2328988": 0.7,
+            "urn:air:qwen:lora:civitai:2004155@3061098": 0.6
+          }
         }
       }]
     };
